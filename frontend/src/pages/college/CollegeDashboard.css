@@ -1,0 +1,118 @@
+.dashboard-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--spacing-6);
+}
+
+.dashboard-section {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-5);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+}
+
+.dashboard-section h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-4);
+}
+
+/* Department Stats */
+.dept-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.dept-stat-card {
+    padding: var(--spacing-3);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+}
+
+.dept-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-2);
+}
+
+.dept-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.dept-count {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.dept-progress {
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    margin-bottom: var(--spacing-2);
+}
+
+.dept-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-500), var(--success-500));
+    border-radius: var(--radius-full);
+    transition: width 0.5s ease;
+}
+
+.dept-placed {
+    font-size: 0.75rem;
+    color: var(--success-600);
+    font-weight: 500;
+}
+
+/* Batch Stats */
+.batch-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--spacing-3);
+}
+
+.batch-card {
+    padding: var(--spacing-4);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.batch-year {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-600);
+    margin-bottom: var(--spacing-3);
+}
+
+.batch-details {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-4);
+}
+
+.batch-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.batch-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.batch-label {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+    .dashboard-sections {
+        grid-template-columns: 1fr;
+    }
+}

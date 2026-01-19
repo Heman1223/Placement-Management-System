@@ -1,0 +1,180 @@
+const mongoose = require('mongoose');
+
+const studentSchema = new mongoose.Schema({
+    // Personal Information
+    name: {
+        firstName: {
+            type: String,
+            required: [true, 'First name is required'],
+            trim: true
+        },
+        lastName: {
+            type: String,
+            required: [true, 'Last name is required'],
+            trim: true
+        }
+    },
+    email: {
+        type: String,
+        required: [true, 'Email is required'],
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
+    phone: {
+        type: String,
+        required: [true, 'Phone number is required']
+    },
+    dateOfBirth: {
+        type: Date
+    },
+    gender: {
+        type: String,
+        enum: ['male', 'female', 'other', 'prefer_not_to_say']
+    },
+
+    // Academic Information
+    college: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'College',
+        required: [true, 'College is required']
+    },
+    department: {
+        type: String,
+        required: [true, 'Department is required'],
+        trim: true
+    },
+    batch: {
+        type: Number,
+        required: [true, 'Batch year is required']
+    },
+    rollNumber: {
+        type: String,
+        required: [true, 'Roll number is required'],
+        trim: true
+    },
+    cgpa: {
+        type: Number,
+        min: [0, 'CGPA cannot be negative'],
+        max: [10, 'CGPA cannot exceed 10']
+    },
+    percentage: {
+        type: Number,
+        min: [0, 'Percentage cannot be negative'],
+        max: [100, 'Percentage cannot exceed 100']
+    },
+    backlogs: {
+        active: { type: Number, default: 0 },
+        history: { type: Number, default: 0 }
+    },
+
+    // Education History
+    education: {
+        tenth: {
+            board: String,
+            percentage: Number,
+            yearOfPassing: Number
+        },
+        twelfth: {
+            board: String,
+            stream: String,
+            percentage: Number,
+            yearOfPassing: Number
+        },
+        diploma: {
+            branch: String,
+            percentage: Number,
+            yearOfPassing: Number
+        }
+    },
+
+    // Skills & Certifications
+    skills: [{
+        type: String,
+        trim: true
+    }],
+    certifications: [{
+        name: String,
+        issuer: String,
+        issueDate: Date,
+        credentialUrl: String
+    }],
+
+    // Projects
+    projects: [{
+        title: String,
+        description: String,
+        technologies: [String],
+        projectUrl: String,
+        githubUrl: String
+    }],
+
+    // Links & Resume
+    resumeUrl: String,
+    portfolioUrl: String,
+    linkedinUrl: String,
+    githubUrl: String,
+
+    // Placement Status
+    placementStatus: {
+        type: String,
+        enum: ['not_placed', 'in_process', 'placed', 'not_interested', 'higher_studies'],
+        default: 'not_placed'
+    },
+    placementDetails: {
+        company: String,
+        role: String,
+        package: Number, // In LPA
+        joiningDate: Date,
+        offerLetterUrl: String
+    },
+
+    // User account reference (if student has login)
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+
+    // Verification by college
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verifiedAt: Date,
+    verifiedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+
+    // Metadata
+    addedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    source: {
+        type: String,
+        enum: ['manual', 'bulk_upload', 'self_registration'],
+        default: 'manual'
+    }
+}, {
+    timestamps: true
+});
+
+// Virtual for full name
+studentSchema.virtual('fullName').get(function () {
+    return `${this.name.firstName} ${this.name.lastName}`;
+});
+
+// Indexes for efficient querying
+studentSchema.index({ college: 1, department: 1 });
+studentSchema.index({ batch: 1 });
+studentSchema.index({ cgpa: -1 });
+studentSchema.index({ placementStatus: 1 });
+studentSchema.index({ skills: 1 });
+studentSchema.index({ 'name.firstName': 'text', 'name.lastName': 'text', skills: 'text' });
+
+// Compound index for college uniqueness
+studentSchema.index({ college: 1, rollNumber: 1 }, { unique: true });
+
+module.exports = mongoose.model('Student', studentSchema);

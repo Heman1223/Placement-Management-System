@@ -1,0 +1,161 @@
+.header {
+    height: var(--header-height);
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-6);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+}
+
+.header-menu-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.header-menu-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.header-icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.header-icon-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.header-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 16px;
+    height: 16px;
+    background: var(--error-500);
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 600;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-user {
+    position: relative;
+}
+
+.header-user-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-1);
+    border-radius: var(--radius-lg);
+    transition: background var(--transition-fast);
+}
+
+.header-user-btn:hover {
+    background: var(--bg-tertiary);
+}
+
+.header-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    color: white;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.header-dropdown {
+    position: absolute;
+    top: calc(100% + var(--spacing-2));
+    right: 0;
+    min-width: 220px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    animation: fadeIn 0.15s ease;
+}
+
+.header-dropdown-info {
+    padding: var(--spacing-3) var(--spacing-4);
+}
+
+.header-dropdown-email {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.header-dropdown-role {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: capitalize;
+    margin-top: var(--spacing-1);
+}
+
+.header-dropdown-divider {
+    height: 1px;
+    background: var(--border-light);
+}
+
+.header-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    width: 100%;
+    padding: var(--spacing-3) var(--spacing-4);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+}
+
+.header-dropdown-item:hover {
+    background: var(--bg-tertiary);
+    color: var(--error-500);
+}

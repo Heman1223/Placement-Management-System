@@ -1,0 +1,16 @@
+/* Reset and import custom styles */
+@import './styles/globals.css';
+
+/* Ensure full width/height for the app */
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-secondary, #f8fafc);
+}

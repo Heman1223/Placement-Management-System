@@ -1,0 +1,89 @@
+.jobs-page {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-5);
+    padding: var(--spacing-1);
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    width: fit-content;
+}
+
+.filter-tab {
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.filter-tab:hover {
+    color: var(--text-primary);
+}
+
+.filter-tab.active {
+    background: var(--primary-500);
+    color: white;
+}
+
+/* Job Type Badge */
+.job-type-badge {
+    display: inline-flex;
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    text-transform: capitalize;
+}
+
+.type-internship {
+    background: var(--primary-100);
+    color: var(--primary-700);
+}
+
+.type-full_time {
+    background: var(--success-50);
+    color: var(--success-700);
+}
+
+.type-part_time {
+    background: var(--warning-50);
+    color: var(--warning-600);
+}
+
+.type-contract {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+/* Status Badge */
+.status-open {
+    background: var(--success-50);
+    color: var(--success-700);
+}
+
+.status-closed {
+    background: var(--gray-100);
+    color: var(--gray-600);
+}
+
+.status-draft {
+    background: var(--warning-50);
+    color: var(--warning-600);
+}
+
+.status-filled {
+    background: var(--primary-100);
+    color: var(--primary-700);
+}
+
+/* Action Button Variants */
+.action-btn-warning:hover {
+    background: var(--warning-50);
+    color: var(--warning-600);
+}

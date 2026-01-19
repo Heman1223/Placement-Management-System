@@ -1,0 +1,139 @@
+.admin-page {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Entity Cell */
+.entity-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.entity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-lg);
+    background: var(--primary-100);
+    color: var(--primary-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.entity-icon.company {
+    background: var(--warning-50);
+    color: var(--warning-600);
+}
+
+.entity-name {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.entity-meta {
+    display: block;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+/* Detail Modal */
+.detail-modal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+}
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding-bottom: var(--spacing-4);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.detail-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-xl);
+    background: var(--primary-100);
+    color: var(--primary-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.detail-icon.company {
+    background: var(--warning-50);
+    color: var(--warning-600);
+}
+
+.detail-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-1);
+}
+
+.detail-code {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-transform: capitalize;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.detail-item .label,
+.detail-section .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.detail-item .value {
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+}
+
+.detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.detail-description {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+}
+
+.tag {
+    padding: var(--spacing-1) var(--spacing-3);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-radius: var(--radius-full);
+    font-size: 0.8125rem;
+}
+
+@media (max-width: 768px) {
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+}

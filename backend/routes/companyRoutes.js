@@ -1,0 +1,26 @@
+const express = require('express');
+const router = express.Router();
+const { companyController } = require('../controllers');
+const { auth, isCompany, isApproved, validateObjectId, validatePagination } = require('../middleware');
+
+// All routes require company auth
+router.use(auth, isCompany);
+
+// Dashboard (doesn't require approval)
+router.get('/stats', isApproved, companyController.getDashboardStats);
+
+// Profile
+router.put('/profile', companyController.updateProfile);
+
+// Student search (requires approval)
+router.get('/students/search', isApproved, validatePagination, companyController.searchStudents);
+router.get('/students/:id', isApproved, validateObjectId('id'), companyController.getStudentProfile);
+
+// Shortlisting
+router.post('/shortlist', isApproved, companyController.shortlistStudent);
+router.get('/shortlist', isApproved, validatePagination, companyController.getShortlistedCandidates);
+
+// Applications
+router.patch('/applications/:id/status', isApproved, validateObjectId('id'), companyController.updateApplicationStatus);
+
+module.exports = router;

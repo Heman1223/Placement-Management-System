@@ -1,0 +1,131 @@
+.card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+    transition: all var(--transition-fast);
+}
+
+.card-padding-none {
+    padding: 0;
+}
+
+.card-padding-sm {
+    padding: var(--spacing-3);
+}
+
+.card-padding-default {
+    padding: var(--spacing-5);
+}
+
+.card-padding-lg {
+    padding: var(--spacing-6);
+}
+
+.card-hoverable:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.card-clickable {
+    cursor: pointer;
+}
+
+.card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+}
+
+.card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.card-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: var(--spacing-1);
+}
+
+.card-actions {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+/* Stats Card */
+.stats-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-5);
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-light);
+}
+
+.stats-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stats-card-primary .stats-card-icon {
+    background: var(--primary-100);
+    color: var(--primary-600);
+}
+
+.stats-card-success .stats-card-icon {
+    background: var(--success-50);
+    color: var(--success-600);
+}
+
+.stats-card-warning .stats-card-icon {
+    background: var(--warning-50);
+    color: var(--warning-600);
+}
+
+.stats-card-error .stats-card-icon {
+    background: var(--error-50);
+    color: var(--error-600);
+}
+
+.stats-card-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.stats-card-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.stats-card-title {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: var(--spacing-1);
+}
+
+.stats-card-trend {
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: var(--spacing-1);
+}
+
+.trend-up {
+    color: var(--success-600);
+}
+
+.trend-down {
+    color: var(--error-500);
+}
