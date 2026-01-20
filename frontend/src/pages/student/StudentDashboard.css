@@ -1,0 +1,186 @@
+.student-dashboard {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.dashboard-header {
+    margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+    font-size: 2rem;
+    color: #1a202c;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-header .subtitle {
+    color: #718096;
+    font-size: 1rem;
+}
+
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.alert-warning {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+}
+
+.alert-info {
+    background-color: #dbeafe;
+    border-left: 4px solid #3b82f6;
+}
+
+.alert strong {
+    font-size: 1.1rem;
+    color: #1a202c;
+}
+
+.alert p {
+    margin: 0.5rem 0;
+    color: #4b5563;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+}
+
+.stat-content h3 {
+    font-size: 2rem;
+    color: #1a202c;
+    margin: 0;
+}
+
+.stat-content p {
+    color: #718096;
+    margin: 0.25rem 0 0 0;
+    font-size: 0.9rem;
+}
+
+.dashboard-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.action-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    text-align: center;
+}
+
+.action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.action-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.action-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.action-card p {
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.application-status-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.application-status-section h2 {
+    font-size: 1.5rem;
+    color: #1a202c;
+    margin-bottom: 1.5rem;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f7fafc;
+    border-radius: 8px;
+    border-left: 3px solid #667eea;
+}
+
+.status-label {
+    text-transform: capitalize;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.status-count {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    font-size: 1.2rem;
+    color: #718096;
+}
+
+@media (max-width: 768px) {
+    .student-dashboard {
+        padding: 1rem;
+    }
+
+    .stats-grid,
+    .dashboard-actions {
+        grid-template-columns: 1fr;
+    }
+}

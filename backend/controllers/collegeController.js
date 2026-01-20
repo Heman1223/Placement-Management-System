@@ -93,9 +93,9 @@ const getStudents = asyncHandler(async (req, res) => {
     if (department) query.department = department;
     if (batch) query.batch = parseInt(batch);
     if (status) query.placementStatus = status;
-    if (verified !== undefined) query.isVerified = verified === 'true';
+    if (verified && verified !== '') query.isVerified = verified === 'true';
 
-    if (search) {
+    if (search && search.trim() !== '') {
         query.$or = [
             { 'name.firstName': { $regex: search, $options: 'i' } },
             { 'name.lastName': { $regex: search, $options: 'i' } },
@@ -166,14 +166,20 @@ const addStudent = asyncHandler(async (req, res) => {
         ...req.body,
         college: collegeId,
         addedBy: req.userId,
-        source: 'manual'
+        source: 'manual',
+        isVerified: true, // Auto-verify students added by college admin
+        verifiedAt: new Date(),
+        verifiedBy: req.userId
     };
 
     const student = await Student.create(studentData);
 
     // Update college stats
     await College.findByIdAndUpdate(collegeId, {
-        $inc: { 'stats.totalStudents': 1 }
+        $inc: { 
+            'stats.totalStudents': 1,
+            'stats.verifiedStudents': 1 // Increment verified count
+        }
     });
 
     res.status(201).json({
@@ -316,7 +322,10 @@ const bulkUploadStudents = asyncHandler(async (req, res) => {
                 ...studentData,
                 college: collegeId,
                 addedBy: req.userId,
-                source: 'bulk_upload'
+                source: 'bulk_upload',
+                isVerified: true, // Auto-verify bulk uploaded students
+                verifiedAt: new Date(),
+                verifiedBy: req.userId
             });
             results.success.push({
                 rollNumber: student.rollNumber,
@@ -333,7 +342,10 @@ const bulkUploadStudents = asyncHandler(async (req, res) => {
 
     // Update college stats
     await College.findByIdAndUpdate(collegeId, {
-        $inc: { 'stats.totalStudents': results.success.length }
+        $inc: { 
+            'stats.totalStudents': results.success.length,
+            'stats.verifiedStudents': results.success.length // All bulk uploaded are verified
+        }
     });
 
     res.status(201).json({
@@ -373,4 +385,47 @@ module.exports = {
     verifyStudent,
     bulkUploadStudents,
     getDepartments
+};
+
+/**
+ * @desc    Export students to CSV
+ * @route   GET /api/college/students/export
+ * @access  College Admin
+ */
+const exportStudents = asyncHandler(async (req, res) => {
+    const { formatStudentData, sendCSVResponse } = require('../utils/csvExporter');
+    const collegeId = req.user.collegeProfile._id;
+    
+    const { department, batch, status, verified } = req.query;
+    
+    const query = { college: collegeId };
+    if (department) query.department = department;
+    if (batch) query.batch = parseInt(batch);
+    if (status) query.placementStatus = status;
+    if (verified !== undefined) query.isVerified = verified === 'true';
+
+    const students = await Student.find(query)
+        .populate('college', 'name')
+        .lean();
+
+    const formattedData = formatStudentData(students);
+    
+    // Track export count for activity logging
+    req.exportCount = students.length;
+    
+    const filename = `students_${Date.now()}`;
+    sendCSVResponse(res, formattedData, filename);
+});
+
+module.exports = {
+    getDashboardStats,
+    getStudents,
+    getStudent,
+    addStudent,
+    updateStudent,
+    deleteStudent,
+    verifyStudent,
+    bulkUploadStudents,
+    getDepartments,
+    exportStudents
 };

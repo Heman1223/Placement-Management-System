@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
 import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
-import { CheckCircle, XCircle, Eye, Briefcase } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Briefcase, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './AdminPages.css';
 
@@ -121,6 +122,9 @@ const Companies = () => {
                     <h1>Companies</h1>
                     <p>Manage registered companies and agencies</p>
                 </div>
+                <Link to="/admin/companies/new">
+                    <Button icon={Plus}>Add Company</Button>
+                </Link>
             </div>
 
             {/* Filters */}

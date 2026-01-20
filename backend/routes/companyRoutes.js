@@ -19,6 +19,7 @@ router.get('/students/:id', isApproved, validateObjectId('id'), companyControlle
 // Shortlisting
 router.post('/shortlist', isApproved, companyController.shortlistStudent);
 router.get('/shortlist', isApproved, validatePagination, companyController.getShortlistedCandidates);
+router.get('/shortlist/export', isApproved, companyController.exportShortlist);
 
 // Applications
 router.patch('/applications/:id/status', isApproved, validateObjectId('id'), companyController.updateApplicationStatus);

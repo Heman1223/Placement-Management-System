@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
 import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
-import { CheckCircle, XCircle, Eye, Building2 } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Building2, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './AdminPages.css';
 
@@ -47,15 +48,17 @@ const Colleges = () => {
             header: 'College',
             accessor: 'name',
             render: (name, row) => (
-                <div className="entity-cell">
-                    <div className="entity-icon">
-                        <Building2 size={20} />
+                <Link to={`/admin/colleges/${row._id}`} className="entity-cell-link">
+                    <div className="entity-cell">
+                        <div className="entity-icon">
+                            <Building2 size={20} />
+                        </div>
+                        <div>
+                            <span className="entity-name">{name}</span>
+                            <span className="entity-meta">{row.code}</span>
+                        </div>
                     </div>
-                    <div>
-                        <span className="entity-name">{name}</span>
-                        <span className="entity-meta">{row.code}</span>
-                    </div>
-                </div>
+                </Link>
             )
         },
         {
@@ -120,6 +123,9 @@ const Colleges = () => {
                     <h1>Colleges</h1>
                     <p>Manage registered colleges and universities</p>
                 </div>
+                <Link to="/admin/colleges/new">
+                    <Button icon={Plus}>Add College</Button>
+                </Link>
             </div>
 
             {/* Filters */}

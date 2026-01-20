@@ -4,6 +4,9 @@ const Student = require('./Student');
 const Company = require('./Company');
 const Job = require('./Job');
 const Application = require('./Application');
+const Notification = require('./Notification');
+const Shortlist = require('./Shortlist');
+const ActivityLog = require('./ActivityLog');
 
 module.exports = {
     User,
@@ -11,5 +14,8 @@ module.exports = {
     Student,
     Company,
     Job,
-    Application
+    Application,
+    Notification,
+    Shortlist,
+    ActivityLog
 };

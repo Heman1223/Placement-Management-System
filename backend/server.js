@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const { errorHandler, notFound } = require('./middleware');
-const { authRoutes, superAdminRoutes, collegeRoutes, companyRoutes, jobRoutes } = require('./routes');
+const { authRoutes, superAdminRoutes, collegeRoutes, companyRoutes, jobRoutes, studentRoutes, uploadRoutes, activityLogRoutes } = require('./routes');
 
 const app = express();
 
@@ -33,6 +33,9 @@ app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/college', collegeRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/student', studentRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/activity-logs', activityLogRoutes);
 
 // Error handling
 app.use(notFound);

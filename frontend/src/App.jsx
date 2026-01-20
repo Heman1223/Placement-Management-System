@@ -13,7 +13,13 @@ import Register from './pages/auth/Register';
 // Super Admin Pages
 import SuperAdminDashboard from './pages/superAdmin/Dashboard';
 import Colleges from './pages/superAdmin/Colleges';
+import AddCollege from './pages/superAdmin/AddCollege';
+import CollegeDetail from './pages/superAdmin/CollegeDetail';
 import Companies from './pages/superAdmin/Companies';
+import AddCompany from './pages/superAdmin/AddCompany';
+import Users from './pages/superAdmin/Users';
+import ActivityLogs from './pages/superAdmin/ActivityLogs';
+import Settings from './pages/superAdmin/Settings';
 
 // College Pages
 import CollegeDashboard from './pages/college/Dashboard';
@@ -27,6 +33,13 @@ import Jobs from './pages/company/Jobs';
 import JobForm from './pages/company/JobForm';
 import SearchStudents from './pages/company/SearchStudents';
 import Shortlist from './pages/company/Shortlist';
+
+// Student Pages
+import StudentDashboard from './pages/student/Dashboard';
+import StudentProfile from './pages/student/Profile';
+import StudentJobs from './pages/student/Jobs';
+import StudentApplications from './pages/student/Applications';
+import StudentNotifications from './pages/student/Notifications';
 
 // Utility Pages
 import PendingApproval from './pages/PendingApproval';
@@ -86,7 +99,13 @@ function App() {
           }>
             <Route index element={<SuperAdminDashboard />} />
             <Route path="colleges" element={<Colleges />} />
+            <Route path="colleges/new" element={<AddCollege />} />
+            <Route path="colleges/:id" element={<CollegeDetail />} />
             <Route path="companies" element={<Companies />} />
+            <Route path="companies/new" element={<AddCompany />} />
+            <Route path="users" element={<Users />} />
+            <Route path="activity-logs" element={<ActivityLogs />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
 
           {/* College Admin Routes */}
@@ -115,6 +134,19 @@ function App() {
             <Route path="jobs/:id/edit" element={<JobForm />} />
             <Route path="search" element={<SearchStudents />} />
             <Route path="shortlist" element={<Shortlist />} />
+          </Route>
+
+          {/* Student Routes */}
+          <Route path="/student" element={
+            <ProtectedRoute allowedRoles={['student']} requireApproval>
+              <Layout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<StudentDashboard />} />
+            <Route path="profile" element={<StudentProfile />} />
+            <Route path="jobs" element={<StudentJobs />} />
+            <Route path="applications" element={<StudentApplications />} />
+            <Route path="notifications" element={<StudentNotifications />} />
           </Route>
 
           {/* 404 */}

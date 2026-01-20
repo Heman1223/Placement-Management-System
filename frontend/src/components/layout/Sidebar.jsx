@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     LayoutDashboard, Users, Building2, GraduationCap, Briefcase,
-    Search, FileText, Settings, Star, Upload, BarChart3
+    Search, FileText, Settings, Star, Upload, BarChart3, Bell, User, Activity
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -18,6 +18,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 { path: '/admin/colleges', icon: Building2, label: 'Colleges' },
                 { path: '/admin/companies', icon: Briefcase, label: 'Companies' },
                 { path: '/admin/users', icon: Users, label: 'Users' },
+                { path: '/admin/activity-logs', icon: Activity, label: 'Activity Logs' },
                 { path: '/admin/settings', icon: Settings, label: 'Settings' }
             ];
         }
@@ -45,9 +46,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
         // Student
         return [
             { path: '/student', icon: LayoutDashboard, label: 'Dashboard' },
-            { path: '/student/jobs', icon: Briefcase, label: 'Jobs' },
-            { path: '/student/profile', icon: FileText, label: 'Profile' },
-            { path: '/student/applications', icon: FileText, label: 'Applications' }
+            { path: '/student/profile', icon: User, label: 'My Profile' },
+            { path: '/student/jobs', icon: Briefcase, label: 'Browse Jobs' },
+            { path: '/student/applications', icon: FileText, label: 'My Applications' },
+            { path: '/student/notifications', icon: Bell, label: 'Notifications' }
         ];
     };
 

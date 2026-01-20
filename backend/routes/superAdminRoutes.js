@@ -11,10 +11,15 @@ router.get('/stats', superAdminController.getDashboardStats);
 
 // Colleges
 router.get('/colleges', superAdminController.getColleges);
+router.post('/colleges', superAdminController.createCollege);
+router.get('/colleges/:id', validateObjectId('id'), superAdminController.getCollegeDetails);
 router.patch('/colleges/:id/approve', validateObjectId('id'), superAdminController.approveCollege);
+router.get('/colleges/:id/students', validateObjectId('id'), superAdminController.getCollegeStudents);
+router.post('/colleges/:id/students', validateObjectId('id'), superAdminController.addStudentToCollege);
 
 // Companies
 router.get('/companies', superAdminController.getCompanies);
+router.post('/companies', superAdminController.createCompany);
 router.patch('/companies/:id/approve', validateObjectId('id'), superAdminController.approveCompany);
 
 // Users

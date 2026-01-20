@@ -36,12 +36,22 @@ const Students = () => {
         try {
             const params = {
                 page: searchParams.get('page') || 1,
-                search: searchParams.get('search') || '',
-                department: searchParams.get('department') || '',
-                batch: searchParams.get('batch') || '',
-                status: searchParams.get('status') || '',
-                verified: searchParams.get('verified') || ''
+                sortBy: 'createdAt',
+                order: 'desc' // Newest first
             };
+            
+            // Only add filter params if they have values
+            const search = searchParams.get('search');
+            const department = searchParams.get('department');
+            const batch = searchParams.get('batch');
+            const status = searchParams.get('status');
+            const verified = searchParams.get('verified');
+            
+            if (search) params.search = search;
+            if (department) params.department = department;
+            if (batch) params.batch = batch;
+            if (status) params.status = status;
+            if (verified) params.verified = verified;
 
             const response = await collegeAPI.getStudents(params);
             setStudents(response.data.data.students);
@@ -78,7 +88,8 @@ const Students = () => {
 
     const clearFilters = () => {
         setFilters({ search: '', department: '', batch: '', status: '', verified: '' });
-        setSearchParams({});
+        setSearchParams({}); // Clear URL params
+        setShowFilters(false);
     };
 
     const handlePageChange = (page) => {
@@ -89,11 +100,19 @@ const Students = () => {
 
     const handleVerify = async (id) => {
         try {
-            await collegeAPI.verifyStudent(id);
+            const response = await collegeAPI.verifyStudent(id);
             toast.success('Student verified successfully');
-            fetchStudents();
+            
+            // Update the student in the local state immediately
+            setStudents(prevStudents => 
+                prevStudents.map(student => 
+                    student._id === id 
+                        ? { ...student, isVerified: true, verifiedAt: new Date() }
+                        : student
+                )
+            );
         } catch (error) {
-            toast.error('Failed to verify student');
+            toast.error(error.response?.data?.message || 'Failed to verify student');
         }
     };
 
@@ -134,10 +153,17 @@ const Students = () => {
         {
             header: 'Verified',
             accessor: 'isVerified',
-            render: (val) => val ? (
-                <CheckCircle size={18} className="verified-icon" />
-            ) : (
-                <span className="not-verified">Pending</span>
+            render: (val) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {val ? (
+                        <>
+                            <CheckCircle size={18} className="verified-icon" />
+                            <span style={{ fontSize: '0.875rem', color: 'var(--success-600)' }}>Verified</span>
+                        </>
+                    ) : (
+                        <span className="not-verified">Pending</span>
+                    )}
+                </div>
             )
         },
         {

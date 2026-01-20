@@ -121,7 +121,7 @@ applicationSchema.pre('save', function (next) {
         this.statusHistory.push({
             status: this.status,
             changedAt: new Date(),
-            changedBy: this.lastUpdatedBy
+            changedBy: this.lastUpdatedBy || null
         });
     }
     next();

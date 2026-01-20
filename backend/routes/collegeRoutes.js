@@ -11,6 +11,7 @@ router.get('/stats', collegeController.getDashboardStats);
 
 // Students
 router.get('/students', validatePagination, collegeController.getStudents);
+router.get('/students/export', collegeController.exportStudents);
 router.get('/students/:id', validateObjectId('id'), collegeController.getStudent);
 router.post('/students', collegeController.addStudent);
 router.put('/students/:id', validateObjectId('id'), collegeController.updateStudent);

@@ -165,6 +165,14 @@ const shortlistStudent = asyncHandler(async (req, res) => {
     const { studentId, jobId, notes } = req.body;
     const companyId = req.user.companyProfile._id;
 
+    // Validate required fields
+    if (!studentId || !jobId) {
+        return res.status(400).json({
+            success: false,
+            message: 'Student ID and Job ID are required'
+        });
+    }
+
     // Verify job belongs to company
     const job = await Job.findOne({ _id: jobId, company: companyId });
     if (!job) {
@@ -174,33 +182,36 @@ const shortlistStudent = asyncHandler(async (req, res) => {
         });
     }
 
+    // Verify student exists
+    const student = await Student.findById(studentId);
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
     // Check if already applied/shortlisted
     let application = await Application.findOne({ student: studentId, job: jobId });
 
     if (application) {
+        // Update existing application
         application.status = 'shortlisted';
-        application.companyNotes = notes;
+        application.companyNotes = notes || '';
         application.lastUpdatedBy = req.userId;
         await application.save();
     } else {
-        const student = await Student.findById(studentId);
-        if (!student) {
-            return res.status(404).json({
-                success: false,
-                message: 'Student not found'
-            });
-        }
-
+        // Create new application
         application = await Application.create({
             student: studentId,
             job: jobId,
             status: 'shortlisted',
-            companyNotes: notes,
+            companyNotes: notes || '',
             lastUpdatedBy: req.userId,
             resumeSnapshot: {
-                url: student.resumeUrl,
-                cgpa: student.cgpa,
-                skills: student.skills
+                url: student.resumeUrl || '',
+                cgpa: student.cgpa || 0,
+                skills: student.skills || []
             }
         });
 
@@ -211,9 +222,11 @@ const shortlistStudent = asyncHandler(async (req, res) => {
     }
 
     // Update student status if not placed
-    await Student.findByIdAndUpdate(studentId, {
-        placementStatus: 'in_process'
-    });
+    if (student.placementStatus === 'not_placed') {
+        await Student.findByIdAndUpdate(studentId, {
+            placementStatus: 'in_process'
+        });
+    }
 
     res.json({
         success: true,
@@ -373,4 +386,47 @@ module.exports = {
     updateApplicationStatus,
     getShortlistedCandidates,
     updateProfile
+};
+
+/**
+ * @desc    Export shortlisted candidates to CSV
+ * @route   GET /api/company/shortlist/export
+ * @access  Company (Approved)
+ */
+const exportShortlist = asyncHandler(async (req, res) => {
+    const { formatApplicationData, sendCSVResponse } = require('../utils/csvExporter');
+    const companyId = req.user.companyProfile._id;
+    const { jobId, status } = req.query;
+
+    // Get all jobs for this company
+    const companyJobs = await Job.find({ company: companyId }).distinct('_id');
+
+    const query = { job: { $in: companyJobs } };
+    if (jobId) query.job = jobId;
+    if (status) query.status = status;
+    else query.status = { $in: ['shortlisted', 'interviewed', 'offered', 'hired'] };
+
+    const applications = await Application.find(query)
+        .populate('student', 'name email phone department batch cgpa skills resumeUrl linkedinUrl githubUrl')
+        .populate('job', 'title type')
+        .lean();
+
+    const formattedData = formatApplicationData(applications);
+    
+    // Track export count for activity logging
+    req.exportCount = applications.length;
+    
+    const filename = `shortlist_${Date.now()}`;
+    sendCSVResponse(res, formattedData, filename);
+});
+
+module.exports = {
+    getDashboardStats,
+    searchStudents,
+    getStudentProfile,
+    shortlistStudent,
+    updateApplicationStatus,
+    getShortlistedCandidates,
+    updateProfile,
+    exportShortlist
 };

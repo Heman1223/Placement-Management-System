@@ -16,7 +16,7 @@ const generateToken = (userId) => {
 /**
  * @desc    Register a new user
  * @route   POST /api/auth/register
- * @access  Public
+ * @access  Public (or Super Admin for creating college admins)
  */
 const register = asyncHandler(async (req, res) => {
     const { email, password, role, ...profileData } = req.body;
@@ -30,12 +30,37 @@ const register = asyncHandler(async (req, res) => {
         });
     }
 
+    // Determine if user should be auto-approved
+    let isAutoApproved = false;
+    
+    // Check if this is a super admin creating a college admin
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        try {
+            const token = authHeader.substring(7);
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const adminUser = await User.findById(decoded.userId);
+            
+            // If super admin is creating a college admin, auto-approve
+            if (adminUser && adminUser.role === 'super_admin' && role === 'college_admin') {
+                isAutoApproved = true;
+            }
+        } catch (error) {
+            // Token invalid or expired, treat as public registration
+        }
+    }
+    
+    // Super admin is always auto-approved
+    if (role === 'super_admin') {
+        isAutoApproved = true;
+    }
+
     // Create user
     const user = await User.create({
         email,
         password,
         role,
-        isApproved: role === 'super_admin' // Only super admin is auto-approved
+        isApproved: isAutoApproved
     });
 
     // Create role-specific profile
@@ -53,7 +78,8 @@ const register = asyncHandler(async (req, res) => {
             phone,
             website,
             departments,
-            admin: user._id
+            admin: user._id,
+            isVerified: isAutoApproved // Auto-verify if created by super admin
         });
 
         user.collegeProfile = profile._id;
@@ -76,21 +102,75 @@ const register = asyncHandler(async (req, res) => {
             },
             headquarters: { city, state },
             size,
-            user: user._id
+            user: user._id,
+            isApproved: false // Companies always need approval
         });
 
         user.companyProfile = profile._id;
         await user.save();
     }
 
+    if (role === 'student') {
+        const { 
+            firstName, lastName, phone, dateOfBirth, gender,
+            collegeId, department, batch, rollNumber, cgpa
+        } = profileData;
+
+        // Find the college
+        const college = await College.findById(collegeId);
+        if (!college) {
+            // Clean up user if college not found
+            await User.findByIdAndDelete(user._id);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid college selected'
+            });
+        }
+
+        profile = await Student.create({
+            name: {
+                firstName,
+                lastName
+            },
+            email,
+            phone,
+            dateOfBirth,
+            gender,
+            college: collegeId,
+            department,
+            batch,
+            rollNumber,
+            cgpa,
+            addedBy: user._id, // Self-added
+            source: 'self_registration',
+            isVerified: false, // Needs college admin approval
+            user: user._id
+        });
+
+        user.studentProfile = profile._id;
+        await user.save();
+    }
+
     // Generate token
     const token = generateToken(user._id);
 
+    // Determine response message
+    let message = 'Registration successful';
+    if (!isAutoApproved) {
+        if (role === 'college_admin') {
+            message = 'Registration successful. Awaiting super admin approval.';
+        } else if (role === 'company') {
+            message = 'Registration successful. Awaiting admin approval.';
+        } else if (role === 'student') {
+            message = 'Registration successful. Awaiting college admin verification.';
+        } else {
+            message = 'Registration successful. Awaiting approval.';
+        }
+    }
+
     res.status(201).json({
         success: true,
-        message: role === 'super_admin'
-            ? 'Registration successful'
-            : 'Registration successful. Awaiting admin approval.',
+        message,
         data: {
             token,
             user: {
