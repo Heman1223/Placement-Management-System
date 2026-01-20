@@ -1,25 +1,224 @@
+/* Bulk Upload Page - Premium Styling */
+
 .bulk-upload-page {
     max-width: 900px;
+    margin: 0 auto;
+    padding: var(--spacing-6);
     animation: fadeIn 0.3s ease;
 }
 
+/* Premium Header */
+.upload-header {
+    margin-bottom: var(--spacing-6);
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: transparent;
+    border: none;
+    color: var(--gray-600);
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+    margin-bottom: var(--spacing-4);
+}
+
+.back-btn:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-6);
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+    border-radius: var(--radius-xl);
+    color: white;
+}
+
+.header-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.header-content h1 {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.header-content p {
+    margin: 0.25rem 0 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+/* Steps Timeline */
+.steps-timeline {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-6);
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    margin-bottom: var(--spacing-6);
+    position: relative;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.step-indicator {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    color: var(--gray-400);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: 3px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.step.active .step-indicator {
+    background: var(--primary-500);
+    color: white;
+}
+
+.step.completed .step-indicator {
+    background: var(--success-500);
+    color: white;
+}
+
+.step-content {
+    text-align: center;
+}
+
+.step-title {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
+.step-desc {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+.step.active .step-title {
+    color: var(--primary-600);
+}
+
+.step.completed .step-title {
+    color: var(--success-600);
+}
+
+.step-connector {
+    position: absolute;
+    top: 24px;
+    left: calc(50% + 30px);
+    width: calc(100% - 60px);
+    height: 3px;
+    background: var(--gray-200);
+}
+
+.step.completed .step-connector,
+.step.active .step-connector {
+    background: linear-gradient(90deg, var(--success-400), var(--primary-400));
+}
+
+/* Glass Card */
+.glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* Instructions Card */
 .instructions-card {
     margin-bottom: var(--spacing-5);
+    padding: var(--spacing-5);
+    border-radius: var(--radius-xl);
 }
 
-.instructions-list {
+.instructions-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
     margin-bottom: var(--spacing-4);
-    padding-left: var(--spacing-5);
-    color: var(--text-secondary);
+    color: var(--primary-600);
 }
 
-.instructions-list li {
-    margin-bottom: var(--spacing-2);
+.instructions-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
-/* Upload Zone */
+.instructions-content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+}
+
+.instruction-step {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
+.instruction-num {
+    width: 24px;
+    height: 24px;
+    background: var(--primary-100);
+    color: var(--primary-600);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+.template-btn {
+    width: 100%;
+}
+
+/* Upload Card */
 .upload-card {
     margin-bottom: var(--spacing-5);
+    border-radius: var(--radius-xl);
 }
 
 .upload-zone {
@@ -28,52 +227,135 @@
     align-items: center;
     justify-content: center;
     padding: var(--spacing-10);
-    border: 2px dashed var(--border-default);
+    border: 2px dashed var(--gray-300);
     border-radius: var(--radius-xl);
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all 0.3s ease;
     text-align: center;
+    min-height: 250px;
 }
 
-.upload-zone:hover {
+.upload-zone:hover,
+.upload-zone.drag-over {
     border-color: var(--primary-400);
     background: var(--primary-50);
 }
 
 .upload-zone.has-file {
-    border-color: var(--success-500);
+    border-color: var(--success-400);
     background: var(--success-50);
+    border-style: solid;
 }
 
-.upload-zone svg {
-    color: var(--text-muted);
-    margin-bottom: var(--spacing-3);
+/* Upload Prompt */
+.upload-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-3);
 }
 
-.upload-zone.has-file svg {
+.upload-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: var(--gray-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-400);
+    margin-bottom: var(--spacing-2);
+}
+
+.upload-zone:hover .upload-icon-wrapper {
+    background: var(--primary-100);
+    color: var(--primary-500);
+}
+
+.upload-text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.upload-or {
+    font-size: 0.85rem;
+    color: var(--gray-500);
+}
+
+.upload-hint {
+    font-size: 0.8rem;
+    color: var(--gray-500);
+    margin-top: var(--spacing-2);
+}
+
+/* File Selected */
+.file-selected {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.file-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: var(--success-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--success-600);
 }
 
 .file-name {
     font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-1);
+    font-size: 1.1rem;
+    color: var(--gray-800);
 }
 
 .file-info {
-    font-size: 0.875rem;
-    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--success-600);
+    font-weight: 500;
 }
 
-.upload-hint {
-    font-size: 0.8125rem;
-    color: var(--text-muted);
-    margin-top: var(--spacing-2);
+.error-count {
+    color: var(--danger-500);
 }
 
-/* Errors */
+/* Errors Card */
 .errors-card {
     margin-bottom: var(--spacing-5);
+    border: 1px solid var(--danger-200);
+    background: var(--danger-50);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-5);
+}
+
+.errors-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+    color: var(--danger-600);
+}
+
+.errors-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    flex: 1;
+}
+
+.error-badge {
+    background: var(--danger-500);
+    color: white;
+    padding: 2px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
 .errors-list {
@@ -85,33 +367,64 @@
 .error-item {
     display: flex;
     align-items: center;
-    gap: var(--spacing-2);
-    padding: var(--spacing-2) var(--spacing-3);
-    background: var(--error-50);
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+    background: white;
     border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    color: var(--error-600);
+    font-size: 0.9rem;
 }
 
-.error-item svg {
-    flex-shrink: 0;
+.error-row {
+    font-weight: 600;
+    color: var(--danger-600);
+    white-space: nowrap;
+}
+
+.error-msg {
+    color: var(--gray-600);
 }
 
 .more-errors {
     font-size: 0.875rem;
-    color: var(--text-muted);
+    color: var(--gray-500);
     margin-top: var(--spacing-2);
+    padding-left: var(--spacing-3);
 }
 
-/* Preview */
+/* Preview Card */
 .preview-card {
     margin-bottom: var(--spacing-5);
+    padding: var(--spacing-5);
+    border-radius: var(--radius-xl);
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+    color: var(--gray-700);
+}
+
+.preview-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    flex: 1;
+}
+
+.preview-count {
+    background: var(--success-100);
+    color: var(--success-700);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
 }
 
 .preview-note {
     text-align: center;
     font-size: 0.875rem;
-    color: var(--text-muted);
+    color: var(--gray-500);
     margin-top: var(--spacing-3);
 }
 
@@ -121,12 +434,29 @@
     gap: var(--spacing-3);
     margin-top: var(--spacing-5);
     padding-top: var(--spacing-4);
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid var(--gray-200);
 }
 
-/* Results */
+/* Results Card */
 .results-card {
-    margin-bottom: var(--spacing-5);
+    padding: var(--spacing-6);
+    border-radius: var(--radius-xl);
+    text-align: center;
+}
+
+.results-header {
+    margin-bottom: var(--spacing-6);
+}
+
+.results-header .success-icon {
+    color: var(--success-500);
+    margin-bottom: var(--spacing-3);
+}
+
+.results-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--gray-800);
 }
 
 .results-summary {
@@ -152,8 +482,8 @@
 }
 
 .result-stat.error {
-    background: var(--error-50);
-    color: var(--error-500);
+    background: var(--danger-50);
+    color: var(--danger-500);
 }
 
 .result-value {
@@ -167,30 +497,66 @@
 
 .failed-list {
     margin-bottom: var(--spacing-5);
+    text-align: left;
 }
 
 .failed-list h4 {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     font-weight: 600;
     margin-bottom: var(--spacing-3);
+    color: var(--gray-700);
 }
 
 .failed-item {
     display: flex;
     justify-content: space-between;
-    padding: var(--spacing-2) var(--spacing-3);
-    background: var(--bg-secondary);
+    padding: var(--spacing-3);
+    background: var(--gray-50);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-2);
     font-size: 0.875rem;
 }
 
 .failed-reason {
-    color: var(--error-500);
+    color: var(--danger-500);
 }
 
 .result-actions {
     display: flex;
     justify-content: center;
     gap: var(--spacing-3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bulk-upload-page {
+        padding: var(--spacing-4);
+    }
+
+    .steps-timeline {
+        flex-direction: column;
+        gap: var(--spacing-4);
+    }
+
+    .step {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .step-content {
+        text-align: left;
+    }
+
+    .step-connector {
+        display: none;
+    }
+
+    .instructions-content {
+        grid-template-columns: 1fr;
+    }
+
+    .results-summary {
+        flex-direction: column;
+        align-items: center;
+    }
 }

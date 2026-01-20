@@ -94,9 +94,11 @@ export const companyAPI = {
     updateProfile: (data) => api.put('/company/profile', data),
     searchStudents: (params) => api.get('/company/students/search', { params }),
     getStudent: (id) => api.get(`/company/students/${id}`),
+    getColleges: () => api.get('/company/colleges'),
     shortlist: (studentId, jobId, notes) => api.post('/company/shortlist', { studentId, jobId, notes }),
     getShortlist: (params) => api.get('/company/shortlist', { params }),
-    updateApplication: (id, data) => api.patch(`/company/applications/${id}/status`, data)
+    updateApplication: (id, data) => api.patch(`/company/applications/${id}/status`, data),
+    exportShortlist: (params) => api.get('/company/shortlist/export', { params, responseType: 'blob' })
 };
 
 // Job endpoints

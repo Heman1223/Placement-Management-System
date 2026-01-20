@@ -5,7 +5,7 @@ import { collegeAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
 import Table from '../../components/common/Table';
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, Download, ArrowLeft } from 'lucide-react';
+import { Upload, FileSpreadsheet, AlertCircle, CheckCircle, Download, ArrowLeft, FileDown, FileUp, Eye, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './BulkUpload.css';
 
@@ -18,10 +18,18 @@ const BulkUpload = () => {
     const [errors, setErrors] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [uploadResult, setUploadResult] = useState(null);
+    const [currentStep, setCurrentStep] = useState(1);
 
     const expectedColumns = [
         'First Name', 'Last Name', 'Email', 'Phone', 'Gender',
         'Department', 'Batch', 'Roll Number', 'CGPA', 'Skills'
+    ];
+
+    const steps = [
+        { num: 1, title: 'Download', desc: 'Get template file', icon: FileDown },
+        { num: 2, title: 'Fill Data', desc: 'Add student details', icon: FileSpreadsheet },
+        { num: 3, title: 'Upload', desc: 'Import your file', icon: FileUp },
+        { num: 4, title: 'Review', desc: 'Confirm & submit', icon: Eye }
     ];
 
     const handleFileSelect = (e) => {
@@ -34,6 +42,7 @@ const BulkUpload = () => {
         }
 
         setFile(selectedFile);
+        setCurrentStep(3);
         parseFile(selectedFile);
     };
 
@@ -52,6 +61,7 @@ const BulkUpload = () => {
                 const { validated, errors } = validateData(jsonData);
                 setParsedData(validated);
                 setErrors(errors);
+                setCurrentStep(4);
 
                 if (errors.length > 0) {
                     toast.error(`Found ${errors.length} errors in the data`);
@@ -176,6 +186,9 @@ const BulkUpload = () => {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Students');
         XLSX.writeFile(wb, 'student_upload_template.xlsx');
+
+        if (currentStep === 1) setCurrentStep(2);
+        toast.success('Template downloaded!');
     };
 
     const previewColumns = [
@@ -189,37 +202,83 @@ const BulkUpload = () => {
 
     return (
         <div className="bulk-upload-page">
-            <div className="page-header">
+            {/* Premium Header */}
+            <div className="upload-header">
                 <button className="back-btn" onClick={() => navigate('/college/students')}>
                     <ArrowLeft size={20} />
                     <span>Back to Students</span>
                 </button>
-                <h1>Bulk Upload Students</h1>
-                <p>Upload multiple students at once using an Excel file</p>
+                <div className="header-content">
+                    <div className="header-icon">
+                        <Upload size={28} />
+                    </div>
+                    <div>
+                        <h1>Bulk Upload Students</h1>
+                        <p>Import multiple students at once using Excel or CSV</p>
+                    </div>
+                </div>
             </div>
 
-            {/* Instructions */}
-            <Card title="Instructions" className="instructions-card">
-                <ol className="instructions-list">
-                    <li>Download the template file</li>
-                    <li>Fill in student data (required: First Name, Email, Department, Roll Number)</li>
-                    <li>Save the file and upload it here</li>
-                    <li>Review the preview and confirm upload</li>
-                </ol>
-                <Button variant="secondary" icon={Download} onClick={downloadTemplate}>
+            {/* Progress Steps */}
+            <div className="steps-timeline">
+                {steps.map((step, idx) => (
+                    <div key={step.num} className={`step ${currentStep >= step.num ? 'active' : ''} ${currentStep > step.num ? 'completed' : ''}`}>
+                        <div className="step-indicator">
+                            {currentStep > step.num ? (
+                                <CheckCircle size={20} />
+                            ) : (
+                                <step.icon size={20} />
+                            )}
+                        </div>
+                        <div className="step-content">
+                            <span className="step-title">{step.title}</span>
+                            <span className="step-desc">{step.desc}</span>
+                        </div>
+                        {idx < steps.length - 1 && <div className="step-connector" />}
+                    </div>
+                ))}
+            </div>
+
+            {/* Instructions Card */}
+            <Card className="instructions-card glass-card">
+                <div className="instructions-header">
+                    <Sparkles size={20} />
+                    <h3>Quick Start Guide</h3>
+                </div>
+                <div className="instructions-content">
+                    <div className="instruction-step">
+                        <span className="instruction-num">1</span>
+                        <span>Download the Excel template with required columns</span>
+                    </div>
+                    <div className="instruction-step">
+                        <span className="instruction-num">2</span>
+                        <span>Fill student data (Required: First Name, Email, Department, Roll Number)</span>
+                    </div>
+                    <div className="instruction-step">
+                        <span className="instruction-num">3</span>
+                        <span>Upload your completed file and review the preview</span>
+                    </div>
+                    <div className="instruction-step">
+                        <span className="instruction-num">4</span>
+                        <span>Confirm and submit to add students to your college</span>
+                    </div>
+                </div>
+                <Button variant="secondary" icon={Download} onClick={downloadTemplate} className="template-btn">
                     Download Template
                 </Button>
             </Card>
 
             {/* Upload Area */}
             {!uploadResult && (
-                <Card className="upload-card">
+                <Card className="upload-card glass-card">
                     <div
                         className={`upload-zone ${file ? 'has-file' : ''}`}
                         onClick={() => fileInputRef.current?.click()}
-                        onDragOver={(e) => e.preventDefault()}
+                        onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }}
+                        onDragLeave={(e) => { e.currentTarget.classList.remove('drag-over'); }}
                         onDrop={(e) => {
                             e.preventDefault();
+                            e.currentTarget.classList.remove('drag-over');
                             const droppedFile = e.dataTransfer.files[0];
                             if (droppedFile) {
                                 setFile(droppedFile);
@@ -236,20 +295,27 @@ const BulkUpload = () => {
                         />
 
                         {file ? (
-                            <>
-                                <FileSpreadsheet size={48} className="file-icon" />
+                            <div className="file-selected">
+                                <div className="file-icon-wrapper">
+                                    <FileSpreadsheet size={48} className="file-icon" />
+                                </div>
                                 <span className="file-name">{file.name}</span>
                                 <span className="file-info">
+                                    <CheckCircle size={16} />
                                     {parsedData.length} students found
-                                    {errors.length > 0 && ` • ${errors.length} errors`}
+                                    {errors.length > 0 && <span className="error-count">• {errors.length} errors</span>}
                                 </span>
-                            </>
+                            </div>
                         ) : (
-                            <>
-                                <Upload size={48} />
-                                <span>Drop your Excel file here or click to browse</span>
+                            <div className="upload-prompt">
+                                <div className="upload-icon-wrapper">
+                                    <Upload size={48} />
+                                </div>
+                                <span className="upload-text">Drop your Excel file here</span>
+                                <span className="upload-or">or</span>
+                                <Button variant="secondary">Browse Files</Button>
                                 <span className="upload-hint">Supports .xlsx, .xls, .csv</span>
-                            </>
+                            </div>
                         )}
                     </div>
                 </Card>
@@ -257,16 +323,21 @@ const BulkUpload = () => {
 
             {/* Errors */}
             {errors.length > 0 && (
-                <Card title="Validation Errors" className="errors-card">
+                <Card className="errors-card">
+                    <div className="errors-header">
+                        <AlertCircle size={20} />
+                        <h3>Validation Errors</h3>
+                        <span className="error-badge">{errors.length} issues</span>
+                    </div>
                     <div className="errors-list">
-                        {errors.slice(0, 10).map((err, idx) => (
+                        {errors.slice(0, 5).map((err, idx) => (
                             <div key={idx} className="error-item">
-                                <AlertCircle size={16} />
-                                <span>Row {err.row}: {err.errors.join(', ')}</span>
+                                <span className="error-row">Row {err.row}</span>
+                                <span className="error-msg">{err.errors.join(', ')}</span>
                             </div>
                         ))}
-                        {errors.length > 10 && (
-                            <p className="more-errors">And {errors.length - 10} more errors...</p>
+                        {errors.length > 5 && (
+                            <p className="more-errors">And {errors.length - 5} more errors...</p>
                         )}
                     </div>
                 </Card>
@@ -274,7 +345,12 @@ const BulkUpload = () => {
 
             {/* Preview */}
             {parsedData.length > 0 && !uploadResult && (
-                <Card title={`Preview (${parsedData.length} students)`} className="preview-card">
+                <Card className="preview-card glass-card">
+                    <div className="preview-header">
+                        <Eye size={20} />
+                        <h3>Preview</h3>
+                        <span className="preview-count">{parsedData.length} students ready</span>
+                    </div>
                     <Table
                         columns={previewColumns}
                         data={parsedData.slice(0, 10)}
@@ -284,7 +360,7 @@ const BulkUpload = () => {
                     )}
 
                     <div className="upload-actions">
-                        <Button variant="secondary" onClick={() => { setFile(null); setParsedData([]); setErrors([]); }}>
+                        <Button variant="secondary" onClick={() => { setFile(null); setParsedData([]); setErrors([]); setCurrentStep(1); }}>
                             Clear
                         </Button>
                         <Button icon={Upload} loading={uploading} onClick={handleUpload}>
@@ -296,7 +372,11 @@ const BulkUpload = () => {
 
             {/* Results */}
             {uploadResult && (
-                <Card title="Upload Complete" className="results-card">
+                <Card className="results-card glass-card">
+                    <div className="results-header">
+                        <CheckCircle size={28} className="success-icon" />
+                        <h2>Upload Complete!</h2>
+                    </div>
                     <div className="results-summary">
                         <div className="result-stat success">
                             <CheckCircle size={24} />
@@ -326,7 +406,7 @@ const BulkUpload = () => {
                         <Button variant="secondary" onClick={() => navigate('/college/students')}>
                             View All Students
                         </Button>
-                        <Button onClick={() => { setUploadResult(null); setFile(null); setParsedData([]); }}>
+                        <Button onClick={() => { setUploadResult(null); setFile(null); setParsedData([]); setCurrentStep(1); }}>
                             Upload More
                         </Button>
                     </div>

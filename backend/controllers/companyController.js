@@ -1,4 +1,4 @@
-const { Company, Student, Application, Job } = require('../models');
+const { Company, Student, Application, Job, College } = require('../models');
 const { asyncHandler } = require('../middleware');
 
 /**
@@ -378,15 +378,21 @@ const updateProfile = asyncHandler(async (req, res) => {
     });
 });
 
-module.exports = {
-    getDashboardStats,
-    searchStudents,
-    getStudentProfile,
-    shortlistStudent,
-    updateApplicationStatus,
-    getShortlistedCandidates,
-    updateProfile
-};
+/**
+ * @desc    Get all verified colleges for filter dropdown
+ * @route   GET /api/company/colleges
+ * @access  Company (Approved)
+ */
+const getColleges = asyncHandler(async (req, res) => {
+    const colleges = await College.find({ isVerified: true })
+        .select('name code city')
+        .sort({ name: 1 });
+
+    res.json({
+        success: true,
+        data: colleges
+    });
+});
 
 /**
  * @desc    Export shortlisted candidates to CSV
@@ -407,15 +413,15 @@ const exportShortlist = asyncHandler(async (req, res) => {
     else query.status = { $in: ['shortlisted', 'interviewed', 'offered', 'hired'] };
 
     const applications = await Application.find(query)
-        .populate('student', 'name email phone department batch cgpa skills resumeUrl linkedinUrl githubUrl')
+        .populate('student', 'name email phone department batch cgpa skills resumeUrl linkedinUrl githubUrl college')
         .populate('job', 'title type')
         .lean();
 
     const formattedData = formatApplicationData(applications);
-    
+
     // Track export count for activity logging
     req.exportCount = applications.length;
-    
+
     const filename = `shortlist_${Date.now()}`;
     sendCSVResponse(res, formattedData, filename);
 });
@@ -428,5 +434,6 @@ module.exports = {
     updateApplicationStatus,
     getShortlistedCandidates,
     updateProfile,
+    getColleges,
     exportShortlist
 };

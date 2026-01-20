@@ -3,27 +3,31 @@ import { companyAPI, jobAPI } from '../../services/api';
 import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
-import { Star, Mail, Phone, Calendar, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
+import { Star, Download, Calendar, MessageSquare, CheckCircle, XCircle, Building2, Users, Sparkles, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Shortlist.css';
 
 const Shortlist = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [exporting, setExporting] = useState(false);
     const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
     const [jobs, setJobs] = useState([]);
+    const [colleges, setColleges] = useState([]);
     const [selectedJob, setSelectedJob] = useState('');
+    const [selectedCollege, setSelectedCollege] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [actionModal, setActionModal] = useState({ open: false, application: null, action: '' });
     const [remarks, setRemarks] = useState('');
 
     useEffect(() => {
         fetchJobs();
+        fetchColleges();
     }, []);
 
     useEffect(() => {
         fetchShortlist();
-    }, [selectedJob, statusFilter]);
+    }, [selectedJob, selectedCollege, statusFilter]);
 
     const fetchJobs = async () => {
         try {
@@ -31,6 +35,15 @@ const Shortlist = () => {
             setJobs(response.data.data.jobs);
         } catch (error) {
             console.error('Failed to fetch jobs');
+        }
+    };
+
+    const fetchColleges = async () => {
+        try {
+            const response = await companyAPI.getColleges();
+            setColleges(response.data.data);
+        } catch (error) {
+            console.error('Failed to fetch colleges');
         }
     };
 
@@ -43,12 +56,47 @@ const Shortlist = () => {
                 status: statusFilter || undefined
             };
             const response = await companyAPI.getShortlist(params);
-            setApplications(response.data.data.applications);
+            let apps = response.data.data.applications;
+
+            // Client-side college filter (since backend may not support it directly)
+            if (selectedCollege) {
+                apps = apps.filter(app => app.student?.college?._id === selectedCollege || app.student?.college === selectedCollege);
+            }
+
+            setApplications(apps);
             setPagination(response.data.data.pagination);
         } catch (error) {
             toast.error('Failed to load shortlist');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleExportCSV = async () => {
+        setExporting(true);
+        try {
+            const params = {
+                jobId: selectedJob || undefined,
+                status: statusFilter || undefined
+            };
+            const response = await companyAPI.exportShortlist(params);
+
+            // Create download link
+            const blob = new Blob([response.data], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `shortlist_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast.success('CSV downloaded successfully!');
+        } catch (error) {
+            toast.error('Failed to export CSV');
+        } finally {
+            setExporting(false);
         }
     };
 
@@ -84,22 +132,31 @@ const Shortlist = () => {
             accessor: 'student',
             render: (student) => (
                 <div className="student-cell">
-                    <span className="student-name">
-                        {student?.name?.firstName} {student?.name?.lastName}
-                    </span>
-                    <span className="student-dept">{student?.department} • {student?.batch}</span>
+                    <div className="student-avatar-sm">
+                        {student?.name?.firstName?.[0]}{student?.name?.lastName?.[0]}
+                    </div>
+                    <div>
+                        <span className="student-name">
+                            {student?.name?.firstName} {student?.name?.lastName}
+                        </span>
+                        <span className="student-dept">{student?.department} • {student?.batch}</span>
+                    </div>
                 </div>
             )
         },
         {
             header: 'Job',
             accessor: 'job',
-            render: (job) => job?.title || '-'
+            render: (job) => (
+                <span className="job-badge">{job?.title || '-'}</span>
+            )
         },
         {
             header: 'CGPA',
             accessor: 'student',
-            render: (student) => student?.cgpa?.toFixed(2) || '-'
+            render: (student) => (
+                <span className="cgpa-value">{student?.cgpa?.toFixed(2) || '-'}</span>
+            )
         },
         {
             header: 'Status',
@@ -175,17 +232,51 @@ const Shortlist = () => {
         { value: 'rejected', label: 'Rejected' }
     ];
 
+    // Calculate pipeline stats
+    const pipelineStats = {
+        shortlisted: applications.filter(a => a.status === 'shortlisted').length,
+        interviewed: applications.filter(a => a.status === 'interviewed').length,
+        offered: applications.filter(a => a.status === 'offered').length,
+        hired: applications.filter(a => a.status === 'hired').length
+    };
+
     return (
         <div className="shortlist-page">
-            <div className="page-header">
-                <div>
-                    <h1>Shortlisted Candidates</h1>
-                    <p>Manage your hiring pipeline</p>
+            <div className="page-header shortlist-header">
+                <div className="header-content">
+                    <div className="header-icon">
+                        <Star size={28} />
+                    </div>
+                    <div className="header-text">
+                        <h1>Shortlisted Candidates</h1>
+                        <p>Manage your hiring pipeline efficiently</p>
+                    </div>
                 </div>
+                <Button
+                    icon={Download}
+                    onClick={handleExportCSV}
+                    disabled={exporting || applications.length === 0}
+                    className="export-btn"
+                >
+                    {exporting ? 'Exporting...' : 'Download CSV'}
+                </Button>
             </div>
 
             {/* Filters */}
-            <div className="shortlist-filters">
+            <div className="shortlist-filters glass-card">
+                <div className="input-wrapper">
+                    <label className="input-label"><Building2 size={14} /> College</label>
+                    <select
+                        className="input"
+                        value={selectedCollege}
+                        onChange={(e) => setSelectedCollege(e.target.value)}
+                    >
+                        <option value="">All Colleges</option>
+                        {colleges.map(c => (
+                            <option key={c._id} value={c._id}>{c.name}</option>
+                        ))}
+                    </select>
+                </div>
                 <div className="input-wrapper">
                     <label className="input-label">Filter by Job</label>
                     <select
@@ -215,19 +306,41 @@ const Shortlist = () => {
 
             {/* Pipeline Summary */}
             <div className="pipeline-summary">
-                {['shortlisted', 'interviewed', 'offered', 'hired'].map(status => {
-                    const count = applications.filter(a => a.status === status).length;
-                    return (
-                        <div key={status} className={`pipeline-stage stage-${status}`}>
-                            <span className="stage-count">{count}</span>
-                            <span className="stage-label">{status}</span>
-                        </div>
-                    );
-                })}
+                <div className="pipeline-stage stage-shortlisted">
+                    <div className="stage-icon"><Star size={20} /></div>
+                    <div className="stage-content">
+                        <span className="stage-count">{pipelineStats.shortlisted}</span>
+                        <span className="stage-label">Shortlisted</span>
+                    </div>
+                </div>
+                <div className="pipeline-connector"></div>
+                <div className="pipeline-stage stage-interviewed">
+                    <div className="stage-icon"><Calendar size={20} /></div>
+                    <div className="stage-content">
+                        <span className="stage-count">{pipelineStats.interviewed}</span>
+                        <span className="stage-label">Interviewed</span>
+                    </div>
+                </div>
+                <div className="pipeline-connector"></div>
+                <div className="pipeline-stage stage-offered">
+                    <div className="stage-icon"><MessageSquare size={20} /></div>
+                    <div className="stage-content">
+                        <span className="stage-count">{pipelineStats.offered}</span>
+                        <span className="stage-label">Offered</span>
+                    </div>
+                </div>
+                <div className="pipeline-connector"></div>
+                <div className="pipeline-stage stage-hired">
+                    <div className="stage-icon"><CheckCircle size={20} /></div>
+                    <div className="stage-content">
+                        <span className="stage-count">{pipelineStats.hired}</span>
+                        <span className="stage-label">Hired</span>
+                    </div>
+                </div>
             </div>
 
             {/* Table */}
-            <div className="table-container">
+            <div className="table-container glass-card">
                 <Table
                     columns={columns}
                     data={applications}

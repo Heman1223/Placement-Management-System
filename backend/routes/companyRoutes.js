@@ -16,6 +16,9 @@ router.put('/profile', companyController.updateProfile);
 router.get('/students/search', isApproved, validatePagination, companyController.searchStudents);
 router.get('/students/:id', isApproved, validateObjectId('id'), companyController.getStudentProfile);
 
+// Colleges list for filter
+router.get('/colleges', isApproved, companyController.getColleges);
+
 // Shortlisting
 router.post('/shortlist', isApproved, companyController.shortlistStudent);
 router.get('/shortlist', isApproved, validatePagination, companyController.getShortlistedCandidates);

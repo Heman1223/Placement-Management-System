@@ -3,8 +3,7 @@ import { companyAPI, jobAPI } from '../../services/api';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
-import Modal from '../../components/common/Modal';
-import { Search, Filter, Star, ExternalLink, Mail, Phone, Github, Linkedin } from 'lucide-react';
+import { Search, Filter, Star, ExternalLink, Mail, Github, Linkedin, Building2, GraduationCap, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './SearchStudents.css';
 
@@ -13,10 +12,9 @@ const SearchStudents = () => {
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
     const [jobs, setJobs] = useState([]);
+    const [colleges, setColleges] = useState([]);
     const [showFilters, setShowFilters] = useState(true);
-    const [shortlistModal, setShortlistModal] = useState({ open: false, student: null });
-    const [selectedJob, setSelectedJob] = useState('');
-    const [shortlistNote, setShortlistNote] = useState('');
+    const [shortlistingId, setShortlistingId] = useState(null);
 
     const [filters, setFilters] = useState({
         search: '',
@@ -25,11 +23,13 @@ const SearchStudents = () => {
         minCgpa: '',
         maxBacklogs: '',
         skills: '',
+        college: '',
         placementStatus: 'not_placed'
     });
 
     useEffect(() => {
         fetchJobs();
+        fetchColleges();
     }, []);
 
     const fetchJobs = async () => {
@@ -38,6 +38,15 @@ const SearchStudents = () => {
             setJobs(response.data.data.jobs);
         } catch (error) {
             console.error('Failed to fetch jobs');
+        }
+    };
+
+    const fetchColleges = async () => {
+        try {
+            const response = await companyAPI.getColleges();
+            setColleges(response.data.data);
+        } catch (error) {
+            console.error('Failed to fetch colleges');
         }
     };
 
@@ -73,20 +82,23 @@ const SearchStudents = () => {
         searchStudents(1);
     };
 
-    const handleShortlist = async () => {
-        if (!selectedJob) {
-            toast.error('Please select a job');
+    const handleShortlist = async (student) => {
+        // Get first available job or shortlist without job
+        const defaultJob = jobs.length > 0 ? jobs[0]._id : null;
+
+        if (!defaultJob) {
+            toast.error('No active jobs available. Please create a job first.');
             return;
         }
 
+        setShortlistingId(student._id);
         try {
-            await companyAPI.shortlist(shortlistModal.student._id, selectedJob, shortlistNote);
-            toast.success('Student shortlisted successfully');
-            setShortlistModal({ open: false, student: null });
-            setSelectedJob('');
-            setShortlistNote('');
+            await companyAPI.shortlist(student._id, defaultJob, '');
+            toast.success(`${student.name?.firstName} shortlisted successfully!`);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to shortlist');
+        } finally {
+            setShortlistingId(null);
         }
     };
 
@@ -99,15 +111,22 @@ const SearchStudents = () => {
 
     return (
         <div className="search-page">
-            <div className="page-header">
-                <h1>Find Talent</h1>
-                <p>Search and filter students based on your requirements</p>
+            <div className="page-header search-header">
+                <div className="header-content">
+                    <div className="header-icon">
+                        <Sparkles size={28} />
+                    </div>
+                    <div>
+                        <h1>Find Talent</h1>
+                        <p>Discover exceptional candidates matching your requirements</p>
+                    </div>
+                </div>
             </div>
 
             {/* Filters */}
-            <Card className="filters-card">
+            <Card className="filters-card glass-card">
                 <div className="filters-header">
-                    <h3><Filter size={18} /> Filters</h3>
+                    <h3><Filter size={18} /> Search Filters</h3>
                     <button
                         className="toggle-filters"
                         onClick={() => setShowFilters(!showFilters)}
@@ -120,17 +139,29 @@ const SearchStudents = () => {
                     <div className="filters-grid">
                         <div className="filter-row">
                             <Input
-                                label="Search"
-                                placeholder="Name, skills..."
-                                value={filters.search}
-                                onChange={(e) => handleFilterChange('search', e.target.value)}
+                                label="Skills"
+                                placeholder="JavaScript, React, Python..."
+                                value={filters.skills}
+                                onChange={(e) => handleFilterChange('skills', e.target.value)}
                                 icon={Search}
                             />
                         </div>
 
-                        <div className="filter-row">
+                        <div className="filter-row filter-row-3">
                             <div className="input-wrapper">
-                                <label className="input-label">Department</label>
+                                <label className="input-label"><Building2 size={14} /> College</label>
+                                <select
+                                    className="input"
+                                    value={filters.college}
+                                    onChange={(e) => handleFilterChange('college', e.target.value)}
+                                >
+                                    <option value="">All Colleges</option>
+                                    {colleges.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="input-wrapper">
+                                <label className="input-label"><GraduationCap size={14} /> Department</label>
                                 <select
                                     className="input"
                                     value={filters.department}
@@ -154,7 +185,7 @@ const SearchStudents = () => {
                             </div>
                         </div>
 
-                        <div className="filter-row">
+                        <div className="filter-row filter-row-3">
                             <Input
                                 label="Minimum CGPA"
                                 type="number"
@@ -173,15 +204,6 @@ const SearchStudents = () => {
                                 value={filters.maxBacklogs}
                                 onChange={(e) => handleFilterChange('maxBacklogs', e.target.value)}
                             />
-                        </div>
-
-                        <div className="filter-row">
-                            <Input
-                                label="Skills (comma separated)"
-                                placeholder="JavaScript, React, Python"
-                                value={filters.skills}
-                                onChange={(e) => handleFilterChange('skills', e.target.value)}
-                            />
                             <div className="input-wrapper">
                                 <label className="input-label">Status</label>
                                 <select
@@ -198,12 +220,12 @@ const SearchStudents = () => {
 
                         <div className="filter-actions">
                             <Button variant="secondary" onClick={() => setFilters({
-                                search: '', department: '', batch: '', minCgpa: '', maxBacklogs: '', skills: '', placementStatus: ''
+                                search: '', department: '', batch: '', minCgpa: '', maxBacklogs: '', skills: '', college: '', placementStatus: ''
                             })}>
-                                Clear
+                                Clear All
                             </Button>
                             <Button onClick={handleSearch} icon={Search}>
-                                Search
+                                Search Talent
                             </Button>
                         </div>
                     </div>
@@ -216,12 +238,15 @@ const SearchStudents = () => {
             ) : students.length > 0 ? (
                 <>
                     <div className="results-header">
-                        <span>{pagination.total} students found</span>
+                        <span className="results-count">
+                            <Sparkles size={16} />
+                            {pagination.total} talented candidates found
+                        </span>
                     </div>
 
                     <div className="students-grid">
                         {students.map(student => (
-                            <Card key={student._id} className="student-card" hoverable>
+                            <Card key={student._id} className="student-card premium-card" hoverable>
                                 <div className="student-header">
                                     <div className="student-avatar">
                                         {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
@@ -233,16 +258,18 @@ const SearchStudents = () => {
                                     <Button
                                         size="sm"
                                         icon={Star}
-                                        onClick={() => setShortlistModal({ open: true, student })}
+                                        className="shortlist-btn"
+                                        onClick={() => handleShortlist(student)}
+                                        disabled={shortlistingId === student._id}
                                     >
-                                        Shortlist
+                                        {shortlistingId === student._id ? 'Adding...' : 'Shortlist'}
                                     </Button>
                                 </div>
 
                                 <div className="student-details">
                                     <div className="detail-item">
                                         <span className="detail-label">CGPA</span>
-                                        <span className="detail-value">{student.cgpa?.toFixed(2) || '-'}</span>
+                                        <span className="detail-value cgpa-badge">{student.cgpa?.toFixed(2) || '-'}</span>
                                     </div>
                                     <div className="detail-item">
                                         <span className="detail-label">College</span>
@@ -263,22 +290,22 @@ const SearchStudents = () => {
 
                                 <div className="student-links">
                                     {student.email && (
-                                        <a href={`mailto:${student.email}`} title="Email">
+                                        <a href={`mailto:${student.email}`} title="Email" className="link-btn">
                                             <Mail size={16} />
                                         </a>
                                     )}
                                     {student.linkedinUrl && (
-                                        <a href={student.linkedinUrl} target="_blank" rel="noopener noreferrer" title="LinkedIn">
+                                        <a href={student.linkedinUrl} target="_blank" rel="noopener noreferrer" title="LinkedIn" className="link-btn linkedin">
                                             <Linkedin size={16} />
                                         </a>
                                     )}
                                     {student.githubUrl && (
-                                        <a href={student.githubUrl} target="_blank" rel="noopener noreferrer" title="GitHub">
+                                        <a href={student.githubUrl} target="_blank" rel="noopener noreferrer" title="GitHub" className="link-btn github">
                                             <Github size={16} />
                                         </a>
                                     )}
                                     {student.resumeUrl && (
-                                        <a href={student.resumeUrl} target="_blank" rel="noopener noreferrer" title="Resume">
+                                        <a href={student.resumeUrl} target="_blank" rel="noopener noreferrer" title="Resume" className="link-btn resume">
                                             <ExternalLink size={16} />
                                         </a>
                                     )}
@@ -296,7 +323,7 @@ const SearchStudents = () => {
                             >
                                 Previous
                             </Button>
-                            <span>Page {pagination.current} of {pagination.pages}</span>
+                            <span className="page-info">Page {pagination.current} of {pagination.pages}</span>
                             <Button
                                 variant="secondary"
                                 disabled={pagination.current === pagination.pages}
@@ -309,57 +336,13 @@ const SearchStudents = () => {
                 </>
             ) : (
                 <div className="no-results">
-                    <Search size={48} />
-                    <h3>Search for students</h3>
+                    <div className="no-results-icon">
+                        <Search size={48} />
+                    </div>
+                    <h3>Discover Top Talent</h3>
                     <p>Use the filters above to find candidates matching your requirements</p>
                 </div>
             )}
-
-            {/* Shortlist Modal */}
-            <Modal
-                isOpen={shortlistModal.open}
-                onClose={() => setShortlistModal({ open: false, student: null })}
-                title="Shortlist Student"
-                size="sm"
-            >
-                <div className="shortlist-modal">
-                    <p>Shortlist <strong>{shortlistModal.student?.name?.firstName} {shortlistModal.student?.name?.lastName}</strong> for:</p>
-
-                    <div className="input-wrapper">
-                        <label className="input-label">Select Job *</label>
-                        <select
-                            className="input"
-                            value={selectedJob}
-                            onChange={(e) => setSelectedJob(e.target.value)}
-                        >
-                            <option value="">Choose a job</option>
-                            {jobs.map(job => (
-                                <option key={job._id} value={job._id}>{job.title}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="input-wrapper" style={{ marginTop: 'var(--spacing-4)' }}>
-                        <label className="input-label">Notes (optional)</label>
-                        <textarea
-                            className="input"
-                            value={shortlistNote}
-                            onChange={(e) => setShortlistNote(e.target.value)}
-                            placeholder="Add any notes about this candidate..."
-                            rows={3}
-                        />
-                    </div>
-
-                    <div className="modal-actions">
-                        <Button variant="secondary" onClick={() => setShortlistModal({ open: false, student: null })}>
-                            Cancel
-                        </Button>
-                        <Button icon={Star} onClick={handleShortlist}>
-                            Shortlist
-                        </Button>
-                    </div>
-                </div>
-            </Modal>
         </div>
     );
 };
