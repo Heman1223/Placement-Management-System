@@ -32,20 +32,20 @@ const Modal = ({
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div
-                className={`modal modal-${size}`}
+                className={`modal modal-${size} mx-4 md:mx-auto`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {(title || showClose) && (
                     <div className="modal-header">
-                        {title && <h2 className="modal-title">{title}</h2>}
+                        {title && <h2 className="modal-title text-base md:text-lg">{title}</h2>}
                         {showClose && (
                             <button className="modal-close" onClick={onClose}>
-                                <X size={20} />
+                                <X className="w-5 h-5 md:w-6 md:h-6" />
                             </button>
                         )}
                     </div>
                 )}
-                <div className="modal-body">{children}</div>
+                <div className="modal-body text-sm md:text-base">{children}</div>
             </div>
         </div>
     );

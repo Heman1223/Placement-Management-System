@@ -118,6 +118,9 @@ export const collegeAPI = {
     bulkUpload: (students) => api.post('/college/students/bulk', { students }),
     getDepartments: () => api.get('/college/departments'),
     exportStudents: (params) => api.get('/college/students/export', { params, responseType: 'blob' }),
+    uploadResume: (formData) => api.post('/upload/resume', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
     getAgencies: () => api.get('/college/agencies'),
     getAgencyRequests: () => api.get('/college/agency-requests'),
     getAgencyActivity: (id) => api.get(`/college/agencies/${id}/activity`),

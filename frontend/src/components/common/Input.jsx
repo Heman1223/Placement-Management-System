@@ -21,7 +21,7 @@ const Input = forwardRef(({
     return (
         <div className={wrapperClasses}>
             {label && (
-                <label className="input-label">
+                <label className="input-label text-xs md:text-sm">
                     {label}
                     {props.required && <span className="input-required">*</span>}
                 </label>
@@ -29,18 +29,18 @@ const Input = forwardRef(({
             <div className="input-container">
                 {Icon && (
                     <span className="input-icon">
-                        <Icon size={18} />
+                        <Icon className="w-4 h-4 md:w-5 md:h-5" />
                     </span>
                 )}
                 <input
                     ref={ref}
                     type={type}
-                    className={`input ${Icon ? 'input-with-icon' : ''}`}
+                    className={`input text-sm md:text-base ${Icon ? 'input-with-icon' : ''}`}
                     {...props}
                 />
             </div>
             {(error || helperText) && (
-                <span className={`input-helper ${error ? 'input-helper-error' : ''}`}>
+                <span className={`input-helper text-xs md:text-sm ${error ? 'input-helper-error' : ''}`}>
                     {error || helperText}
                 </span>
             )}

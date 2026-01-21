@@ -240,7 +240,33 @@ const seedStudents = async () => {
             for (let i = 1; i <= studentsPerBatch; i++) {
                 try {
                     const studentData = generateStudent(college, adminUser._id, existingCount + totalCreated + i, batch);
-                    await Student.create(studentData);
+                    
+                    // Check if user account exists
+                    let userAccount = await User.findOne({ email: studentData.email });
+                    
+                    if (!userAccount) {
+                        // Create user account with auto-generated password: FirstName@123
+                        const autoPassword = `${studentData.name.firstName}@123`;
+                        
+                        userAccount = await User.create({
+                            email: studentData.email,
+                            password: autoPassword,
+                            role: 'student',
+                            isApproved: true,
+                            isActive: true
+                        });
+                    }
+
+                    // Create student record
+                    const student = await Student.create({
+                        ...studentData,
+                        user: userAccount._id // Link to user account
+                    });
+
+                    // Link student profile to user account
+                    userAccount.studentProfile = student._id;
+                    await userAccount.save();
+
                     totalCreated++;
                     
                     if (i % 10 === 0) {
@@ -292,6 +318,10 @@ const seedStudents = async () => {
         console.log('\n   Super Admin:');
         console.log('   Email: admin@placement.com');
         console.log('   Password: Admin@123');
+        console.log('\n   Students:');
+        console.log('   Email: <student email from database>');
+        console.log('   Password: <FirstName>@123');
+        console.log('   Example: aarav.sharma@college.edu / Aarav@123');
         console.log('='.repeat(60));
 
         process.exit(0);

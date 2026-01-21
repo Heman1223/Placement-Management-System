@@ -335,6 +335,32 @@ const calculateProfileCompleteness = (student) => {
 const addStudent = asyncHandler(async (req, res) => {
     const collegeId = req.user.collegeProfile._id;
 
+    // Check if user account already exists with this email
+    const existingUser = await User.findOne({ email: req.body.email });
+    
+    let userAccount;
+    if (existingUser) {
+        // If user exists, check if they're already a student
+        if (existingUser.role === 'student' && existingUser.studentProfile) {
+            return res.status(400).json({
+                success: false,
+                message: 'A student account with this email already exists'
+            });
+        }
+        userAccount = existingUser;
+    } else {
+        // Create user account with auto-generated password: FirstName@123
+        const autoPassword = `${req.body.name.firstName}@123`;
+        
+        userAccount = await User.create({
+            email: req.body.email,
+            password: autoPassword,
+            role: 'student',
+            isApproved: true,
+            isActive: true
+        });
+    }
+
     const studentData = {
         ...req.body,
         college: collegeId,
@@ -342,10 +368,15 @@ const addStudent = asyncHandler(async (req, res) => {
         source: 'manual',
         isVerified: true, // Auto-verify students added by college admin
         verifiedAt: new Date(),
-        verifiedBy: req.userId
+        verifiedBy: req.userId,
+        user: userAccount._id // Link to user account
     };
 
     const student = await Student.create(studentData);
+
+    // Link student profile to user account
+    userAccount.studentProfile = student._id;
+    await userAccount.save();
 
     // Update college stats
     await College.findByIdAndUpdate(collegeId, {
@@ -357,8 +388,14 @@ const addStudent = asyncHandler(async (req, res) => {
 
     res.status(201).json({
         success: true,
-        message: 'Student added successfully',
-        data: student
+        message: 'Student added successfully. Login credentials created.',
+        data: {
+            student,
+            credentials: {
+                email: req.body.email,
+                password: `${req.body.name.firstName}@123`
+            }
+        }
     });
 });
 
@@ -491,6 +528,35 @@ const bulkUploadStudents = asyncHandler(async (req, res) => {
 
     for (const studentData of students) {
         try {
+            // Check if user account already exists
+            const existingUser = await User.findOne({ email: studentData.email });
+            
+            let userAccount;
+            if (existingUser) {
+                // If user exists and is already a student, skip
+                if (existingUser.role === 'student' && existingUser.studentProfile) {
+                    results.failed.push({
+                        rollNumber: studentData.rollNumber || 'Unknown',
+                        name: studentData.name?.firstName || 'Unknown',
+                        error: 'User account already exists'
+                    });
+                    continue;
+                }
+                userAccount = existingUser;
+            } else {
+                // Create user account with auto-generated password: FirstName@123
+                const autoPassword = `${studentData.name.firstName}@123`;
+                
+                userAccount = await User.create({
+                    email: studentData.email,
+                    password: autoPassword,
+                    role: 'student',
+                    isApproved: true,
+                    isActive: true
+                });
+            }
+
+            // Create student record
             const student = await Student.create({
                 ...studentData,
                 college: collegeId,
@@ -498,11 +564,19 @@ const bulkUploadStudents = asyncHandler(async (req, res) => {
                 source: 'bulk_upload',
                 isVerified: true, // Auto-verify bulk uploaded students
                 verifiedAt: new Date(),
-                verifiedBy: req.userId
+                verifiedBy: req.userId,
+                user: userAccount._id // Link to user account
             });
+
+            // Link student profile to user account
+            userAccount.studentProfile = student._id;
+            await userAccount.save();
+
             results.success.push({
                 rollNumber: student.rollNumber,
-                name: `${student.name.firstName} ${student.name.lastName}`
+                name: `${student.name.firstName} ${student.name.lastName}`,
+                email: student.email,
+                password: `${studentData.name.firstName}@123`
             });
         } catch (error) {
             results.failed.push({

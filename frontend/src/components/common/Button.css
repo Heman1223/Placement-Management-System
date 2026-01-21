@@ -33,6 +33,26 @@
     height: 48px;
 }
 
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .btn-sm {
+        padding: var(--spacing-1) var(--spacing-2);
+        font-size: 0.75rem;
+    }
+
+    .btn-md {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.875rem;
+        height: 36px;
+    }
+
+    .btn-lg {
+        padding: var(--spacing-2) var(--spacing-4);
+        font-size: 0.9375rem;
+        height: 42px;
+    }
+}
+
 /* Variants */
 .btn-primary {
     background: linear-gradient(135deg, var(--primary-600), var(--primary-700));

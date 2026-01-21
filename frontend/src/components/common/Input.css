@@ -45,6 +45,27 @@
     height: 42px;
 }
 
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .input {
+        padding: var(--spacing-2);
+        font-size: 0.875rem;
+        height: 38px;
+    }
+
+    .input-label {
+        font-size: 0.8125rem;
+    }
+
+    .input-helper {
+        font-size: 0.75rem;
+    }
+
+    textarea.input {
+        min-height: 80px;
+    }
+}
+
 .input-with-icon {
     padding-left: calc(var(--spacing-3) + 24px);
 }

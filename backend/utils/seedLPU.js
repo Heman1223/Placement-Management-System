@@ -166,7 +166,24 @@ const seedLPUData = async () => {
         for (const studentData of students) {
             const existing = await Student.findOne({ email: studentData.email });
             if (!existing) {
-                await Student.create({
+                // Check if user account exists
+                let userAccount = await User.findOne({ email: studentData.email });
+                
+                if (!userAccount) {
+                    // Create user account with auto-generated password: FirstName@123
+                    const autoPassword = `${studentData.name.firstName}@123`;
+                    
+                    userAccount = await User.create({
+                        email: studentData.email,
+                        password: autoPassword,
+                        role: 'student',
+                        isApproved: true,
+                        isActive: true
+                    });
+                }
+
+                // Create student record
+                const student = await Student.create({
                     ...studentData,
                     college: college._id,
                     phone: '+91-98765' + Math.floor(10000 + Math.random() * 90000),
@@ -176,12 +193,27 @@ const seedLPUData = async () => {
                     isVerified: true, // Auto-verified as admin is creating
                     verifiedAt: new Date(),
                     source: 'manual',
-                    addedBy: adminUser._id
+                    addedBy: adminUser._id,
+                    user: userAccount._id // Link to user account
                 });
+
+                // Link student profile to user account
+                userAccount.studentProfile = student._id;
+                await userAccount.save();
+
                 createdCount++;
             }
         }
         console.log(`✓ Created ${createdCount} students (${10 - createdCount} already existed)`);
+        
+        // Print login credentials
+        if (createdCount > 0) {
+            console.log('\n📋 Student Login Credentials:');
+            console.log('   Format: Email / Password');
+            students.forEach(s => {
+                console.log(`   ${s.email} / ${s.name.firstName}@123`);
+            });
+        }
 
         // 4. Create Infosys Company User
         const existingCompanyUser = await User.findOne({ email: 'hr@infosys.com' });

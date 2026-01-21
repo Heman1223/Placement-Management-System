@@ -59,8 +59,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
             <div className="sidebar-header">
                 <div className="sidebar-logo">
-                    <GraduationCap size={28} className="logo-icon" />
-                    {!collapsed && <span className="logo-text">PlaceMS</span>}
+                    <GraduationCap className="logo-icon w-6 h-6 md:w-7 md:h-7" />
+                    {!collapsed && <span className="logo-text text-base md:text-lg">PlaceMS</span>}
                 </div>
             </div>
 
@@ -71,11 +71,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         to={item.path}
                         end={item.path === '/admin' || item.path === '/college' || item.path === '/company'}
                         className={({ isActive }) =>
-                            `sidebar-link ${isActive ? 'sidebar-link-active' : ''}`
+                            `sidebar-link text-sm md:text-base ${isActive ? 'sidebar-link-active' : ''}`
                         }
                         title={collapsed ? item.label : undefined}
                     >
-                        <item.icon size={20} />
+                        <item.icon className="w-4 h-4 md:w-5 md:h-5" />
                         {!collapsed && <span>{item.label}</span>}
                     </NavLink>
                 ))}

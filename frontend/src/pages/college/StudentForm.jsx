@@ -38,6 +38,8 @@ const StudentForm = () => {
     });
 
     const [newSkill, setNewSkill] = useState('');
+    const [resumeFile, setResumeFile] = useState(null);
+    const [uploadingResume, setUploadingResume] = useState(false);
 
     useEffect(() => {
         fetchDepartments();
@@ -104,12 +106,41 @@ const StudentForm = () => {
         setSaving(true);
 
         try {
+            // First upload resume if file is selected
+            if (resumeFile) {
+                setUploadingResume(true);
+                const resumeFormData = new FormData();
+                resumeFormData.append('resume', resumeFile);
+
+                try {
+                    const uploadResponse = await collegeAPI.uploadResume(resumeFormData);
+                    formData.resumeUrl = uploadResponse.data.data.url;
+                } catch (uploadError) {
+                    toast.error('Failed to upload resume');
+                    setSaving(false);
+                    setUploadingResume(false);
+                    return;
+                }
+                setUploadingResume(false);
+            }
+
+            // Then save student data
             if (isEdit) {
                 await collegeAPI.updateStudent(id, formData);
                 toast.success('Student updated successfully');
             } else {
-                await collegeAPI.addStudent(formData);
-                toast.success('Student added successfully');
+                const response = await collegeAPI.addStudent(formData);
+                
+                // Show credentials if provided
+                if (response.data.data.credentials) {
+                    const { email, password } = response.data.data.credentials;
+                    toast.success(
+                        `Student added successfully!\n\nLogin Credentials:\nEmail: ${email}\nPassword: ${password}`,
+                        { duration: 8000 }
+                    );
+                } else {
+                    toast.success('Student added successfully');
+                }
             }
             navigate('/college/students');
         } catch (error) {
@@ -117,6 +148,27 @@ const StudentForm = () => {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleResumeChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowedTypes.includes(file.type)) {
+            toast.error('Please upload a PDF or Word document');
+            return;
+        }
+
+        // Validate file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('File size should be less than 5MB');
+            return;
+        }
+
+        setResumeFile(file);
+        toast.success('Resume selected: ' + file.name);
     };
 
     if (loading) {
@@ -315,8 +367,8 @@ const StudentForm = () => {
                     </div>
                 </Card>
 
-                {/* Links */}
-                <Card title="Profile Links" className="form-card">
+                {/* Links & Resume */}
+                <Card title="Profile Links & Resume" className="form-card">
                     <div className="form-grid">
                         <Input
                             label="LinkedIn URL"
@@ -332,14 +384,38 @@ const StudentForm = () => {
                             onChange={(e) => handleChange('githubUrl', e.target.value)}
                             placeholder="https://github.com/..."
                         />
-                        <Input
-                            label="Resume URL"
-                            type="url"
-                            value={formData.resumeUrl}
-                            onChange={(e) => handleChange('resumeUrl', e.target.value)}
-                            placeholder="Link to resume"
-                            fullWidth
-                        />
+                    </div>
+                    
+                    {/* Resume Upload */}
+                    <div className="resume-upload-section" style={{ marginTop: 'var(--spacing-4)' }}>
+                        <label className="input-label text-xs md:text-sm">Resume Upload</label>
+                        <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
+                            <input
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                onChange={handleResumeChange}
+                                className="text-sm md:text-base"
+                                style={{ flex: 1 }}
+                            />
+                            {resumeFile && (
+                                <span className="text-xs md:text-sm text-green-600">
+                                    ✓ {resumeFile.name}
+                                </span>
+                            )}
+                            {formData.resumeUrl && !resumeFile && (
+                                <a 
+                                    href={formData.resumeUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-xs md:text-sm text-blue-600 hover:underline"
+                                >
+                                    View Current Resume
+                                </a>
+                            )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                            Accepted formats: PDF, DOC, DOCX (Max 5MB)
+                        </p>
                     </div>
                 </Card>
 

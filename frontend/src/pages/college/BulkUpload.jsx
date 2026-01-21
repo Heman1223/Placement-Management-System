@@ -390,6 +390,31 @@ const BulkUpload = () => {
                         </div>
                     </div>
 
+                    {/* Success List with Credentials */}
+                    {uploadResult.success?.length > 0 && (
+                        <div className="success-list" style={{ marginTop: 'var(--spacing-4)', maxHeight: '300px', overflowY: 'auto' }}>
+                            <h4 style={{ marginBottom: 'var(--spacing-2)' }}>✅ Successfully Added (with login credentials):</h4>
+                            <div style={{ fontSize: '0.875rem', fontFamily: 'monospace' }}>
+                                {uploadResult.success.map((item, idx) => (
+                                    <div key={idx} style={{ 
+                                        padding: 'var(--spacing-2)', 
+                                        borderBottom: '1px solid var(--border-color)',
+                                        display: 'grid',
+                                        gridTemplateColumns: '2fr 2fr 1fr',
+                                        gap: 'var(--spacing-2)'
+                                    }}>
+                                        <span><strong>{item.name}</strong> ({item.rollNumber})</span>
+                                        <span style={{ color: 'var(--text-secondary)' }}>{item.email}</span>
+                                        <span style={{ color: 'var(--success-color)', fontWeight: 'bold' }}>{item.password}</span>
+                                    </div>
+                                ))}
+                            </div>
+                            <p style={{ marginTop: 'var(--spacing-2)', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                                💡 Students can login with their email and password shown above
+                            </p>
+                        </div>
+                    )}
+
                     {uploadResult.failed?.length > 0 && (
                         <div className="failed-list">
                             <h4>Failed Entries:</h4>

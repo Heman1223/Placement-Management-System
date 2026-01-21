@@ -9,17 +9,31 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Storage for resumes (PDF only)
+// Storage for resumes (PDF, DOC, DOCX)
 const resumeStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: {
-        folder: 'placement-system/resumes',
-        allowed_formats: ['pdf'],
-        resource_type: 'raw',
-        public_id: (req, file) => {
-            const studentId = req.user?.studentProfile || req.params.id || Date.now();
-            return `resume_${studentId}_${Date.now()}`;
+    params: async (req, file) => {
+        // Get student ID - handle both ObjectId and populated object
+        let studentId = 'unknown';
+        if (req.user?.studentProfile) {
+            studentId = typeof req.user.studentProfile === 'object' 
+                ? req.user.studentProfile._id?.toString() || req.user.studentProfile.toString()
+                : req.user.studentProfile.toString();
+        } else if (req.params?.id) {
+            studentId = req.params.id;
         }
+        
+        // Create a short, clean filename
+        const timestamp = Date.now();
+        
+        return {
+            folder: 'placement-system/resumes',
+            allowed_formats: ['pdf', 'doc', 'docx'],
+            resource_type: 'raw',
+            public_id: `resume_${studentId}_${timestamp}`,
+            // Add flags to make it viewable in browser instead of downloading
+            flags: 'attachment:false'
+        };
     }
 });
 
@@ -40,10 +54,16 @@ const uploadResume = multer({
         fileSize: 5 * 1024 * 1024 // 5MB
     },
     fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/pdf') {
+        const allowedMimeTypes = [
+            'application/pdf',
+            'application/msword', // .doc
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
+        ];
+        
+        if (allowedMimeTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDF files are allowed for resumes'), false);
+            cb(new Error('Only PDF, DOC, and DOCX files are allowed for resumes'), false);
         }
     }
 });

@@ -55,8 +55,15 @@ const StudentProfile = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (file.type !== 'application/pdf') {
-            alert('Please upload a PDF file');
+        // Accept PDF, DOC, and DOCX files
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            alert('Please upload a PDF, DOC, or DOCX file');
             return;
         }
 
@@ -70,14 +77,25 @@ const StudentProfile = () => {
         formData.append('resume', file);
 
         try {
-            const response = await api.post('/upload/resume', formData, {
+            // Upload resume to Cloudinary
+            const uploadResponse = await api.post('/upload/resume', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setProfile(prev => ({ ...prev, resumeUrl: response.data.data.url }));
+            
+            const resumeUrl = uploadResponse.data.data.url;
+            
+            // Save resume URL to student profile
+            const updateResponse = await api.put('/student/profile', { resumeUrl });
+            
+            // Update local state
+            setProfile(updateResponse.data.data);
+            setFormData(updateResponse.data.data);
+            
             alert('Resume uploaded successfully!');
         } catch (error) {
             console.error('Error uploading resume:', error);
-            alert('Failed to upload resume');
+            const errorMessage = error.response?.data?.message || 'Failed to upload resume';
+            alert(errorMessage);
         } finally {
             setUploading(false);
         }
@@ -293,12 +311,12 @@ const StudentProfile = () => {
                         )}
                         <div className="upload-section">
                             <label htmlFor="resume-upload" className="btn btn-primary">
-                                {uploading ? 'Uploading...' : 'Upload Resume (PDF)'}
+                                {uploading ? 'Uploading...' : 'Upload Resume (PDF, DOC, DOCX)'}
                             </label>
                             <input
                                 id="resume-upload"
                                 type="file"
-                                accept=".pdf"
+                                accept=".pdf,.doc,.docx"
                                 onChange={handleResumeUpload}
                                 disabled={uploading}
                                 style={{ display: 'none' }}
