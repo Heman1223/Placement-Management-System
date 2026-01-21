@@ -27,6 +27,28 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// API root route
+app.get('/api', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Placement Management System API',
+        version: '1.0.0',
+        status: 'running',
+        endpoints: {
+            health: '/api/health',
+            auth: '/api/auth (POST /login, /register)',
+            superAdmin: '/api/super-admin',
+            college: '/api/college',
+            company: '/api/company',
+            jobs: '/api/jobs',
+            student: '/api/student',
+            upload: '/api/upload',
+            activityLogs: '/api/activity-logs'
+        },
+        documentation: 'See API_DOCUMENTATION.md for details'
+    });
+});
+
 // Root route
 app.get('/', (req, res) => {
     res.json({
