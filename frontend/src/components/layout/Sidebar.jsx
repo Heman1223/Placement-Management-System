@@ -18,8 +18,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 { path: '/admin/colleges', icon: Building2, label: 'Colleges' },
                 { path: '/admin/companies', icon: Briefcase, label: 'Companies' },
                 { path: '/admin/users', icon: Users, label: 'Users' },
-                { path: '/admin/activity-logs', icon: Activity, label: 'Activity Logs' },
-                { path: '/admin/settings', icon: Settings, label: 'Settings' }
+                { path: '/admin/activity-logs', icon: Activity, label: 'Activity Logs' }
             ];
         }
 
@@ -27,9 +26,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             return [
                 { path: '/college', icon: LayoutDashboard, label: 'Dashboard' },
                 { path: '/college/students', icon: GraduationCap, label: 'Students' },
-                { path: '/college/upload', icon: Upload, label: 'Bulk Upload' },
-                { path: '/college/stats', icon: BarChart3, label: 'Statistics' },
-                { path: '/college/settings', icon: Settings, label: 'Settings' }
+                { path: '/college/upload', icon: Upload, label: 'Bulk Upload' }
             ];
         }
 
@@ -38,8 +35,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 { path: '/company', icon: LayoutDashboard, label: 'Dashboard' },
                 { path: '/company/jobs', icon: Briefcase, label: 'My Jobs' },
                 { path: '/company/search', icon: Search, label: 'Find Talent' },
-                { path: '/company/shortlist', icon: Star, label: 'Shortlisted' },
-                { path: '/company/settings', icon: Settings, label: 'Settings' }
+                { path: '/company/shortlist', icon: Star, label: 'Shortlisted' }
             ];
         }
 
@@ -48,8 +44,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             { path: '/student', icon: LayoutDashboard, label: 'Dashboard' },
             { path: '/student/profile', icon: User, label: 'My Profile' },
             { path: '/student/jobs', icon: Briefcase, label: 'Browse Jobs' },
-            { path: '/student/applications', icon: FileText, label: 'My Applications' },
-            { path: '/student/notifications', icon: Bell, label: 'Notifications' }
+            { path: '/student/applications', icon: FileText, label: 'My Applications' }
         ];
     };
 

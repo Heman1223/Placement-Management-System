@@ -63,23 +63,23 @@
 
 /* Status Badge */
 .status-open {
-    background: var(--success-50);
-    color: var(--success-700);
+    background: var(--success-300);
+    color: var(--success-900);
 }
 
 .status-closed {
-    background: var(--gray-100);
-    color: var(--gray-600);
+    background: var(--gray-300);
+    color: var(--gray-900);
 }
 
 .status-draft {
-    background: var(--warning-50);
-    color: var(--warning-600);
+    background: var(--warning-300);
+    color: var(--warning-900);
 }
 
 .status-filled {
-    background: var(--primary-100);
-    color: var(--primary-700);
+    background: var(--primary-300);
+    color: var(--primary-900);
 }
 
 /* Action Button Variants */

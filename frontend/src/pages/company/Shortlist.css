@@ -269,28 +269,28 @@
 }
 
 .status-shortlisted {
-    background: var(--warning-100);
-    color: var(--warning-700);
+    background: var(--warning-300);
+    color: var(--warning-900);
 }
 
 .status-interviewed {
-    background: var(--info-100);
-    color: var(--info-700);
+    background: var(--info-300);
+    color: var(--info-900);
 }
 
 .status-offered {
-    background: var(--primary-100);
-    color: var(--primary-700);
+    background: var(--primary-300);
+    color: var(--primary-900);
 }
 
 .status-hired {
-    background: var(--success-100);
-    color: var(--success-700);
+    background: var(--success-300);
+    color: var(--success-900);
 }
 
 .status-rejected {
-    background: var(--danger-100);
-    color: var(--danger-700);
+    background: var(--danger-300);
+    color: var(--danger-900);
 }
 
 /* Action Buttons */
@@ -438,4 +438,263 @@
     .pipeline-stage {
         justify-content: center;
     }
+}
+
+/* View Button */
+.action-btn-view {
+    background: var(--primary-100);
+    color: var(--primary-600);
+}
+
+.action-btn-view:hover {
+    background: var(--primary-500);
+    color: white;
+}
+
+/* Student Detail Modal */
+.student-detail-modal {
+    padding: var(--spacing-1);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding-bottom: var(--spacing-4);
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: var(--spacing-4);
+}
+
+.detail-avatar {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.detail-header-info h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--gray-900);
+}
+
+.detail-header-info p {
+    margin: 0.25rem 0 0;
+    color: var(--gray-600);
+}
+
+.detail-header-info .college-name {
+    color: var(--primary-600);
+    font-weight: 500;
+}
+
+.detail-section {
+    margin-bottom: var(--spacing-5);
+}
+
+.detail-section h4 {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin: 0 0 var(--spacing-3);
+    font-size: 1rem;
+    color: var(--gray-800);
+    font-weight: 600;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-3);
+}
+
+.detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.field-label {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.field-value {
+    font-size: 0.95rem;
+    color: var(--gray-800);
+}
+
+.cgpa-highlight {
+    font-weight: 700;
+    color: var(--success-600);
+}
+
+.education-grid {
+    display: flex;
+    gap: var(--spacing-3);
+    flex-wrap: wrap;
+}
+
+.education-card {
+    flex: 1;
+    min-width: 140px;
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3);
+    text-align: center;
+}
+
+.edu-level {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.edu-percent {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-600);
+    margin: var(--spacing-1) 0;
+}
+
+.edu-board {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--gray-600);
+}
+
+.skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+}
+
+.skill-tag {
+    background: var(--primary-50);
+    color: var(--primary-700);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--primary-100);
+}
+
+.projects-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+.project-item {
+    background: var(--gray-50);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+    border-left: 3px solid var(--primary-500);
+}
+
+.project-item h5 {
+    margin: 0 0 var(--spacing-2);
+    color: var(--gray-800);
+    font-size: 1rem;
+}
+
+.project-item p {
+    margin: 0 0 var(--spacing-3);
+    color: var(--gray-600);
+    font-size: 0.9rem;
+}
+
+.project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-1);
+}
+
+.tech-tag {
+    background: var(--primary-100);
+    color: var(--primary-700);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.links-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-3);
+}
+
+.profile-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.profile-link.resume {
+    background: var(--primary-100);
+    color: var(--primary-700);
+}
+
+.profile-link.linkedin {
+    background: #e8f4f8;
+    color: #0077b5;
+}
+
+.profile-link.github {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.placement-status-badge {
+    display: inline-block;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.placement-status-badge.status-not_placed {
+    background: var(--gray-300);
+    color: var(--gray-900);
+}
+
+.placement-status-badge.status-in_process {
+    background: var(--warning-300);
+    color: var(--warning-900);
+}
+
+.placement-status-badge.status-placed {
+    background: var(--success-300);
+    color: var(--success-900);
+}
+
+.detail-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-3);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--gray-200);
+    margin-top: var(--spacing-4);
 }

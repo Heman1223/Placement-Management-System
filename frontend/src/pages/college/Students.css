@@ -200,18 +200,18 @@
 }
 
 .status-not_placed {
-    background: var(--gray-100);
-    color: var(--gray-600);
+    background: var(--gray-300);
+    color: var(--gray-900);
 }
 
 .status-in_process {
-    background: var(--warning-100);
-    color: var(--warning-700);
+    background: var(--warning-300);
+    color: var(--warning-900);
 }
 
 .status-placed {
-    background: var(--success-100);
-    color: var(--success-700);
+    background: var(--success-300);
+    color: var(--success-900);
 }
 
 .verified-icon {

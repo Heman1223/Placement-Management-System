@@ -17,11 +17,6 @@ const Header = ({ onMenuClick, title }) => {
             </div>
 
             <div className="header-right">
-                <button className="header-icon-btn">
-                    <Bell size={20} />
-                    <span className="header-badge">3</span>
-                </button>
-
                 <div className="header-user">
                     <button
                         className="header-user-btn"

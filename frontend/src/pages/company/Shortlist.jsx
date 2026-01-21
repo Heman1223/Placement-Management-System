@@ -3,7 +3,7 @@ import { companyAPI, jobAPI } from '../../services/api';
 import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
-import { Star, Download, Calendar, MessageSquare, CheckCircle, XCircle, Building2, Users, Sparkles, TrendingUp } from 'lucide-react';
+import { Star, Download, Calendar, MessageSquare, CheckCircle, XCircle, Building2, Users, Sparkles, TrendingUp, Eye, GraduationCap, Award, Briefcase, Mail, Phone, ExternalLink, Linkedin, Github, FileText, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Shortlist.css';
 
@@ -19,6 +19,7 @@ const Shortlist = () => {
     const [statusFilter, setStatusFilter] = useState('');
     const [actionModal, setActionModal] = useState({ open: false, application: null, action: '' });
     const [remarks, setRemarks] = useState('');
+    const [studentDetailModal, setStudentDetailModal] = useState({ open: false, student: null, loading: false });
 
     useEffect(() => {
         fetchJobs();
@@ -115,6 +116,17 @@ const Shortlist = () => {
         }
     };
 
+    const viewStudentDetails = async (studentId) => {
+        setStudentDetailModal({ open: true, student: null, loading: true });
+        try {
+            const response = await companyAPI.getStudent(studentId);
+            setStudentDetailModal({ open: true, student: response.data.data, loading: false });
+        } catch (error) {
+            toast.error('Failed to load student details');
+            setStudentDetailModal({ open: false, student: null, loading: false });
+        }
+    };
+
     const getStatusOptions = (currentStatus) => {
         const flow = {
             'shortlisted': ['interviewed', 'rejected'],
@@ -177,10 +189,16 @@ const Shortlist = () => {
             accessor: '_id',
             render: (id, row) => {
                 const options = getStatusOptions(row.status);
-                if (options.length === 0) return null;
 
                 return (
                     <div className="action-buttons">
+                        <button
+                            className="action-btn action-btn-view"
+                            title="View Details"
+                            onClick={() => viewStudentDetails(row.student?._id)}
+                        >
+                            <Eye size={16} />
+                        </button>
                         {options.includes('interviewed') && (
                             <button
                                 className="action-btn action-btn-info"
@@ -391,6 +409,163 @@ const Shortlist = () => {
                         </Button>
                     </div>
                 </div>
+            </Modal>
+
+            {/* Student Detail Modal */}
+            <Modal
+                isOpen={studentDetailModal.open}
+                onClose={() => setStudentDetailModal({ open: false, student: null, loading: false })}
+                title="Student Profile"
+                size="lg"
+            >
+                {studentDetailModal.loading ? (
+                    <div className="loading-screen" style={{ padding: 'var(--spacing-8)' }}>
+                        <div className="loading-spinner" />
+                    </div>
+                ) : studentDetailModal.student && (
+                    <div className="student-detail-modal">
+                        {/* Header Section */}
+                        <div className="detail-header">
+                            <div className="detail-avatar">
+                                {studentDetailModal.student.name?.firstName?.[0]}
+                                {studentDetailModal.student.name?.lastName?.[0]}
+                            </div>
+                            <div className="detail-header-info">
+                                <h2>{studentDetailModal.student.name?.firstName} {studentDetailModal.student.name?.lastName}</h2>
+                                <p>{studentDetailModal.student.department} • Batch {studentDetailModal.student.batch}</p>
+                                <p className="college-name">{studentDetailModal.student.college?.name}</p>
+                            </div>
+                        </div>
+
+                        {/* Contact Information */}
+                        <div className="detail-section">
+                            <h4><Mail size={16} /> Contact Information</h4>
+                            <div className="detail-grid">
+                                <div className="detail-field">
+                                    <span className="field-label">Email</span>
+                                    <span className="field-value">{studentDetailModal.student.email}</span>
+                                </div>
+                                <div className="detail-field">
+                                    <span className="field-label">Phone</span>
+                                    <span className="field-value">{studentDetailModal.student.phone || 'Not provided'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Academic Information */}
+                        <div className="detail-section">
+                            <h4><GraduationCap size={16} /> Academic Information</h4>
+                            <div className="detail-grid">
+                                <div className="detail-field">
+                                    <span className="field-label">Roll Number</span>
+                                    <span className="field-value">{studentDetailModal.student.rollNumber}</span>
+                                </div>
+                                <div className="detail-field">
+                                    <span className="field-label">CGPA</span>
+                                    <span className="field-value cgpa-highlight">{studentDetailModal.student.cgpa?.toFixed(2) || '-'}</span>
+                                </div>
+                                <div className="detail-field">
+                                    <span className="field-label">Active Backlogs</span>
+                                    <span className="field-value">{studentDetailModal.student.backlogs?.active || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Education History */}
+                        {studentDetailModal.student.education && (
+                            <div className="detail-section">
+                                <h4><Award size={16} /> Education History</h4>
+                                <div className="education-grid">
+                                    {studentDetailModal.student.education.tenth?.percentage && (
+                                        <div className="education-card">
+                                            <span className="edu-level">10th</span>
+                                            <span className="edu-percent">{studentDetailModal.student.education.tenth.percentage}%</span>
+                                            <span className="edu-board">{studentDetailModal.student.education.tenth.board}</span>
+                                        </div>
+                                    )}
+                                    {studentDetailModal.student.education.twelfth?.percentage && (
+                                        <div className="education-card">
+                                            <span className="edu-level">12th</span>
+                                            <span className="edu-percent">{studentDetailModal.student.education.twelfth.percentage}%</span>
+                                            <span className="edu-board">{studentDetailModal.student.education.twelfth.board}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Skills */}
+                        {studentDetailModal.student.skills?.length > 0 && (
+                            <div className="detail-section">
+                                <h4><Sparkles size={16} /> Skills</h4>
+                                <div className="skills-list">
+                                    {studentDetailModal.student.skills.map((skill, i) => (
+                                        <span key={i} className="skill-tag">{skill}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Projects */}
+                        {studentDetailModal.student.projects?.length > 0 && (
+                            <div className="detail-section">
+                                <h4><Briefcase size={16} /> Projects</h4>
+                                <div className="projects-list">
+                                    {studentDetailModal.student.projects.map((project, i) => (
+                                        <div key={i} className="project-item">
+                                            <h5>{project.title}</h5>
+                                            <p>{project.description}</p>
+                                            {project.technologies?.length > 0 && (
+                                                <div className="project-tech">
+                                                    {project.technologies.map((tech, j) => (
+                                                        <span key={j} className="tech-tag">{tech}</span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Links */}
+                        <div className="detail-section">
+                            <h4><ExternalLink size={16} /> Links & Resume</h4>
+                            <div className="links-grid">
+                                {studentDetailModal.student.resumeUrl && (
+                                    <a href={studentDetailModal.student.resumeUrl} target="_blank" rel="noopener noreferrer" className="profile-link resume">
+                                        <FileText size={18} /> Resume
+                                    </a>
+                                )}
+                                {studentDetailModal.student.linkedinUrl && (
+                                    <a href={studentDetailModal.student.linkedinUrl} target="_blank" rel="noopener noreferrer" className="profile-link linkedin">
+                                        <Linkedin size={18} /> LinkedIn
+                                    </a>
+                                )}
+                                {studentDetailModal.student.githubUrl && (
+                                    <a href={studentDetailModal.student.githubUrl} target="_blank" rel="noopener noreferrer" className="profile-link github">
+                                        <Github size={18} /> GitHub
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Placement Status */}
+                        <div className="detail-section">
+                            <h4><User size={16} /> Placement Status</h4>
+                            <span className={`placement-status-badge status-${studentDetailModal.student.placementStatus}`}>
+                                {studentDetailModal.student.placementStatus?.replace('_', ' ')}
+                            </span>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="detail-footer">
+                            <Button variant="secondary" onClick={() => setStudentDetailModal({ open: false, student: null, loading: false })}>
+                                Close
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </Modal>
         </div>
     );

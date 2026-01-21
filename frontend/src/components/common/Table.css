@@ -108,3 +108,23 @@
         transform: rotate(360deg);
     }
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+
+    .table th,
+    .table td {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.85rem;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        gap: var(--spacing-2);
+    }
+
+    .pagination-btn {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.8rem;
+    }
+}

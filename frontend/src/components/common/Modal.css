@@ -102,3 +102,33 @@
         transform: translateY(0) scale(1);
     }
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: var(--spacing-2);
+    }
+
+    .modal {
+        max-height: calc(100vh - 1rem);
+    }
+
+    .modal-sm,
+    .modal-md,
+    .modal-lg,
+    .modal-xl {
+        max-width: calc(100vw - 1rem);
+    }
+
+    .modal-header {
+        padding: var(--spacing-3) var(--spacing-4);
+    }
+
+    .modal-body {
+        padding: var(--spacing-3) var(--spacing-4);
+    }
+
+    .modal-title {
+        font-size: 1rem;
+    }
+}

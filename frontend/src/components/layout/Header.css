@@ -159,3 +159,18 @@
     background: var(--bg-tertiary);
     color: var(--error-500);
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .header {
+        padding: 0 var(--spacing-3);
+    }
+
+    .header-title {
+        font-size: 1rem;
+    }
+
+    .header-left {
+        gap: var(--spacing-2);
+    }
+}

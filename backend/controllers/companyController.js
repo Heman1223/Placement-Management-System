@@ -323,7 +323,11 @@ const getShortlistedCandidates = asyncHandler(async (req, res) => {
 
     const [applications, total] = await Promise.all([
         Application.find(query)
-            .populate('student', 'name email phone department batch cgpa skills resumeUrl')
+            .populate({
+                path: 'student',
+                select: 'name email phone department batch cgpa skills resumeUrl college',
+                populate: { path: 'college', select: 'name code' }
+            })
             .populate('job', 'title type')
             .sort({ updatedAt: -1 })
             .skip(skip)

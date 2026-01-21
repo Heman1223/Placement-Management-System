@@ -129,3 +129,32 @@
 .trend-down {
     color: var(--error-500);
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .card-padding-default {
+        padding: var(--spacing-4);
+    }
+
+    .card-padding-lg {
+        padding: var(--spacing-5);
+    }
+
+    .stats-card {
+        padding: var(--spacing-4);
+        gap: var(--spacing-3);
+    }
+
+    .stats-card-icon {
+        width: 44px;
+        height: 44px;
+    }
+
+    .stats-card-value {
+        font-size: 1.5rem;
+    }
+
+    .stats-card-title {
+        font-size: 0.8rem;
+    }
+}
