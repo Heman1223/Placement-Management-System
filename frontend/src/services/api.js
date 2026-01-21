@@ -56,23 +56,53 @@ export const authAPI = {
     login: (data) => api.post('/auth/login', data),
     getProfile: () => api.get('/auth/profile'),
     updatePassword: (data) => api.put('/auth/password', data),
-    logout: () => api.post('/auth/logout')
+    logout: () => api.post('/auth/logout'),
+    getLoginHistory: () => api.get('/auth/login-history')
 };
 
 // Super Admin endpoints
 export const superAdminAPI = {
     getStats: () => api.get('/super-admin/stats'),
+    getAnalytics: () => api.get('/super-admin/analytics'),
     getColleges: (params) => api.get('/super-admin/colleges', { params }),
     createCollege: (data) => api.post('/super-admin/colleges', data),
     getCollegeDetails: (id) => api.get(`/super-admin/colleges/${id}`),
+    updateCollege: (id, data) => api.patch(`/super-admin/colleges/${id}`, data),
     approveCollege: (id, approved) => api.patch(`/super-admin/colleges/${id}/approve`, { approved }),
+    toggleCollegeStatus: (id) => api.patch(`/super-admin/colleges/${id}/toggle-active`),
+    deleteCollege: (id) => api.delete(`/super-admin/colleges/${id}`),
+    restoreCollege: (id) => api.patch(`/super-admin/colleges/${id}/restore`),
     getCollegeStudents: (id, params) => api.get(`/super-admin/colleges/${id}/students`, { params }),
     addStudentToCollege: (id, data) => api.post(`/super-admin/colleges/${id}/students`, data),
     getCompanies: (params) => api.get('/super-admin/companies', { params }),
     createCompany: (data) => api.post('/super-admin/companies', data),
+    getAgencyDetails: (id) => api.get(`/super-admin/companies/${id}/agency-details`),
+    updateCompany: (id, data) => api.patch(`/super-admin/companies/${id}`, data),
     approveCompany: (id, approved) => api.patch(`/super-admin/companies/${id}/approve`, { approved }),
+    toggleCompanyStatus: (id) => api.patch(`/super-admin/companies/${id}/toggle-active`),
+    toggleCompanySuspension: (id, reason, endDate) => api.patch(`/super-admin/companies/${id}/suspend`, { reason, endDate }),
+    deleteCompany: (id) => api.delete(`/super-admin/companies/${id}`),
+    restoreCompany: (id) => api.patch(`/super-admin/companies/${id}/restore`),
+    assignCollegesToAgency: (id, collegeIds) => api.post(`/super-admin/companies/${id}/assign-colleges`, { collegeIds }),
+    removeCollegeFromAgency: (id, collegeId) => api.delete(`/super-admin/companies/${id}/colleges/${collegeId}`),
+    setAgencyAccessExpiry: (id, expiryDate) => api.patch(`/super-admin/companies/${id}/access-expiry`, { expiryDate }),
+    setAgencyDownloadLimit: (id, limit) => api.patch(`/super-admin/companies/${id}/download-limit`, { limit }),
+    getAllStudents: (params) => api.get('/super-admin/students', { params }),
     getUsers: (params) => api.get('/super-admin/users', { params }),
-    toggleUserStatus: (id) => api.patch(`/super-admin/users/${id}/toggle-status`)
+    toggleUserStatus: (id) => api.patch(`/super-admin/users/${id}/toggle-status`),
+    resetUserPassword: (id, newPassword) => api.post(`/super-admin/users/${id}/reset-password`, { newPassword }),
+    getCollegeAdmin: (id) => api.get(`/super-admin/college-admins/${id}`),
+    updateCollegeAdmin: (id, data) => api.patch(`/super-admin/college-admins/${id}`, data),
+    toggleCollegeAdminBlock: (id) => api.patch(`/super-admin/college-admins/${id}/toggle-block`),
+    // Settings
+    getSettings: () => api.get('/super-admin/settings'),
+    updateSettings: (data) => api.put('/super-admin/settings', data),
+    resetSettings: () => api.post('/super-admin/settings/reset'),
+    updateStudentSignup: (data) => api.patch('/super-admin/settings/student-signup', data),
+    updateAgencyRegistration: (data) => api.patch('/super-admin/settings/agency-registration', data),
+    updateApprovalRules: (data) => api.patch('/super-admin/settings/approval-rules', data),
+    toggleMaintenanceMode: (data) => api.patch('/super-admin/settings/maintenance-mode', data),
+    updateDataVisibility: (data) => api.patch('/super-admin/settings/data-visibility', data)
 };
 
 // College Admin endpoints
@@ -84,8 +114,23 @@ export const collegeAPI = {
     updateStudent: (id, data) => api.put(`/college/students/${id}`, data),
     deleteStudent: (id) => api.delete(`/college/students/${id}`),
     verifyStudent: (id) => api.patch(`/college/students/${id}/verify`),
+    resetStudentPassword: (id, newPassword) => api.post(`/college/students/${id}/reset-password`, { newPassword }),
     bulkUpload: (students) => api.post('/college/students/bulk', { students }),
-    getDepartments: () => api.get('/college/departments')
+    getDepartments: () => api.get('/college/departments'),
+    exportStudents: (params) => api.get('/college/students/export', { params, responseType: 'blob' }),
+    getAgencies: () => api.get('/college/agencies'),
+    getAgencyRequests: () => api.get('/college/agency-requests'),
+    getAgencyActivity: (id) => api.get(`/college/agencies/${id}/activity`),
+    grantAgencyAccess: (id, data) => api.post(`/college/agencies/${id}/grant-access`, data),
+    revokeAgencyAccess: (id) => api.delete(`/college/agencies/${id}/revoke-access`),
+    updateAgencyAccessSettings: (id, data) => api.patch(`/college/agencies/${id}/access-settings`, data),
+    getPlacementTracking: (type) => api.get('/college/placements', { params: { type } }),
+    getPlacementStats: () => api.get('/college/placement-stats'),
+    exportPlacementReport: (type) => api.get('/college/placement-report', { params: { type }, responseType: 'blob' }),
+    getCollegeProfile: () => api.get('/college/profile'),
+    updateCollegeProfile: (data) => api.patch('/college/profile', data),
+    getCollegeSettings: () => api.get('/college/settings'),
+    updateCollegeSettings: (data) => api.patch('/college/settings', data)
 };
 
 // Company endpoints
@@ -97,8 +142,18 @@ export const companyAPI = {
     getColleges: () => api.get('/company/colleges'),
     shortlist: (studentId, jobId, notes) => api.post('/company/shortlist', { studentId, jobId, notes }),
     getShortlist: (params) => api.get('/company/shortlist', { params }),
+    getShortlistDetails: (id) => api.get(`/company/shortlist/${id}`),
+    updateShortlistStatus: (id, data) => api.patch(`/company/shortlist/${id}/status`, data),
+    addShortlistNote: (id, note) => api.post(`/company/shortlist/${id}/notes`, { note }),
+    removeFromShortlist: (id) => api.delete(`/company/shortlist/${id}`),
     updateApplication: (id, data) => api.patch(`/company/applications/${id}/status`, data),
-    exportShortlist: (params) => api.get('/company/shortlist/export', { params, responseType: 'blob' })
+    exportShortlist: (params) => api.get('/company/shortlist/export', { params, responseType: 'blob' }),
+    saveSearchFilter: (name, filters) => api.post('/company/search-filters', { name, filters }),
+    getSavedFilters: () => api.get('/company/search-filters'),
+    deleteSearchFilter: (name) => api.delete(`/company/search-filters/${name}`),
+    logResumeView: (id) => api.post(`/company/students/${id}/log-resume-view`),
+    getDownloadStats: () => api.get('/company/download-stats'),
+    bulkDownload: (studentIds) => api.post('/company/bulk-download', { studentIds })
 };
 
 // Job endpoints
@@ -111,6 +166,23 @@ export const jobAPI = {
     deleteJob: (id) => api.delete(`/jobs/${id}`),
     getApplicants: (id, params) => api.get(`/jobs/${id}/applicants`, { params }),
     closeJob: (id, reason) => api.patch(`/jobs/${id}/close`, { reason })
+};
+
+// Student endpoints
+export const studentAPI = {
+    getProfile: () => api.get('/student/profile'),
+    updateProfile: (data) => api.put('/student/profile', data),
+    uploadResume: (formData) => api.post('/student/resume', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    getJobs: (params) => api.get('/student/jobs', { params }),
+    getJob: (id) => api.get(`/student/jobs/${id}`),
+    applyJob: (jobId) => api.post(`/student/jobs/${jobId}/apply`),
+    getApplications: (params) => api.get('/student/applications', { params }),
+    withdrawApplication: (id) => api.delete(`/student/applications/${id}`),
+    getNotifications: (params) => api.get('/student/notifications', { params }),
+    markNotificationRead: (id) => api.patch(`/student/notifications/${id}/read`),
+    markAllNotificationsRead: () => api.patch('/student/notifications/read-all')
 };
 
 export default api;

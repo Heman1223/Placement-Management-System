@@ -14,10 +14,17 @@
 }
 
 html {
-    font-size: 16px;
+    font-size: 14px; /* Mobile base font size */
     scroll-behavior: smooth;
     width: 100%;
     min-height: 100vh;
+}
+
+/* Desktop: 80% width and larger font */
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
@@ -38,7 +45,7 @@ body {
     min-height: 100vh;
 }
 
-/* Typography */
+/* Typography - Mobile First */
 h1,
 h2,
 h3,
@@ -50,28 +57,56 @@ h6 {
     color: var(--text-primary);
 }
 
+/* Mobile sizes */
 h1 {
-    font-size: 2rem;
-}
-
-h2 {
     font-size: 1.5rem;
 }
 
-h3 {
+h2 {
     font-size: 1.25rem;
 }
 
-h4 {
+h3 {
     font-size: 1.125rem;
 }
 
-h5 {
+h4 {
     font-size: 1rem;
+}
+
+h5 {
+    font-size: 0.9375rem;
 }
 
 h6 {
     font-size: 0.875rem;
+}
+
+/* Desktop sizes */
+@media (min-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+
+    h4 {
+        font-size: 1.125rem;
+    }
+
+    h5 {
+        font-size: 1rem;
+    }
+
+    h6 {
+        font-size: 0.875rem;
+    }
 }
 
 p {

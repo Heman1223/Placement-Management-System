@@ -92,6 +92,69 @@
     background: var(--gray-200);
 }
 
+/* Saved Filters Section */
+.saved-filters-section {
+    padding: var(--spacing-4);
+    background: var(--primary-50);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-4);
+}
+
+.saved-filters-section h4 {
+    margin: 0 0 var(--spacing-3);
+    font-size: 0.875rem;
+    color: var(--primary-700);
+    font-weight: 600;
+}
+
+.saved-filters-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+}
+
+.saved-filter-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: white;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--primary-200);
+}
+
+.load-filter-btn {
+    background: none;
+    border: none;
+    padding: var(--spacing-2) var(--spacing-3);
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--primary-700);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.load-filter-btn:hover {
+    background: var(--primary-50);
+}
+
+.delete-filter-btn {
+    background: none;
+    border: none;
+    border-left: 1px solid var(--primary-200);
+    padding: var(--spacing-2) var(--spacing-2);
+    cursor: pointer;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--gray-400);
+    transition: all 0.2s ease;
+}
+
+.delete-filter-btn:hover {
+    background: var(--error-50);
+    color: var(--error-600);
+}
+
 .filters-grid {
     display: flex;
     flex-direction: column;

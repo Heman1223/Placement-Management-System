@@ -8,6 +8,8 @@
     "dev": "nodemon server.js",
     "seed": "node utils/seedAdmin.js",
     "seed:students": "node utils/seedStudents.js",
+    "seed:lpu": "node utils/seedLPU.js",
+    "seed:infosys-job": "node utils/seedInfosysJob.js",
     "seed:all": "node utils/seedAdmin.js && node utils/seedStudents.js",
     "cleanup:students": "node utils/cleanupStudents.js",
     "reset:placement": "node utils/resetPlacementStatus.js"

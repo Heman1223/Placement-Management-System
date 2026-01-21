@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import api from '../../services/api';
+import { superAdminAPI } from '../../services/api';
+import Modal from '../../components/common/Modal';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import { Key } from 'lucide-react';
+import toast from 'react-hot-toast';
 import './AdminPages.css';
 
 const Users = () => {
@@ -12,6 +17,8 @@ const Users = () => {
         limit: 10
     });
     const [pagination, setPagination] = useState({});
+    const [resetModal, setResetModal] = useState({ open: false, user: null });
+    const [newPassword, setNewPassword] = useState('');
 
     useEffect(() => {
         fetchUsers();
@@ -20,17 +27,18 @@ const Users = () => {
     const fetchUsers = async () => {
         try {
             setLoading(true);
-            const params = new URLSearchParams();
-            if (filters.role) params.append('role', filters.role);
-            if (filters.search) params.append('search', filters.search);
-            params.append('page', filters.page);
-            params.append('limit', filters.limit);
+            const params = {
+                role: filters.role || undefined,
+                search: filters.search || undefined,
+                page: filters.page,
+                limit: filters.limit
+            };
 
-            const response = await api.get(`/super-admin/users?${params}`);
+            const response = await superAdminAPI.getUsers(params);
             setUsers(response.data.data.users || response.data.data);
             setPagination(response.data.data.pagination || response.data.pagination);
         } catch (error) {
-            console.error('Error fetching users:', error);
+            toast.error('Failed to load users');
         } finally {
             setLoading(false);
         }
@@ -42,10 +50,33 @@ const Users = () => {
         }
 
         try {
-            await api.patch(`/super-admin/users/${userId}/toggle-status`);
+            await superAdminAPI.toggleUserStatus(userId);
+            toast.success(`User ${currentStatus ? 'deactivated' : 'activated'} successfully`);
             fetchUsers();
         } catch (error) {
-            alert(error.response?.data?.message || 'Failed to update user status');
+            toast.error(error.response?.data?.message || 'Failed to update user status');
+        }
+    };
+
+    const openResetModal = (user) => {
+        setResetModal({ open: true, user });
+        setNewPassword('');
+    };
+
+    const handleResetPassword = async (e) => {
+        e.preventDefault();
+        if (newPassword.length < 6) {
+            toast.error('Password must be at least 6 characters');
+            return;
+        }
+
+        try {
+            await superAdminAPI.resetUserPassword(resetModal.user._id, newPassword);
+            toast.success('Password reset successfully');
+            setResetModal({ open: false, user: null });
+            setNewPassword('');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to reset password');
         }
     };
 
@@ -167,6 +198,13 @@ const Users = () => {
                                             >
                                                 {user.isActive ? 'Deactivate' : 'Activate'}
                                             </button>
+                                            <button
+                                                onClick={() => openResetModal(user)}
+                                                className="btn btn-sm btn-secondary"
+                                                title="Reset Password"
+                                            >
+                                                <Key size={14} /> Reset
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -198,6 +236,44 @@ const Users = () => {
                     </button>
                 </div>
             )}
+
+            {/* Reset Password Modal */}
+            <Modal
+                isOpen={resetModal.open}
+                onClose={() => setResetModal({ open: false, user: null })}
+                title="Reset User Password"
+                size="sm"
+            >
+                {resetModal.user && (
+                    <form onSubmit={handleResetPassword} className="form">
+                        <p className="modal-description">
+                            Reset password for <strong>{resetModal.user.email}</strong>
+                        </p>
+                        <Input
+                            label="New Password"
+                            type="password"
+                            required
+                            minLength={6}
+                            placeholder="Enter new password (min 6 characters)"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            autoComplete="new-password"
+                        />
+                        <div className="modal-actions">
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => setResetModal({ open: false, user: null })}
+                            >
+                                Cancel
+                            </Button>
+                            <Button type="submit">
+                                Reset Password
+                            </Button>
+                        </div>
+                    </form>
+                )}
+            </Modal>
         </div>
     );
 };

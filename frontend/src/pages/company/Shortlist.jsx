@@ -20,10 +20,14 @@ const Shortlist = () => {
     const [actionModal, setActionModal] = useState({ open: false, application: null, action: '' });
     const [remarks, setRemarks] = useState('');
     const [studentDetailModal, setStudentDetailModal] = useState({ open: false, student: null, loading: false });
+    const [notesModal, setNotesModal] = useState({ open: false, application: null });
+    const [newNote, setNewNote] = useState('');
+    const [downloadLimits, setDownloadLimits] = useState(null);
 
     useEffect(() => {
         fetchJobs();
         fetchColleges();
+        fetchDownloadLimits();
     }, []);
 
     useEffect(() => {
@@ -45,6 +49,15 @@ const Shortlist = () => {
             setColleges(response.data.data);
         } catch (error) {
             console.error('Failed to fetch colleges');
+        }
+    };
+
+    const fetchDownloadLimits = async () => {
+        try {
+            const response = await companyAPI.getDownloadStats();
+            setDownloadLimits(response.data.data.limits);
+        } catch (error) {
+            console.error('Failed to fetch download limits');
         }
     };
 
@@ -74,6 +87,17 @@ const Shortlist = () => {
     };
 
     const handleExportCSV = async () => {
+        // Check if export would exceed limits
+        if (downloadLimits && applications.length > 0) {
+            const canExport = applications.length <= downloadLimits.dailyRemaining && 
+                            applications.length <= downloadLimits.monthlyRemaining;
+            
+            if (!canExport) {
+                toast.error(`Cannot export ${applications.length} records. Daily remaining: ${downloadLimits.dailyRemaining}, Monthly remaining: ${downloadLimits.monthlyRemaining}`);
+                return;
+            }
+        }
+
         setExporting(true);
         try {
             const params = {
@@ -94,8 +118,15 @@ const Shortlist = () => {
             window.URL.revokeObjectURL(url);
 
             toast.success('CSV downloaded successfully!');
+            
+            // Refresh download limits
+            fetchDownloadLimits();
         } catch (error) {
-            toast.error('Failed to export CSV');
+            if (error.response?.status === 429) {
+                toast.error(error.response.data.message || 'Download limit exceeded');
+            } else {
+                toast.error('Failed to export CSV');
+            }
         } finally {
             setExporting(false);
         }
@@ -103,9 +134,9 @@ const Shortlist = () => {
 
     const handleStatusUpdate = async () => {
         try {
-            await companyAPI.updateApplication(actionModal.application._id, {
+            await companyAPI.updateShortlistStatus(actionModal.application._id, {
                 status: actionModal.action,
-                remarks
+                notes: remarks
             });
             toast.success(`Status updated to ${actionModal.action}`);
             setActionModal({ open: false, application: null, action: '' });
@@ -113,6 +144,37 @@ const Shortlist = () => {
             fetchShortlist();
         } catch (error) {
             toast.error('Failed to update status');
+        }
+    };
+
+    const handleAddNote = async () => {
+        if (!newNote.trim()) {
+            toast.error('Please enter a note');
+            return;
+        }
+
+        try {
+            await companyAPI.addShortlistNote(notesModal.application._id, newNote);
+            toast.success('Note added successfully');
+            setNotesModal({ open: false, application: null });
+            setNewNote('');
+            fetchShortlist();
+        } catch (error) {
+            toast.error('Failed to add note');
+        }
+    };
+
+    const handleRemoveFromShortlist = async (application) => {
+        if (!confirm(`Remove ${application.student?.name?.firstName} ${application.student?.name?.lastName} from shortlist?`)) {
+            return;
+        }
+
+        try {
+            await companyAPI.removeFromShortlist(application._id);
+            toast.success('Removed from shortlist');
+            fetchShortlist();
+        } catch (error) {
+            toast.error('Failed to remove from shortlist');
         }
     };
 
@@ -199,6 +261,13 @@ const Shortlist = () => {
                         >
                             <Eye size={16} />
                         </button>
+                        <button
+                            className="action-btn action-btn-secondary"
+                            title="Add Note"
+                            onClick={() => setNotesModal({ open: true, application: row })}
+                        >
+                            <MessageSquare size={16} />
+                        </button>
                         {options.includes('interviewed') && (
                             <button
                                 className="action-btn action-btn-info"
@@ -214,7 +283,7 @@ const Shortlist = () => {
                                 title="Send Offer"
                                 onClick={() => setActionModal({ open: true, application: row, action: 'offered' })}
                             >
-                                <MessageSquare size={16} />
+                                <CheckCircle size={16} />
                             </button>
                         )}
                         {options.includes('hired') && (
@@ -231,6 +300,15 @@ const Shortlist = () => {
                                 className="action-btn action-btn-danger"
                                 title="Reject"
                                 onClick={() => setActionModal({ open: true, application: row, action: 'rejected' })}
+                            >
+                                <XCircle size={16} />
+                            </button>
+                        )}
+                        {row.status !== 'hired' && row.status !== 'rejected' && (
+                            <button
+                                className="action-btn action-btn-danger"
+                                title="Remove from Shortlist"
+                                onClick={() => handleRemoveFromShortlist(row)}
                             >
                                 <XCircle size={16} />
                             </button>
@@ -268,6 +346,13 @@ const Shortlist = () => {
                     <div className="header-text">
                         <h1>Shortlisted Candidates</h1>
                         <p>Manage your hiring pipeline efficiently</p>
+                        {downloadLimits && (
+                            <div className="download-limits-info">
+                                <span>Daily: {downloadLimits.dailyRemaining}/{downloadLimits.dailyLimit}</span>
+                                <span>•</span>
+                                <span>Monthly: {downloadLimits.monthlyRemaining}/{downloadLimits.monthlyLimit}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <Button
@@ -406,6 +491,51 @@ const Shortlist = () => {
                             onClick={handleStatusUpdate}
                         >
                             Confirm
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Notes Modal */}
+            <Modal
+                isOpen={notesModal.open}
+                onClose={() => setNotesModal({ open: false, application: null })}
+                title="Add Note"
+                size="sm"
+            >
+                <div className="notes-modal">
+                    <p>
+                        Add a note for <strong>
+                            {notesModal.application?.student?.name?.firstName} {notesModal.application?.student?.name?.lastName}
+                        </strong>
+                    </p>
+
+                    {notesModal.application?.companyNotes && (
+                        <div className="existing-notes">
+                            <h4>Previous Notes:</h4>
+                            <div className="notes-content">
+                                {notesModal.application.companyNotes}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="input-wrapper" style={{ marginTop: 'var(--spacing-4)' }}>
+                        <label className="input-label">New Note *</label>
+                        <textarea
+                            className="input"
+                            value={newNote}
+                            onChange={(e) => setNewNote(e.target.value)}
+                            placeholder="Enter your note here..."
+                            rows={4}
+                        />
+                    </div>
+
+                    <div className="modal-actions">
+                        <Button variant="secondary" onClick={() => setNotesModal({ open: false, application: null })}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleAddNote}>
+                            Add Note
                         </Button>
                     </div>
                 </div>

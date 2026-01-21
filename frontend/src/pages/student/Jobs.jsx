@@ -189,7 +189,7 @@ const StudentJobs = () => {
 
                                 <div className="job-actions">
                                     <button
-                                        onClick={() => setSelectedJob(job)}
+                                        onClick={() => navigate(`/student/jobs/${job._id}`)}
                                         className="btn btn-outline"
                                     >
                                         View Details

@@ -47,6 +47,16 @@
     font-size: 0.95rem;
 }
 
+.download-limits-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-2);
+    font-size: 0.85rem;
+    opacity: 0.85;
+    font-weight: 500;
+}
+
 .export-btn {
     background: rgba(255, 255, 255, 0.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
@@ -697,4 +707,54 @@
     padding-top: var(--spacing-4);
     border-top: 1px solid var(--gray-200);
     margin-top: var(--spacing-4);
+}
+
+/* Notes Modal */
+.notes-modal {
+    padding: var(--spacing-2);
+}
+
+.notes-modal p {
+    margin: 0 0 var(--spacing-4);
+    color: var(--gray-600);
+}
+
+.existing-notes {
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+    border-left: 3px solid var(--primary-500);
+}
+
+.existing-notes h4 {
+    margin: 0 0 var(--spacing-2);
+    font-size: 0.875rem;
+    color: var(--gray-700);
+    font-weight: 600;
+}
+
+.notes-content {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.modal-actions {
+    display: flex;
+    gap: var(--spacing-3);
+    justify-content: flex-end;
+    margin-top: var(--spacing-4);
+}
+
+/* Action Buttons */
+.action-btn-secondary {
+    background: var(--gray-100);
+    color: var(--gray-700);
+}
+
+.action-btn-secondary:hover {
+    background: var(--gray-200);
 }

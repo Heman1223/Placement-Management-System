@@ -1,0 +1,455 @@
+/* Agencies Page */
+
+.agencies-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Empty State */
+.empty-state-card {
+    text-align: center;
+    padding: var(--spacing-10);
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.empty-state-card svg {
+    color: var(--gray-400);
+    margin-bottom: var(--spacing-4);
+}
+
+.empty-state-card h3 {
+    margin: 0 0 var(--spacing-2);
+    font-size: 1.25rem;
+    color: var(--gray-800);
+}
+
+.empty-state-card p {
+    margin: 0 0 var(--spacing-2);
+    color: var(--gray-600);
+}
+
+.info-text {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+    font-style: italic;
+}
+
+/* Agencies Grid */
+.agencies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spacing-5);
+}
+
+/* Agency Card */
+.agency-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-5);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--gray-100);
+    transition: all 0.3s ease;
+}
+
+.agency-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Agency Header */
+.agency-header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-4);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.agency-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-100);
+    color: var(--primary-600);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.agency-info {
+    flex: 1;
+}
+
+.agency-info h3 {
+    margin: 0 0 var(--spacing-1);
+    font-size: 1.125rem;
+    color: var(--gray-800);
+}
+
+.agency-info p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--gray-500);
+}
+
+.agency-status {
+    flex-shrink: 0;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: var(--success-100);
+    color: var(--success-700);
+}
+
+.status-inactive {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.status-suspended {
+    background: var(--danger-100);
+    color: var(--danger-700);
+}
+
+.status-expired {
+    background: var(--warning-100);
+    color: var(--warning-700);
+}
+
+/* Agency Contact */
+.agency-contact {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+    padding: var(--spacing-3);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+}
+
+.contact-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.contact-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.contact-value {
+    font-size: 0.875rem;
+    color: var(--gray-800);
+}
+
+/* Agency Stats */
+.agency-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+}
+
+.stat-item svg {
+    color: var(--primary-500);
+    flex-shrink: 0;
+}
+
+.stat-item > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+/* Agency Access Info */
+.agency-access-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3);
+    background: var(--info-50);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-4);
+    font-size: 0.875rem;
+    color: var(--info-700);
+}
+
+.agency-access-info svg {
+    flex-shrink: 0;
+}
+
+/* Agency Actions */
+.agency-actions {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+/* Activity Modal */
+.activity-modal {
+    padding: var(--spacing-2) 0;
+}
+
+.activity-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-6);
+}
+
+.activity-stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-4);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+}
+
+.activity-stat-card svg {
+    color: var(--primary-500);
+}
+
+.activity-stat-card > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.activity-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    line-height: 1;
+}
+
+.activity-stat-label {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+/* Recent Activity Section */
+.recent-activity-section {
+    margin-bottom: var(--spacing-4);
+}
+
+.recent-activity-section h4 {
+    margin: 0 0 var(--spacing-4);
+    font-size: 1rem;
+    color: var(--gray-700);
+}
+
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--primary-100);
+    color: var(--primary-600);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.activity-action {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--gray-800);
+}
+
+.activity-time {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+.empty-text {
+    text-align: center;
+    padding: var(--spacing-6);
+    color: var(--gray-500);
+    font-size: 0.875rem;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .agencies-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .agency-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .activity-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Tabs */
+.tabs-container {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-5);
+    border-bottom: 2px solid var(--gray-200);
+}
+
+.tab {
+    padding: var(--spacing-3) var(--spacing-5);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--gray-600);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: -2px;
+}
+
+.tab:hover {
+    color: var(--primary-600);
+}
+
+.tab.active {
+    color: var(--primary-600);
+    border-bottom-color: var(--primary-600);
+}
+
+/* Available Agency Card */
+.agency-card.available {
+    border: 2px dashed var(--primary-300);
+    background: var(--primary-50);
+}
+
+.agency-card.available .agency-icon {
+    background: var(--primary-200);
+    color: var(--primary-700);
+}
+
+/* Form Groups in Modals */
+.grant-access-modal,
+.settings-modal,
+.revoke-modal {
+    padding: var(--spacing-2) 0;
+}
+
+.grant-access-modal p,
+.settings-modal p,
+.revoke-modal p {
+    margin-bottom: var(--spacing-4);
+    color: var(--gray-600);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-4);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-2);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.help-text {
+    display: block;
+    margin-top: var(--spacing-1);
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    font-style: italic;
+}
+
+.warning-text {
+    font-size: 0.875rem;
+    color: var(--danger-600);
+    margin-top: var(--spacing-2);
+}
+
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-6);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--gray-100);
+}

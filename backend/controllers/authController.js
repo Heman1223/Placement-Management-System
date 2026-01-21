@@ -223,8 +223,21 @@ const login = asyncHandler(async (req, res) => {
         });
     }
 
-    // Update last login
+    // Update last login and login history
     user.lastLogin = new Date();
+    user.loginHistory = user.loginHistory || [];
+    user.loginHistory.push({
+        timestamp: new Date(),
+        ipAddress: req.ip || req.connection.remoteAddress,
+        userAgent: req.headers['user-agent'],
+        success: true
+    });
+    
+    // Keep only last 20 login records
+    if (user.loginHistory.length > 20) {
+        user.loginHistory = user.loginHistory.slice(-20);
+    }
+    
     await user.save();
 
     // Generate token
@@ -325,10 +338,25 @@ const logout = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * @desc    Get login history
+ * @route   GET /api/auth/login-history
+ * @access  Private
+ */
+const getLoginHistory = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.userId).select('loginHistory');
+
+    res.json({
+        success: true,
+        data: user.loginHistory || []
+    });
+});
+
 module.exports = {
     register,
     login,
     getProfile,
     updatePassword,
-    logout
+    logout,
+    getLoginHistory
 };

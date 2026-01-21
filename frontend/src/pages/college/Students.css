@@ -135,11 +135,23 @@
     transition: all 0.2s ease;
 }
 
-.filter-group select:hover {
+.filter-group input {
+    padding: var(--spacing-2) var(--spacing-3);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    background: var(--gray-50);
+    font-size: 0.875rem;
+    color: var(--gray-700);
+    transition: all 0.2s ease;
+}
+
+.filter-group select:hover,
+.filter-group input:hover {
     border-color: var(--gray-300);
 }
 
-.filter-group select:focus {
+.filter-group select:focus,
+.filter-group input:focus {
     outline: none;
     border-color: var(--primary-400);
     box-shadow: 0 0 0 3px var(--primary-100);
@@ -278,4 +290,143 @@
     .filter-group {
         width: 100%;
     }
+}
+
+/* Reset Password Modal */
+.reset-password-modal {
+    padding: var(--spacing-2) 0;
+}
+
+.reset-password-modal p {
+    margin-bottom: var(--spacing-4);
+    color: var(--gray-600);
+}
+
+.reset-password-modal .form-group {
+    margin-bottom: var(--spacing-4);
+}
+
+.reset-password-modal .form-group label {
+    display: block;
+    margin-bottom: var(--spacing-2);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.action-btn-warning:hover {
+    background: var(--warning-100);
+    color: var(--warning-600);
+}
+
+/* Profile Completeness Modal */
+.profile-completeness-modal {
+    padding: var(--spacing-2) 0;
+}
+
+.student-info {
+    text-align: center;
+    margin-bottom: var(--spacing-6);
+    padding-bottom: var(--spacing-4);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.student-info h3 {
+    margin: 0 0 var(--spacing-1);
+    font-size: 1.25rem;
+    color: var(--gray-800);
+}
+
+.student-info p {
+    margin: 0;
+    color: var(--gray-500);
+    font-size: 0.875rem;
+}
+
+.overall-completeness {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-6);
+}
+
+.completeness-circle {
+    position: relative;
+    width: 160px;
+    height: 160px;
+}
+
+.completeness-circle svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.completeness-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.completeness-text .percentage {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--success-600);
+    line-height: 1;
+}
+
+.completeness-text .label {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--gray-500);
+    margin-top: var(--spacing-1);
+}
+
+.completeness-breakdown {
+    margin-bottom: var(--spacing-4);
+}
+
+.completeness-breakdown h4 {
+    margin: 0 0 var(--spacing-4);
+    font-size: 1rem;
+    color: var(--gray-700);
+}
+
+.breakdown-item {
+    margin-bottom: var(--spacing-4);
+}
+
+.breakdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-2);
+}
+
+.breakdown-header span:first-child {
+    font-size: 0.875rem;
+    color: var(--gray-700);
+    font-weight: 500;
+}
+
+.breakdown-percentage {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary-600);
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-500), var(--success-500));
+    border-radius: var(--radius-full);
+    transition: width 0.5s ease;
 }

@@ -1,19 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { RefreshCw } from 'lucide-react';
+import toast from 'react-hot-toast';
 import './StudentDashboard.css';
 
 const StudentDashboard = () => {
     const [stats, setStats] = useState(null);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         fetchDashboardData();
+        
+        // Auto-refresh every 30 seconds
+        const interval = setInterval(() => {
+            fetchDashboardData(true);
+        }, 30000);
+
+        return () => clearInterval(interval);
     }, []);
 
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = async (silent = false) => {
+        if (!silent) setLoading(true);
         try {
             const [statsRes, profileRes] = await Promise.all([
                 api.get('/student/stats'),
@@ -21,11 +32,24 @@ const StudentDashboard = () => {
             ]);
             setStats(statsRes.data.data);
             setProfile(profileRes.data.data);
+            
+            if (silent) {
+                console.log('Dashboard data refreshed');
+            }
         } catch (error) {
-            console.error('Error fetching dashboard data:', error);
+            if (!silent) {
+                console.error('Error fetching dashboard data:', error);
+            }
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
+    };
+
+    const handleRefresh = () => {
+        setRefreshing(true);
+        fetchDashboardData();
+        toast.success('Dashboard refreshed');
     };
 
     if (loading) {
@@ -38,8 +62,19 @@ const StudentDashboard = () => {
     return (
         <div className="student-dashboard">
             <div className="dashboard-header">
-                <h1>Welcome, {profile?.name?.firstName}!</h1>
-                <p className="subtitle">Track your placement journey</p>
+                <div>
+                    <h1>Welcome, {profile?.name?.firstName}!</h1>
+                    <p className="subtitle">Track your placement journey</p>
+                </div>
+                <button 
+                    onClick={handleRefresh} 
+                    disabled={refreshing}
+                    className="refresh-btn"
+                    title="Refresh Dashboard"
+                >
+                    <RefreshCw size={18} className={refreshing ? 'spinning' : ''} />
+                    Refresh
+                </button>
             </div>
 
             {isProfileIncomplete && (

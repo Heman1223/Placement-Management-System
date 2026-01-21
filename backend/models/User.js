@@ -48,6 +48,18 @@ const userSchema = new mongoose.Schema({
     lastLogin: {
         type: Date
     },
+    loginHistory: [{
+        timestamp: {
+            type: Date,
+            default: Date.now
+        },
+        ipAddress: String,
+        userAgent: String,
+        success: {
+            type: Boolean,
+            default: true
+        }
+    }],
     refreshToken: {
         type: String,
         select: false

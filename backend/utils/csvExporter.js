@@ -128,6 +128,29 @@ const formatActivityLogData = (logs) => {
 };
 
 /**
+ * Format placement data for export
+ */
+const formatPlacementData = (students) => {
+    return students.map(student => ({
+        'Roll Number': student.rollNumber,
+        'Name': student.name ? `${student.name.firstName} ${student.name.lastName}` : '',
+        'Email': student.email,
+        'Department': student.department,
+        'Batch': student.batch,
+        'CGPA': student.cgpa || 'N/A',
+        'Placement Status': student.placementStatus,
+        'Shortlisted': student.isShortlisted ? 'Yes' : 'No',
+        'Company': student.placementDetails?.company || 'N/A',
+        'Role': student.placementDetails?.role || 'N/A',
+        'Package (LPA)': student.placementDetails?.package || 'N/A',
+        'Joining Date': student.placementDetails?.joiningDate 
+            ? new Date(student.placementDetails.joiningDate).toLocaleDateString() 
+            : 'N/A',
+        'College': student.college?.name || ''
+    }));
+};
+
+/**
  * Send CSV response
  */
 const sendCSVResponse = (res, data, filename) => {
@@ -156,6 +179,7 @@ module.exports = {
     formatApplicationData,
     formatShortlistData,
     formatActivityLogData,
+    formatPlacementData,
     sendCSVResponse,
     sendExcelResponse
 };

@@ -121,6 +121,10 @@ const studentSchema = new mongoose.Schema({
         enum: ['not_placed', 'in_process', 'placed', 'not_interested', 'higher_studies'],
         default: 'not_placed'
     },
+    isShortlisted: {
+        type: Boolean,
+        default: false
+    },
     placementDetails: {
         company: String,
         role: String,

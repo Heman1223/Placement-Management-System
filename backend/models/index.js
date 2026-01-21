@@ -7,6 +7,7 @@ const Application = require('./Application');
 const Notification = require('./Notification');
 const Shortlist = require('./Shortlist');
 const ActivityLog = require('./ActivityLog');
+const PlatformSettings = require('./PlatformSettings');
 
 module.exports = {
     User,
@@ -17,5 +18,6 @@ module.exports = {
     Application,
     Notification,
     Shortlist,
-    ActivityLog
+    ActivityLog,
+    PlatformSettings
 };

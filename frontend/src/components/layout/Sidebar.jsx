@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     LayoutDashboard, Users, Building2, GraduationCap, Briefcase,
-    Search, FileText, Settings, Star, Upload, BarChart3, Bell, User, Activity
+    Search, FileText, Settings, Star, Upload, BarChart3, Bell, User, Activity, UserCog
 } from 'lucide-react';
 import './Sidebar.css';
 
@@ -16,7 +16,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
             return [
                 { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
                 { path: '/admin/colleges', icon: Building2, label: 'Colleges' },
+                { path: '/admin/college-admins', icon: UserCog, label: 'College Admins' },
                 { path: '/admin/companies', icon: Briefcase, label: 'Companies' },
+                { path: '/admin/students', icon: GraduationCap, label: 'Students' },
                 { path: '/admin/users', icon: Users, label: 'Users' },
                 { path: '/admin/activity-logs', icon: Activity, label: 'Activity Logs' }
             ];
@@ -26,7 +28,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
             return [
                 { path: '/college', icon: LayoutDashboard, label: 'Dashboard' },
                 { path: '/college/students', icon: GraduationCap, label: 'Students' },
-                { path: '/college/upload', icon: Upload, label: 'Bulk Upload' }
+                { path: '/college/upload', icon: Upload, label: 'Bulk Upload' },
+                { path: '/college/placements', icon: BarChart3, label: 'Placements' },
+                { path: '/college/agencies', icon: Building2, label: 'Agencies' },
+                { path: '/college/activity-logs', icon: Activity, label: 'Activity Logs' }
             ];
         }
 

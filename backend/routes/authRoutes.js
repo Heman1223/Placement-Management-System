@@ -31,4 +31,7 @@ router.put('/password',
 // @route   POST /api/auth/logout
 router.post('/logout', auth, authController.logout);
 
+// @route   GET /api/auth/login-history
+router.get('/login-history', auth, authController.getLoginHistory);
+
 module.exports = router;

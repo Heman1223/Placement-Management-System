@@ -2,28 +2,51 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { collegeAPI } from '../../services/api';
 import { StatsCard } from '../../components/common/Card';
-import { GraduationCap, UserCheck, Briefcase, TrendingUp, Plus, Upload, BarChart3, Users, ArrowUpRight, Award, Sparkles } from 'lucide-react';
+import { GraduationCap, UserCheck, Briefcase, TrendingUp, Plus, Upload, BarChart3, Users, ArrowUpRight, Award, Sparkles, Clock, Building2, Star, RefreshCw } from 'lucide-react';
 import Button from '../../components/common/Button';
 import toast from 'react-hot-toast';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import './CollegeDashboard.css';
 
 const CollegeDashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         fetchStats();
+        
+        // Auto-refresh every 30 seconds
+        const interval = setInterval(() => {
+            fetchStats(true);
+        }, 30000);
+
+        return () => clearInterval(interval);
     }, []);
 
-    const fetchStats = async () => {
+    const fetchStats = async (silent = false) => {
+        if (!silent) setLoading(true);
         try {
             const response = await collegeAPI.getStats();
             setStats(response.data.data);
+            
+            if (silent) {
+                console.log('Dashboard data refreshed');
+            }
         } catch (error) {
-            toast.error('Failed to load dashboard data');
+            if (!silent) {
+                toast.error('Failed to load dashboard data');
+            }
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
+    };
+
+    const handleRefresh = () => {
+        setRefreshing(true);
+        fetchStats();
+        toast.success('Dashboard refreshed');
     };
 
     if (loading) {
@@ -35,6 +58,14 @@ const CollegeDashboard = () => {
         { label: 'Bulk Upload', icon: Upload, path: '/college/upload', color: 'success' },
         { label: 'View Students', icon: Users, path: '/college/students', color: 'warning' }
     ];
+
+    // Prepare chart data
+    const placementStatusData = stats?.placementStatusStats?.map(item => ({
+        name: item._id.replace('_', ' ').toUpperCase(),
+        value: item.count
+    })) || [];
+
+    const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#6366f1'];
 
     return (
         <div className="dashboard college-dashboard">
@@ -49,6 +80,14 @@ const CollegeDashboard = () => {
                         <p>Manage your students and track placement progress</p>
                     </div>
                 </div>
+                <Button 
+                    variant="outline" 
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                >
+                    <RefreshCw size={18} className={refreshing ? 'spinning' : ''} />
+                    Refresh
+                </Button>
             </div>
 
             {/* Quick Actions */}
@@ -64,7 +103,7 @@ const CollegeDashboard = () => {
                 ))}
             </div>
 
-            {/* Stats Grid */}
+            {/* Stats Grid - Enhanced with new metrics */}
             <div className="stats-grid enhanced-stats">
                 <div className="stat-card stat-primary">
                     <div className="stat-icon">
@@ -83,22 +122,51 @@ const CollegeDashboard = () => {
                         <UserCheck size={24} />
                     </div>
                     <div className="stat-content">
-                        <span className="stat-value">{stats?.overview?.verified || 0}</span>
-                        <span className="stat-label">Verified</span>
+                        <span className="stat-value">{stats?.overview?.active || 0}</span>
+                        <span className="stat-label">Active Students</span>
                     </div>
                     <div className="stat-badge">Active</div>
                 </div>
                 <div className="stat-card stat-warning">
                     <div className="stat-icon">
+                        <Clock size={24} />
+                    </div>
+                    <div className="stat-content">
+                        <span className="stat-value">{stats?.overview?.pendingApprovals || 0}</span>
+                        <span className="stat-label">Pending Approvals</span>
+                    </div>
+                    <div className="stat-badge warning">Pending</div>
+                </div>
+                <div className="stat-card stat-info">
+                    <div className="stat-icon">
+                        <Building2 size={24} />
+                    </div>
+                    <div className="stat-content">
+                        <span className="stat-value">{stats?.overview?.agenciesWithAccess || 0}</span>
+                        <span className="stat-label">Agencies with Access</span>
+                    </div>
+                </div>
+                <div className="stat-card stat-purple">
+                    <div className="stat-icon">
+                        <Star size={24} />
+                    </div>
+                    <div className="stat-content">
+                        <span className="stat-value">{stats?.overview?.shortlisted || 0}</span>
+                        <span className="stat-label">Students Shortlisted</span>
+                    </div>
+                    <div className="stat-badge">Shortlisted</div>
+                </div>
+                <div className="stat-card stat-success-alt">
+                    <div className="stat-icon">
                         <Briefcase size={24} />
                     </div>
                     <div className="stat-content">
                         <span className="stat-value">{stats?.overview?.placed || 0}</span>
-                        <span className="stat-label">Placed</span>
+                        <span className="stat-label">Students Placed</span>
                     </div>
                     <div className="stat-badge success">Success</div>
                 </div>
-                <div className="stat-card stat-info">
+                <div className="stat-card stat-gradient">
                     <div className="stat-icon">
                         <TrendingUp size={24} />
                     </div>
@@ -113,6 +181,95 @@ const CollegeDashboard = () => {
             </div>
 
             <div className="dashboard-sections">
+                {/* Charts Section */}
+                <div className="charts-row">
+                    {/* Students by Branch Chart */}
+                    <div className="dashboard-section glass-card chart-card">
+                        <div className="section-header">
+                            <BarChart3 size={20} />
+                            <h2>Students by Branch</h2>
+                        </div>
+                        {stats?.departmentStats?.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={stats.departmentStats}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="_id" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="total" fill="#3b82f6" name="Total Students" />
+                                    <Bar dataKey="placed" fill="#10b981" name="Placed" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="empty-state">
+                                <BarChart3 size={40} />
+                                <p>No department data available</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Placement Status Overview Chart */}
+                    <div className="dashboard-section glass-card chart-card">
+                        <div className="section-header">
+                            <Award size={20} />
+                            <h2>Placement Status Overview</h2>
+                        </div>
+                        {placementStatusData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie
+                                        data={placementStatusData}
+                                        cx="50%"
+                                        cy="50%"
+                                        labelLine={false}
+                                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                    >
+                                        {placementStatusData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="empty-state">
+                                <Award size={40} />
+                                <p>No placement data available</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Students by CGPA Range Chart */}
+                <div className="dashboard-section glass-card chart-card-full">
+                    <div className="section-header">
+                        <TrendingUp size={20} />
+                        <h2>Students by CGPA Range</h2>
+                    </div>
+                    {stats?.cgpaRangeStats?.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={stats.cgpaRangeStats}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="range" />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Bar dataKey="count" fill="#8b5cf6" name="Total Students" />
+                                <Bar dataKey="placed" fill="#10b981" name="Placed" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="empty-state">
+                            <TrendingUp size={40} />
+                            <p>No CGPA data available</p>
+                        </div>
+                    )}
+                </div>
+
                 {/* Department Stats */}
                 <div className="dashboard-section glass-card">
                     <div className="section-header">
@@ -207,7 +364,7 @@ const CollegeDashboard = () => {
                     <div className="summary-content">
                         <h3>Placement Progress</h3>
                         <p>
-                            {stats?.overview?.placed || 0} out of {stats?.overview?.verified || 0} verified students have been placed.
+                            {stats?.overview?.placed || 0} out of {stats?.overview?.active || 0} active students have been placed.
                             {(stats?.overview?.placementRate || 0) >= 50 ? ' Great progress!' : ' Keep going!'}
                         </p>
                     </div>

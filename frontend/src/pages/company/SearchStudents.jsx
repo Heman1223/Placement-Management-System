@@ -22,20 +22,40 @@ const SearchStudents = () => {
     const [studentDetailModal, setStudentDetailModal] = useState({ open: false, student: null, loading: false });
 
     const [filters, setFilters] = useState({
-        search: '',
+        keyword: '',
         department: '',
         batch: '',
         minCgpa: '',
         maxBacklogs: '',
         skills: '',
         college: '',
-        placementStatus: 'not_placed'
+        placementStatus: 'not_placed',
+        experience: ''
     });
+
+    const [savedFilters, setSavedFilters] = useState([]);
+    const [showSaveFilterModal, setShowSaveFilterModal] = useState(false);
+    const [filterName, setFilterName] = useState('');
+    const [showSavedFilters, setShowSavedFilters] = useState(false);
 
     useEffect(() => {
         fetchJobs();
         fetchColleges();
+        fetchSavedFilters();
     }, []);
+
+    // Auto-search when filters change (with debounce for keyword)
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            // Only search if at least one filter is set (excluding empty strings)
+            const hasFilters = Object.values(filters).some(value => value !== '');
+            if (hasFilters) {
+                searchStudents(1);
+            }
+        }, 500); // 500ms debounce for keyword search
+
+        return () => clearTimeout(timeoutId);
+    }, [filters]);
 
     const fetchJobs = async () => {
         try {
@@ -52,6 +72,50 @@ const SearchStudents = () => {
             setColleges(response.data.data);
         } catch (error) {
             console.error('Failed to fetch colleges');
+        }
+    };
+
+    const fetchSavedFilters = async () => {
+        try {
+            const response = await companyAPI.getSavedFilters();
+            setSavedFilters(response.data.data);
+        } catch (error) {
+            console.error('Failed to fetch saved filters');
+        }
+    };
+
+    const handleSaveFilter = async () => {
+        if (!filterName.trim()) {
+            toast.error('Please enter a filter name');
+            return;
+        }
+
+        try {
+            await companyAPI.saveSearchFilter(filterName, filters);
+            toast.success('Filter saved successfully');
+            setShowSaveFilterModal(false);
+            setFilterName('');
+            fetchSavedFilters();
+        } catch (error) {
+            toast.error('Failed to save filter');
+        }
+    };
+
+    const handleLoadFilter = (savedFilter) => {
+        setFilters(savedFilter.filters);
+        setShowSavedFilters(false);
+        toast.success(`Loaded filter: ${savedFilter.name}`);
+    };
+
+    const handleDeleteFilter = async (name) => {
+        if (!confirm(`Delete filter "${name}"?`)) return;
+
+        try {
+            await companyAPI.deleteSearchFilter(name);
+            toast.success('Filter deleted');
+            fetchSavedFilters();
+        } catch (error) {
+            toast.error('Failed to delete filter');
         }
     };
 
@@ -81,6 +145,22 @@ const SearchStudents = () => {
 
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleClearFilters = () => {
+        setFilters({
+            keyword: '',
+            department: '',
+            batch: '',
+            minCgpa: '',
+            maxBacklogs: '',
+            skills: '',
+            college: '',
+            placementStatus: '',
+            experience: ''
+        });
+        setStudents([]); // Clear results
+        setPagination({ current: 1, pages: 1, total: 0 });
     };
 
     const handleSearch = () => {
@@ -154,16 +234,62 @@ const SearchStudents = () => {
             <Card className="filters-card glass-card">
                 <div className="filters-header">
                     <h3><Filter size={18} /> Search Filters</h3>
-                    <button
-                        className="toggle-filters"
-                        onClick={() => setShowFilters(!showFilters)}
-                    >
-                        {showFilters ? 'Hide' : 'Show'}
-                    </button>
+                    <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
+                        {savedFilters.length > 0 && (
+                            <button
+                                className="toggle-filters"
+                                onClick={() => setShowSavedFilters(!showSavedFilters)}
+                            >
+                                Saved ({savedFilters.length})
+                            </button>
+                        )}
+                        <button
+                            className="toggle-filters"
+                            onClick={() => setShowFilters(!showFilters)}
+                        >
+                            {showFilters ? 'Hide' : 'Show'}
+                        </button>
+                    </div>
                 </div>
+
+                {/* Saved Filters Dropdown */}
+                {showSavedFilters && savedFilters.length > 0 && (
+                    <div className="saved-filters-section">
+                        <h4>Saved Filters</h4>
+                        <div className="saved-filters-list">
+                            {savedFilters.map((sf, index) => (
+                                <div key={index} className="saved-filter-item">
+                                    <button
+                                        className="load-filter-btn"
+                                        onClick={() => handleLoadFilter(sf)}
+                                    >
+                                        {sf.name}
+                                    </button>
+                                    <button
+                                        className="delete-filter-btn"
+                                        onClick={() => handleDeleteFilter(sf.name)}
+                                        title="Delete filter"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {showFilters && (
                     <div className="filters-grid">
+                        <div className="filter-row">
+                            <Input
+                                label="Keyword Search"
+                                placeholder="Search by name, email, roll number, skills..."
+                                value={filters.keyword}
+                                onChange={(e) => handleFilterChange('keyword', e.target.value)}
+                                icon={Search}
+                            />
+                        </div>
+
                         <div className="filter-row">
                             <Input
                                 label="Skills"
@@ -232,7 +358,22 @@ const SearchStudents = () => {
                                 onChange={(e) => handleFilterChange('maxBacklogs', e.target.value)}
                             />
                             <div className="input-wrapper">
-                                <label className="input-label">Status</label>
+                                <label className="input-label">Experience</label>
+                                <select
+                                    className="input"
+                                    value={filters.experience}
+                                    onChange={(e) => handleFilterChange('experience', e.target.value)}
+                                >
+                                    <option value="">Any</option>
+                                    <option value="internship">Has Internship</option>
+                                    <option value="projects">Has Projects</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="filter-row filter-row-3">
+                            <div className="input-wrapper">
+                                <label className="input-label">Placement Status</label>
                                 <select
                                     className="input"
                                     value={filters.placementStatus}
@@ -246,10 +387,11 @@ const SearchStudents = () => {
                         </div>
 
                         <div className="filter-actions">
-                            <Button variant="secondary" onClick={() => setFilters({
-                                search: '', department: '', batch: '', minCgpa: '', maxBacklogs: '', skills: '', college: '', placementStatus: ''
-                            })}>
+                            <Button variant="secondary" onClick={handleClearFilters}>
                                 Clear All
+                            </Button>
+                            <Button variant="secondary" onClick={() => setShowSaveFilterModal(true)}>
+                                Save Filter
                             </Button>
                             <Button onClick={handleSearch} icon={Search}>
                                 Search Talent
@@ -343,7 +485,26 @@ const SearchStudents = () => {
                                         </a>
                                     )}
                                     {student.resumeUrl && (
-                                        <a href={student.resumeUrl} target="_blank" rel="noopener noreferrer" title="Resume" className="link-btn resume">
+                                        <a 
+                                            href={student.resumeUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            title="Resume" 
+                                            className="link-btn resume"
+                                            onClick={async (e) => {
+                                                try {
+                                                    const response = await companyAPI.logResumeView(student._id);
+                                                    if (response.data.limits) {
+                                                        console.log('Download limits:', response.data.limits);
+                                                    }
+                                                } catch (error) {
+                                                    if (error.response?.status === 429) {
+                                                        e.preventDefault();
+                                                        toast.error(error.response.data.message || 'Download limit exceeded');
+                                                    }
+                                                }
+                                            }}
+                                        >
                                             <FileText size={16} />
                                         </a>
                                     )}
@@ -612,7 +773,25 @@ const SearchStudents = () => {
                             <h4><ExternalLink size={16} /> Links & Resume</h4>
                             <div className="links-grid">
                                 {studentDetailModal.student.resumeUrl && (
-                                    <a href={studentDetailModal.student.resumeUrl} target="_blank" rel="noopener noreferrer" className="profile-link resume">
+                                    <a 
+                                        href={studentDetailModal.student.resumeUrl} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="profile-link resume"
+                                        onClick={async (e) => {
+                                            try {
+                                                const response = await companyAPI.logResumeView(studentDetailModal.student._id);
+                                                if (response.data.limits) {
+                                                    console.log('Download limits:', response.data.limits);
+                                                }
+                                            } catch (error) {
+                                                if (error.response?.status === 429) {
+                                                    e.preventDefault();
+                                                    toast.error(error.response.data.message || 'Download limit exceeded');
+                                                }
+                                            }
+                                        }}
+                                    >
                                         <FileText size={18} /> Resume
                                     </a>
                                 )}
@@ -656,6 +835,33 @@ const SearchStudents = () => {
                         </div>
                     </div>
                 )}
+            </Modal>
+            {/* Save Filter Modal */}
+            <Modal
+                isOpen={showSaveFilterModal}
+                onClose={() => setShowSaveFilterModal(false)}
+                title="Save Search Filter"
+                size="sm"
+            >
+                <div style={{ padding: 'var(--spacing-2)' }}>
+                    <p style={{ marginBottom: 'var(--spacing-4)', color: 'var(--gray-600)' }}>
+                        Save your current search filters for quick access later
+                    </p>
+                    <Input
+                        label="Filter Name"
+                        placeholder="e.g., CS Students 8+ CGPA"
+                        value={filterName}
+                        onChange={(e) => setFilterName(e.target.value)}
+                    />
+                    <div style={{ display: 'flex', gap: 'var(--spacing-3)', marginTop: 'var(--spacing-4)', justifyContent: 'flex-end' }}>
+                        <Button variant="secondary" onClick={() => setShowSaveFilterModal(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSaveFilter}>
+                            Save Filter
+                        </Button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );
