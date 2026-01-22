@@ -94,6 +94,8 @@ export const superAdminAPI = {
     getCollegeAdmin: (id) => api.get(`/super-admin/college-admins/${id}`),
     updateCollegeAdmin: (id, data) => api.patch(`/super-admin/college-admins/${id}`, data),
     toggleCollegeAdminBlock: (id) => api.patch(`/super-admin/college-admins/${id}/toggle-block`),
+    // Jobs
+    getAllJobs: (params) => api.get('/super-admin/jobs', { params }),
     // Settings
     getSettings: () => api.get('/super-admin/settings'),
     updateSettings: (data) => api.put('/super-admin/settings', data),
@@ -127,6 +129,7 @@ export const collegeAPI = {
     grantAgencyAccess: (id, data) => api.post(`/college/agencies/${id}/grant-access`, data),
     revokeAgencyAccess: (id) => api.delete(`/college/agencies/${id}/revoke-access`),
     updateAgencyAccessSettings: (id, data) => api.patch(`/college/agencies/${id}/access-settings`, data),
+    getCompanyActivity: () => api.get('/college/company-activity'),
     getPlacementTracking: (type) => api.get('/college/placements', { params: { type } }),
     getPlacementStats: () => api.get('/college/placement-stats'),
     exportPlacementReport: (type) => api.get('/college/placement-report', { params: { type }, responseType: 'blob' }),
@@ -135,7 +138,6 @@ export const collegeAPI = {
     getCollegeSettings: () => api.get('/college/settings'),
     updateCollegeSettings: (data) => api.patch('/college/settings', data)
 };
-
 // Company endpoints
 export const companyAPI = {
     getStats: () => api.get('/company/stats'),
@@ -149,7 +151,8 @@ export const companyAPI = {
     updateShortlistStatus: (id, data) => api.patch(`/company/shortlist/${id}/status`, data),
     addShortlistNote: (id, note) => api.post(`/company/shortlist/${id}/notes`, { note }),
     removeFromShortlist: (id) => api.delete(`/company/shortlist/${id}`),
-    updateApplication: (id, data) => api.patch(`/company/applications/${id}/status`, data),
+    updateApplicationStatus: (id, status) => api.patch(`/company/applications/${id}/status`, { status }),
+    getJobApplicants: (jobId, params) => api.get(`/jobs/${jobId}/applicants`, { params }),
     exportShortlist: (params) => api.get('/company/shortlist/export', { params, responseType: 'blob' }),
     saveSearchFilter: (name, filters) => api.post('/company/search-filters', { name, filters }),
     getSavedFilters: () => api.get('/company/search-filters'),

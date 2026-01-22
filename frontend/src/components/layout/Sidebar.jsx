@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import './Sidebar.css';
 
-const Sidebar = ({ collapsed, onToggle }) => {
+const Sidebar = ({ collapsed, onToggle, mobileOpen }) => {
     const { user, isSuperAdmin, isCollegeAdmin, isCompany } = useAuth();
     const location = useLocation();
 
@@ -30,7 +30,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 { path: '/college/students', icon: GraduationCap, label: 'Students' },
                 { path: '/college/upload', icon: Upload, label: 'Bulk Upload' },
                 { path: '/college/placements', icon: BarChart3, label: 'Placements' },
-                { path: '/college/agencies', icon: Building2, label: 'Agencies' },
+                { path: '/college/company-activity', icon: Building2, label: 'Company Activity' },
                 { path: '/college/activity-logs', icon: Activity, label: 'Activity Logs' }
             ];
         }
@@ -56,7 +56,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     const navItems = getNavItems();
 
     return (
-        <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
+        <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'sidebar-open' : ''}`}>
             <div className="sidebar-header">
                 <div className="sidebar-logo">
                     <GraduationCap className="logo-icon w-6 h-6 md:w-7 md:h-7" />

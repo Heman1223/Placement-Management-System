@@ -4,7 +4,7 @@ import { jobAPI } from '../../services/api';
 import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
-import { Plus, Eye, Edit, Trash2, Users, XCircle } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Users, XCircle, MoreVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Jobs.css';
 
@@ -14,10 +14,21 @@ const Jobs = () => {
     const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
     const [filter, setFilter] = useState('');
     const [deleteModal, setDeleteModal] = useState({ open: false, job: null });
+    const [openDropdown, setOpenDropdown] = useState(null);
 
     useEffect(() => {
         fetchJobs();
     }, [filter]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.action-dropdown-wrapper')) {
+                setOpenDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const fetchJobs = async (page = 1) => {
         setLoading(true);
@@ -88,34 +99,56 @@ const Jobs = () => {
             header: 'Actions',
             accessor: '_id',
             render: (id, row) => (
-                <div className="action-buttons">
-                    <Link to={`/company/jobs/${id}/applicants`}>
-                        <button className="action-btn" title="View Applicants">
-                            <Users size={16} />
-                        </button>
-                    </Link>
-                    <Link to={`/company/jobs/${id}/edit`}>
-                        <button className="action-btn" title="Edit">
-                            <Edit size={16} />
-                        </button>
-                    </Link>
-                    {row.status === 'open' && (
-                        <button
-                            className="action-btn action-btn-warning"
-                            title="Close Job"
-                            onClick={() => handleClose(id)}
-                        >
-                            <XCircle size={16} />
-                        </button>
-                    )}
-                    {row.stats?.totalApplications === 0 && (
-                        <button
-                            className="action-btn action-btn-danger"
-                            title="Delete"
-                            onClick={() => setDeleteModal({ open: true, job: row })}
-                        >
-                            <Trash2 size={16} />
-                        </button>
+                <div className="action-dropdown-wrapper">
+                    <button
+                        className="action-dropdown-trigger"
+                        onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
+                    >
+                        <MoreVertical size={18} />
+                    </button>
+                    {openDropdown === id && (
+                        <div className="action-dropdown-menu">
+                            <Link 
+                                to={`/company/jobs/${id}/applicants`}
+                                className="action-dropdown-item"
+                                onClick={() => setOpenDropdown(null)}
+                            >
+                                <Users size={16} />
+                                <span>View Applicants ({row.stats?.totalApplications || 0})</span>
+                            </Link>
+                            <Link 
+                                to={`/company/jobs/${id}/edit`}
+                                className="action-dropdown-item"
+                                onClick={() => setOpenDropdown(null)}
+                            >
+                                <Edit size={16} />
+                                <span>Edit Job</span>
+                            </Link>
+                            {row.status === 'open' && (
+                                <button
+                                    className="action-dropdown-item warning"
+                                    onClick={() => {
+                                        handleClose(id);
+                                        setOpenDropdown(null);
+                                    }}
+                                >
+                                    <XCircle size={16} />
+                                    <span>Close Job</span>
+                                </button>
+                            )}
+                            {row.stats?.totalApplications === 0 && (
+                                <button
+                                    className="action-dropdown-item danger"
+                                    onClick={() => {
+                                        setDeleteModal({ open: true, job: row });
+                                        setOpenDropdown(null);
+                                    }}
+                                >
+                                    <Trash2 size={16} />
+                                    <span>Delete Job</span>
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
             )

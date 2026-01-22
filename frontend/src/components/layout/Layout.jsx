@@ -21,6 +21,7 @@ const Layout = ({ title }) => {
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggle={toggleSidebar}
+                mobileOpen={mobileSidebarOpen}
             />
 
             <div className={`layout-main ${sidebarCollapsed ? 'layout-main-expanded' : ''}`}>

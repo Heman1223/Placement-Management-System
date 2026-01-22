@@ -65,3 +65,22 @@
         padding: var(--spacing-4);
     }
 }
+
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .layout-main {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .layout-content {
+        padding: var(--spacing-3);
+    }
+}
+
+@media (max-width: 480px) {
+    .layout-content {
+        padding: var(--spacing-2);
+    }
+}

@@ -722,9 +722,9 @@ const getAgencies = asyncHandler(async (req, res) => {
 
     // Get all approved agencies that have access to this college
     const agencies = await Company.find({
-        type: 'agency',
+        type: 'placement_agency',
         isApproved: true,
-        'agencyAccess.allowedColleges': collegeId
+        'agencyAccess.allowedColleges.college': collegeId
     }).select('name industry contactPerson agencyAccess isActive isSuspended');
 
     // Get agency activity from activity logs
@@ -758,7 +758,7 @@ const getAgencies = asyncHandler(async (req, res) => {
 
         // Get access details for this college
         const accessDetails = agency.agencyAccess.allowedColleges.find(
-            c => c.toString() === collegeId.toString()
+            c => c.college.toString() === collegeId.toString()
         );
 
         return {
@@ -789,9 +789,8 @@ const getAgencyRequests = asyncHandler(async (req, res) => {
     const { Company } = require('../models');
 
     // Get agencies that are approved but don't have access to this college yet
-    // Or agencies that have requested access (we'll track this via a pending status)
     const allAgencies = await Company.find({
-        type: 'agency',
+        type: 'placement_agency',
         isApproved: true,
         isActive: true,
         isDeleted: false
@@ -799,8 +798,11 @@ const getAgencyRequests = asyncHandler(async (req, res) => {
 
     // Filter to show only agencies that don't have access yet
     const requestableAgencies = allAgencies.filter(agency => {
-        const hasAccess = agency.agencyAccess?.allowedColleges?.some(
-            ac => ac.college?.toString() === collegeId.toString()
+        if (!agency.agencyAccess || !agency.agencyAccess.allowedColleges) {
+            return true; // No access granted yet
+        }
+        const hasAccess = agency.agencyAccess.allowedColleges.some(
+            ac => ac.college && ac.college.toString() === collegeId.toString()
         );
         return !hasAccess;
     });
@@ -825,7 +827,7 @@ const grantAgencyAccess = asyncHandler(async (req, res) => {
     // Find the agency
     const agency = await Company.findOne({
         _id: agencyId,
-        type: 'agency',
+        type: 'placement_agency',
         isApproved: true,
         isActive: true
     });
@@ -837,9 +839,18 @@ const grantAgencyAccess = asyncHandler(async (req, res) => {
         });
     }
 
+    // Initialize agencyAccess if it doesn't exist
+    if (!agency.agencyAccess) {
+        agency.agencyAccess = {
+            allowedColleges: [],
+            downloadLimit: downloadLimit || 100,
+            downloadCount: 0
+        };
+    }
+
     // Check if agency already has access
-    const hasAccess = agency.agencyAccess?.allowedColleges?.some(
-        ac => ac.college?.toString() === collegeId.toString()
+    const hasAccess = agency.agencyAccess.allowedColleges.some(
+        ac => ac.college && ac.college.toString() === collegeId.toString()
     );
 
     if (hasAccess) {
@@ -850,14 +861,6 @@ const grantAgencyAccess = asyncHandler(async (req, res) => {
     }
 
     // Grant access
-    if (!agency.agencyAccess) {
-        agency.agencyAccess = {
-            allowedColleges: [],
-            downloadLimit: downloadLimit || 100,
-            downloadCount: 0
-        };
-    }
-
     agency.agencyAccess.allowedColleges.push({
         college: collegeId,
         grantedAt: new Date(),
@@ -894,7 +897,7 @@ const revokeAgencyAccess = asyncHandler(async (req, res) => {
     // Find the agency
     const agency = await Company.findOne({
         _id: agencyId,
-        type: 'agency'
+        type: 'placement_agency'
     });
 
     if (!agency) {
@@ -905,11 +908,18 @@ const revokeAgencyAccess = asyncHandler(async (req, res) => {
     }
 
     // Check if agency has access
-    const accessIndex = agency.agencyAccess?.allowedColleges?.findIndex(
-        ac => ac.college?.toString() === collegeId.toString()
+    if (!agency.agencyAccess || !agency.agencyAccess.allowedColleges) {
+        return res.status(400).json({
+            success: false,
+            message: 'Agency does not have access to your college'
+        });
+    }
+
+    const accessIndex = agency.agencyAccess.allowedColleges.findIndex(
+        ac => ac.college && ac.college.toString() === collegeId.toString()
     );
 
-    if (accessIndex === -1 || accessIndex === undefined) {
+    if (accessIndex === -1) {
         return res.status(400).json({
             success: false,
             message: 'Agency does not have access to your college'
@@ -940,7 +950,7 @@ const updateAgencyAccessSettings = asyncHandler(async (req, res) => {
     // Find the agency
     const agency = await Company.findOne({
         _id: agencyId,
-        type: 'agency',
+        type: 'placement_agency',
         'agencyAccess.allowedColleges.college': collegeId
     });
 
@@ -977,13 +987,13 @@ const updateAgencyAccessSettings = asyncHandler(async (req, res) => {
 const getAgencyActivity = asyncHandler(async (req, res) => {
     const collegeId = req.user.collegeProfile._id;
     const agencyId = req.params.id;
-    const { Company, ActivityLog } = require('../models');
+    const { Company, ActivityLog, Student } = require('../models');
 
     // Verify agency has access to this college
     const agency = await Company.findOne({
         _id: agencyId,
-        type: 'agency',
-        'agencyAccess.allowedColleges': collegeId
+        type: 'placement_agency',
+        'agencyAccess.allowedColleges.college': collegeId
     });
 
     if (!agency) {
@@ -1005,7 +1015,8 @@ const getAgencyActivity = asyncHandler(async (req, res) => {
                 stats: {
                     profilesAccessed: 0,
                     shortlistsMade: 0,
-                    downloadsCount: 0
+                    downloadsCount: 0,
+                    downloadLimit: agency.agencyAccess?.downloadLimit || 0
                 }
             }
         });
@@ -1052,8 +1063,8 @@ const getAgencyActivity = asyncHandler(async (req, res) => {
             stats: {
                 profilesAccessed,
                 shortlistsMade,
-                downloadsCount: agency.agencyAccess.downloadCount || 0,
-                downloadLimit: agency.agencyAccess.downloadLimit
+                downloadsCount: agency.agencyAccess?.downloadCount || 0,
+                downloadLimit: agency.agencyAccess?.downloadLimit || 0
             }
         }
     });
@@ -1430,6 +1441,167 @@ const updateCollegeSettings = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * @desc    Get company recruitment activity for college
+ * @route   GET /api/college/company-activity
+ * @access  College Admin
+ */
+const getCompanyActivity = asyncHandler(async (req, res) => {
+    const collegeId = req.user.collegeProfile._id;
+    const { Company, Application, Job, Shortlist, ActivityLog } = require('../models');
+
+    // Get all students from this college
+    const collegeStudents = await Student.find({ college: collegeId }).distinct('_id');
+
+    // Get companies that have interacted with college students
+    // 1. Companies with applications from college students
+    const applicationsData = await Application.aggregate([
+        {
+            $match: {
+                student: { $in: collegeStudents }
+            }
+        },
+        {
+            $lookup: {
+                from: 'jobs',
+                localField: 'job',
+                foreignField: '_id',
+                as: 'jobData'
+            }
+        },
+        { $unwind: '$jobData' },
+        {
+            $group: {
+                _id: '$jobData.company',
+                totalApplications: { $sum: 1 },
+                shortlisted: {
+                    $sum: { $cond: [{ $eq: ['$status', 'shortlisted'] }, 1, 0] }
+                },
+                interviewed: {
+                    $sum: { $cond: [{ $eq: ['$status', 'interviewed'] }, 1, 0] }
+                },
+                offered: {
+                    $sum: { $cond: [{ $eq: ['$status', 'offered'] }, 1, 0] }
+                },
+                hired: {
+                    $sum: { $cond: [{ $eq: ['$status', 'hired'] }, 1, 0] }
+                },
+                lastActivity: { $max: '$updatedAt' }
+            }
+        },
+        { $sort: { lastActivity: -1 } },
+        { $limit: 20 }
+    ]);
+
+    // 2. Companies that shortlisted college students
+    const shortlistData = await Shortlist.aggregate([
+        {
+            $match: {
+                student: { $in: collegeStudents }
+            }
+        },
+        {
+            $group: {
+                _id: '$company',
+                totalShortlisted: { $sum: 1 },
+                lastActivity: { $max: '$createdAt' }
+            }
+        },
+        { $sort: { lastActivity: -1 } }
+    ]);
+
+    // Populate company details
+    const companyIds = [...new Set([
+        ...applicationsData.map(a => a._id),
+        ...shortlistData.map(s => s._id)
+    ])];
+
+    const companies = await Company.find({
+        _id: { $in: companyIds }
+    }).select('name industry logo contactPerson');
+
+    // Merge data
+    const companyActivityMap = {};
+    
+    companies.forEach(company => {
+        companyActivityMap[company._id] = {
+            _id: company._id,
+            name: company.name,
+            industry: company.industry,
+            logo: company.logo,
+            contactPerson: company.contactPerson,
+            applications: 0,
+            shortlisted: 0,
+            interviewed: 0,
+            offered: 0,
+            hired: 0,
+            totalShortlisted: 0,
+            lastActivity: null
+        };
+    });
+
+    applicationsData.forEach(app => {
+        if (companyActivityMap[app._id]) {
+            companyActivityMap[app._id].applications = app.totalApplications;
+            companyActivityMap[app._id].shortlisted = app.shortlisted;
+            companyActivityMap[app._id].interviewed = app.interviewed;
+            companyActivityMap[app._id].offered = app.offered;
+            companyActivityMap[app._id].hired = app.hired;
+            companyActivityMap[app._id].lastActivity = app.lastActivity;
+        }
+    });
+
+    shortlistData.forEach(short => {
+        if (companyActivityMap[short._id]) {
+            companyActivityMap[short._id].totalShortlisted = short.totalShortlisted;
+            if (!companyActivityMap[short._id].lastActivity || 
+                short.lastActivity > companyActivityMap[short._id].lastActivity) {
+                companyActivityMap[short._id].lastActivity = short.lastActivity;
+            }
+        }
+    });
+
+    // Convert to array and sort by last activity
+    const companyActivity = Object.values(companyActivityMap)
+        .sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
+
+    // Get summary stats
+    const summary = {
+        totalCompaniesEngaged: companyActivity.length,
+        totalApplications: companyActivity.reduce((sum, c) => sum + c.applications, 0),
+        totalShortlisted: companyActivity.reduce((sum, c) => sum + c.totalShortlisted, 0),
+        totalOffered: companyActivity.reduce((sum, c) => sum + c.offered, 0),
+        totalHired: companyActivity.reduce((sum, c) => sum + c.hired, 0)
+    };
+
+    // Get recent activity logs
+    const recentActivity = await ActivityLog.find({
+        targetModel: 'Student',
+        targetId: { $in: collegeStudents },
+        action: { $in: ['view_student', 'shortlist_student', 'download_student_data'] }
+    })
+        .sort({ createdAt: -1 })
+        .limit(20)
+        .populate('user', 'email role')
+        .populate({
+            path: 'user',
+            populate: {
+                path: 'companyProfile',
+                select: 'name'
+            }
+        })
+        .lean();
+
+    res.json({
+        success: true,
+        data: {
+            summary,
+            companies: companyActivity,
+            recentActivity
+        }
+    });
+});
+
 module.exports = {
     getDashboardStats,
     getStudents,
@@ -1447,6 +1619,7 @@ module.exports = {
     getAgencyActivity,
     grantAgencyAccess,
     revokeAgencyAccess,
+    getCompanyActivity,
     updateAgencyAccessSettings,
     getPlacementTracking,
     getPlacementStats,

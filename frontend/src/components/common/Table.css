@@ -128,3 +128,82 @@
         font-size: 0.8rem;
     }
 }
+
+
+/* Force visible text colors */
+.table td {
+    color: #1f2937 !important;
+}
+
+.table th {
+    color: #374151 !important;
+}
+
+/* Ensure links in tables are visible */
+.table a {
+    color: #1f2937 !important;
+}
+
+.table a:hover {
+    color: #4f46e5 !important;
+}
+
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .table {
+        font-size: 0.875rem;
+    }
+
+    .table th {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.75rem;
+    }
+
+    .table td {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.875rem;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        gap: var(--spacing-2);
+        padding: var(--spacing-3);
+    }
+
+    .pagination-btn {
+        padding: var(--spacing-1) var(--spacing-3);
+        font-size: 0.8125rem;
+    }
+
+    .pagination-info {
+        font-size: 0.8125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .table {
+        font-size: 0.8125rem;
+    }
+
+    .table th {
+        padding: var(--spacing-2);
+        font-size: 0.6875rem;
+    }
+
+    .table td {
+        padding: var(--spacing-2);
+        font-size: 0.8125rem;
+    }
+
+    .pagination-btn {
+        padding: var(--spacing-1) var(--spacing-2);
+        font-size: 0.75rem;
+    }
+
+    .pagination-info {
+        font-size: 0.75rem;
+        width: 100%;
+        text-align: center;
+    }
+}

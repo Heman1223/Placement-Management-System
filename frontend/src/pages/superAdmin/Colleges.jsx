@@ -5,7 +5,7 @@ import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
-import { CheckCircle, XCircle, Eye, Building2, Plus, Edit2, Power, Trash2, RotateCcw } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Building2, Plus, Edit2, Power, Trash2, RotateCcw, MoreVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './AdminPages.css';
 
@@ -17,10 +17,21 @@ const Colleges = () => {
     const [detailModal, setDetailModal] = useState({ open: false, college: null });
     const [editModal, setEditModal] = useState({ open: false, college: null });
     const [editForm, setEditForm] = useState({});
+    const [openDropdown, setOpenDropdown] = useState(null);
 
     useEffect(() => {
         fetchColleges();
     }, [filter]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.action-dropdown-wrapper')) {
+                setOpenDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const fetchColleges = async (page = 1) => {
         setLoading(true);
@@ -174,67 +185,98 @@ const Colleges = () => {
             header: 'Actions',
             accessor: '_id',
             render: (id, row) => (
-                <div className="action-buttons">
+                <div className="action-dropdown-wrapper">
                     <button
-                        className="action-btn"
-                        onClick={() => setDetailModal({ open: true, college: row })}
-                        title="View Details"
+                        className="action-dropdown-trigger"
+                        onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
                     >
-                        <Eye size={16} />
+                        <MoreVertical size={18} />
                     </button>
-                    {!row.isDeleted && (
-                        <>
+                    {openDropdown === id && (
+                        <div className="action-dropdown-menu">
                             <button
-                                className="action-btn"
-                                onClick={() => openEditModal(row)}
-                                title="Edit College"
+                                className="action-dropdown-item"
+                                onClick={() => {
+                                    setDetailModal({ open: true, college: row });
+                                    setOpenDropdown(null);
+                                }}
                             >
-                                <Edit2 size={16} />
+                                <Eye size={16} />
+                                <span>View Details</span>
                             </button>
-                            {!row.isVerified && (
+                            {!row.isDeleted && (
                                 <>
                                     <button
-                                        className="action-btn action-btn-success"
-                                        onClick={() => handleApprove(id, true)}
-                                        title="Approve"
+                                        className="action-dropdown-item"
+                                        onClick={() => {
+                                            openEditModal(row);
+                                            setOpenDropdown(null);
+                                        }}
                                     >
-                                        <CheckCircle size={16} />
+                                        <Edit2 size={16} />
+                                        <span>Edit College</span>
                                     </button>
+                                    {!row.isVerified && (
+                                        <>
+                                            <button
+                                                className="action-dropdown-item success"
+                                                onClick={() => {
+                                                    handleApprove(id, true);
+                                                    setOpenDropdown(null);
+                                                }}
+                                            >
+                                                <CheckCircle size={16} />
+                                                <span>Approve</span>
+                                            </button>
+                                            <button
+                                                className="action-dropdown-item danger"
+                                                onClick={() => {
+                                                    handleApprove(id, false);
+                                                    setOpenDropdown(null);
+                                                }}
+                                            >
+                                                <XCircle size={16} />
+                                                <span>Reject</span>
+                                            </button>
+                                        </>
+                                    )}
+                                    {row.isVerified && (
+                                        <button
+                                            className={`action-dropdown-item ${row.isActive ? 'warning' : 'success'}`}
+                                            onClick={() => {
+                                                handleToggleActive(id, row.isActive);
+                                                setOpenDropdown(null);
+                                            }}
+                                        >
+                                            <Power size={16} />
+                                            <span>{row.isActive ? 'Deactivate' : 'Activate'}</span>
+                                        </button>
+                                    )}
                                     <button
-                                        className="action-btn action-btn-danger"
-                                        onClick={() => handleApprove(id, false)}
-                                        title="Reject"
+                                        className="action-dropdown-item danger"
+                                        onClick={() => {
+                                            handleDelete(id);
+                                            setOpenDropdown(null);
+                                        }}
                                     >
-                                        <XCircle size={16} />
+                                        <Trash2 size={16} />
+                                        <span>Delete College</span>
                                     </button>
                                 </>
                             )}
-                            {row.isVerified && (
+                            {row.isDeleted && (
                                 <button
-                                    className={`action-btn ${row.isActive ? 'action-btn-warning' : 'action-btn-success'}`}
-                                    onClick={() => handleToggleActive(id, row.isActive)}
-                                    title={row.isActive ? 'Deactivate' : 'Activate'}
+                                    className="action-dropdown-item success"
+                                    onClick={() => {
+                                        handleRestore(id);
+                                        setOpenDropdown(null);
+                                    }}
                                 >
-                                    <Power size={16} />
+                                    <RotateCcw size={16} />
+                                    <span>Restore College</span>
                                 </button>
                             )}
-                            <button
-                                className="action-btn action-btn-danger"
-                                onClick={() => handleDelete(id)}
-                                title="Delete College"
-                            >
-                                <Trash2 size={16} />
-                            </button>
-                        </>
-                    )}
-                    {row.isDeleted && (
-                        <button
-                            className="action-btn action-btn-success"
-                            onClick={() => handleRestore(id)}
-                            title="Restore College"
-                        >
-                            <RotateCcw size={16} />
-                        </button>
+                        </div>
                     )}
                 </div>
             )

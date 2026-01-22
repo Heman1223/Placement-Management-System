@@ -243,6 +243,9 @@ const getAllUsers = asyncHandler(async (req, res) => {
     const [users, total] = await Promise.all([
         User.find(query)
             .select('-password -refreshToken')
+            .populate('collegeProfile', 'name code')
+            .populate('companyProfile', 'name type')
+            .populate('studentProfile', 'name rollNumber college')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit)),
@@ -1438,30 +1441,61 @@ const getAgencyDetails = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * @desc    Get all jobs (optionally filter by company)
+ * @route   GET /api/super-admin/jobs
+ * @access  Super Admin
+ */
+const getAllJobs = asyncHandler(async (req, res) => {
+    const { company, status, page = 1, limit = 50 } = req.query;
+
+    const query = {};
+    if (company) query.company = company;
+    if (status) query.status = status;
+
+    const skip = (page - 1) * limit;
+
+    const [jobs, total] = await Promise.all([
+        Job.find(query)
+            .populate('company', 'name type industry')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit))
+            .lean(),
+        Job.countDocuments(query)
+    ]);
+
+    res.json({
+        success: true,
+        data: {
+            jobs,
+            pagination: {
+                current: parseInt(page),
+                pages: Math.ceil(total / limit),
+                total
+            }
+        }
+    });
+});
+
 module.exports = {
     getDashboardStats,
+    getAnalytics,
     getColleges,
-    approveCollege,
-    getCompanies,
-    approveCompany,
-    getAllUsers,
-    toggleUserStatus,
     createCollege,
     getCollegeDetails,
-    createCompany,
-    addStudentToCollege,
-    getCollegeStudents,
-    getAnalytics,
     updateCollege,
-    updateCompany,
-    getAllStudents,
-    resetUserPassword,
+    approveCollege,
     toggleCollegeStatus,
     softDeleteCollege,
     restoreCollege,
-    getCollegeAdmin,
-    updateCollegeAdmin,
-    toggleCollegeAdminBlock,
+    getCollegeStudents,
+    addStudentToCollege,
+    getCompanies,
+    createCompany,
+    getAgencyDetails,
+    updateCompany,
+    approveCompany,
     toggleCompanyStatus,
     toggleCompanySuspension,
     softDeleteCompany,
@@ -1470,5 +1504,12 @@ module.exports = {
     removeCollegeFromAgency,
     setAgencyAccessExpiry,
     setAgencyDownloadLimit,
-    getAgencyDetails
+    getAllStudents,
+    getAllUsers,
+    toggleUserStatus,
+    resetUserPassword,
+    getCollegeAdmin,
+    updateCollegeAdmin,
+    toggleCollegeAdminBlock,
+    getAllJobs
 };

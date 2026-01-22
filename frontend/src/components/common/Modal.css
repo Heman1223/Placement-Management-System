@@ -132,3 +132,62 @@
         font-size: 1rem;
     }
 }
+
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: var(--spacing-3);
+    }
+
+    .modal {
+        max-width: 95%;
+        max-height: 90vh;
+        margin: auto;
+    }
+
+    .modal-header h2 {
+        font-size: 1.125rem;
+    }
+
+    .modal-close {
+        width: 32px;
+        height: 32px;
+    }
+
+    .modal-body {
+        padding: var(--spacing-4);
+        font-size: 0.875rem;
+    }
+
+    .modal-footer {
+        padding: var(--spacing-3) var(--spacing-4);
+        gap: var(--spacing-2);
+    }
+
+    .modal-actions {
+        flex-direction: column-reverse;
+        gap: var(--spacing-2);
+    }
+
+    .modal-actions .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal {
+        max-width: 100%;
+        max-height: 95vh;
+        border-radius: var(--radius-lg);
+    }
+
+    .modal-header h2 {
+        font-size: 1rem;
+    }
+
+    .modal-body {
+        padding: var(--spacing-3);
+        font-size: 0.8125rem;
+    }
+}

@@ -5,7 +5,7 @@ import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
-import { Plus, Search, Filter, CheckCircle, Eye, Edit, Trash2, Upload, Key, User, Download } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle, Eye, Edit, Trash2, Upload, Key, User, Download, MoreVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Students.css';
 
@@ -20,6 +20,7 @@ const Students = () => {
     const [resetPasswordModal, setResetPasswordModal] = useState({ open: false, student: null });
     const [newPassword, setNewPassword] = useState('');
     const [profileModal, setProfileModal] = useState({ open: false, student: null, completeness: null });
+    const [openDropdown, setOpenDropdown] = useState(null);
 
     const [filters, setFilters] = useState({
         search: searchParams.get('search') || '',
@@ -37,6 +38,16 @@ const Students = () => {
         fetchStudents();
         fetchDepartments();
     }, [searchParams]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.action-dropdown-wrapper')) {
+                setOpenDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const fetchStudents = async () => {
         setLoading(true);
@@ -247,47 +258,75 @@ const Students = () => {
             header: 'Actions',
             accessor: '_id',
             render: (id, row) => (
-                <div className="action-buttons">
+                <div className="action-dropdown-wrapper">
                     <button
-                        className="action-btn"
-                        title="Profile Completeness"
-                        onClick={() => viewProfileCompleteness(row)}
+                        className="action-dropdown-trigger"
+                        onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
                     >
-                        <User size={16} />
+                        <MoreVertical size={18} />
                     </button>
-                    <Link to={`/college/students/${id}`}>
-                        <button className="action-btn" title="View">
-                            <Eye size={16} />
-                        </button>
-                    </Link>
-                    <Link to={`/college/students/${id}/edit`}>
-                        <button className="action-btn" title="Edit">
-                            <Edit size={16} />
-                        </button>
-                    </Link>
-                    {!row.isVerified && (
-                        <button
-                            className="action-btn action-btn-success"
-                            title="Verify"
-                            onClick={() => handleVerify(id)}
-                        >
-                            <CheckCircle size={16} />
-                        </button>
+                    {openDropdown === id && (
+                        <div className="action-dropdown-menu">
+                            <button
+                                className="action-dropdown-item"
+                                onClick={() => {
+                                    viewProfileCompleteness(row);
+                                    setOpenDropdown(null);
+                                }}
+                            >
+                                <User size={16} />
+                                <span>Profile Completeness</span>
+                            </button>
+                            <Link 
+                                to={`/college/students/${id}`}
+                                className="action-dropdown-item"
+                                onClick={() => setOpenDropdown(null)}
+                            >
+                                <Eye size={16} />
+                                <span>View Details</span>
+                            </Link>
+                            <Link 
+                                to={`/college/students/${id}/edit`}
+                                className="action-dropdown-item"
+                                onClick={() => setOpenDropdown(null)}
+                            >
+                                <Edit size={16} />
+                                <span>Edit Student</span>
+                            </Link>
+                            {!row.isVerified && (
+                                <button
+                                    className="action-dropdown-item success"
+                                    onClick={() => {
+                                        handleVerify(id);
+                                        setOpenDropdown(null);
+                                    }}
+                                >
+                                    <CheckCircle size={16} />
+                                    <span>Verify Student</span>
+                                </button>
+                            )}
+                            <button
+                                className="action-dropdown-item warning"
+                                onClick={() => {
+                                    setResetPasswordModal({ open: true, student: row });
+                                    setOpenDropdown(null);
+                                }}
+                            >
+                                <Key size={16} />
+                                <span>Reset Password</span>
+                            </button>
+                            <button
+                                className="action-dropdown-item danger"
+                                onClick={() => {
+                                    setDeleteModal({ open: true, student: row });
+                                    setOpenDropdown(null);
+                                }}
+                            >
+                                <Trash2 size={16} />
+                                <span>Delete Student</span>
+                            </button>
+                        </div>
                     )}
-                    <button
-                        className="action-btn action-btn-warning"
-                        title="Reset Password"
-                        onClick={() => setResetPasswordModal({ open: true, student: row })}
-                    >
-                        <Key size={16} />
-                    </button>
-                    <button
-                        className="action-btn action-btn-danger"
-                        title="Delete"
-                        onClick={() => setDeleteModal({ open: true, student: row })}
-                    >
-                        <Trash2 size={16} />
-                    </button>
                 </div>
             )
         }

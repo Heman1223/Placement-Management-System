@@ -138,3 +138,34 @@
         transform: rotate(360deg);
     }
 }
+
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .btn {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.875rem;
+    }
+
+    .btn-sm {
+        padding: var(--spacing-1) var(--spacing-2);
+        font-size: 0.8125rem;
+    }
+
+    .btn-lg {
+        padding: var(--spacing-3) var(--spacing-4);
+        font-size: 0.9375rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn {
+        padding: var(--spacing-2);
+        font-size: 0.8125rem;
+    }
+
+    .btn-sm {
+        padding: var(--spacing-1);
+        font-size: 0.75rem;
+    }
+}

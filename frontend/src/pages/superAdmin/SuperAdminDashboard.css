@@ -169,3 +169,71 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .dashboard-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .dashboard-header p {
+        font-size: 0.875rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-3);
+    }
+
+    .pending-summary {
+        flex-direction: column;
+        gap: var(--spacing-2);
+        padding: var(--spacing-3);
+    }
+
+    .pending-item {
+        font-size: 0.8125rem;
+        padding: var(--spacing-2) var(--spacing-3);
+    }
+
+    .analytics-section h2 {
+        font-size: 1.125rem;
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-3);
+    }
+
+    .chart-card {
+        padding: var(--spacing-3);
+    }
+
+    .chart-card h3 {
+        font-size: 0.875rem;
+    }
+
+    .dashboard-tables {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-4);
+    }
+
+    .dashboard-table-section {
+        padding: var(--spacing-3);
+    }
+
+    .dashboard-table-section h2 {
+        font-size: 0.9375rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.125rem;
+    }
+}

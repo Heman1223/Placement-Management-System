@@ -64,6 +64,11 @@ const Header = ({ onMenuClick, title }) => {
                                 <div className="header-dropdown-info">
                                     <span className="header-dropdown-email text-xs md:text-sm">{user?.email}</span>
                                     <span className="header-dropdown-role text-xs">{user?.role?.replace('_', ' ')}</span>
+                                    {isCollegeAdmin && user?.profile?.name && (
+                                        <span className="header-dropdown-college text-xs" style={{ color: 'var(--primary-600)', fontWeight: 600, marginTop: '4px' }}>
+                                            {user.profile.name}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="header-dropdown-divider" />
                                 <button className="header-dropdown-item text-xs md:text-sm" onClick={logout}>

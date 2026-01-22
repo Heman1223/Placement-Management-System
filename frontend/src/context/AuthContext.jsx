@@ -23,13 +23,29 @@ export const AuthProvider = ({ children }) => {
             const token = localStorage.getItem('token');
             const savedUser = localStorage.getItem('user');
 
+            console.log('AuthContext - initAuth - token exists:', !!token);
+            console.log('AuthContext - initAuth - savedUser from localStorage:', savedUser);
+
             if (token && savedUser) {
                 try {
-                    // Verify token is still valid
+                    // Verify token is still valid and get fresh profile data
                     const response = await authAPI.getProfile();
-                    setUser(response.data.data.user);
+                    console.log('AuthContext - initAuth - API response:', response.data);
+                    
+                    const { user: userData, profile } = response.data.data;
+                    console.log('AuthContext - initAuth - userData:', userData);
+                    console.log('AuthContext - initAuth - profile:', profile);
+                    
+                    const userWithProfile = { ...userData, profile };
+                    console.log('AuthContext - initAuth - userWithProfile:', userWithProfile);
+                    
+                    setUser(userWithProfile);
                     setIsAuthenticated(true);
+                    
+                    // Update localStorage with fresh data
+                    localStorage.setItem('user', JSON.stringify(userWithProfile));
                 } catch (error) {
+                    console.error('AuthContext - initAuth - Error:', error);
                     // Token invalid, clear storage
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
@@ -44,12 +60,20 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const response = await authAPI.login({ email, password });
+            console.log('AuthContext - login - API response:', response.data);
+            
             const { token, user: userData, profile } = response.data.data;
+            console.log('AuthContext - login - token:', token);
+            console.log('AuthContext - login - userData:', userData);
+            console.log('AuthContext - login - profile:', profile);
+
+            const userWithProfile = { ...userData, profile };
+            console.log('AuthContext - login - userWithProfile:', userWithProfile);
 
             localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify({ ...userData, profile }));
+            localStorage.setItem('user', JSON.stringify(userWithProfile));
 
-            setUser({ ...userData, profile });
+            setUser(userWithProfile);
             setIsAuthenticated(true);
 
             toast.success('Login successful!');

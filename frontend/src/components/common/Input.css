@@ -117,3 +117,48 @@ select.input {
     background-position: right 12px center;
     padding-right: 36px;
 }
+
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .input-wrapper {
+        margin-bottom: var(--spacing-3);
+    }
+
+    .input-label {
+        font-size: 0.875rem;
+        margin-bottom: var(--spacing-1);
+    }
+
+    .input {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.9375rem;
+    }
+
+    .input-with-icon {
+        padding-left: var(--spacing-8);
+    }
+
+    .input-icon {
+        left: var(--spacing-3);
+    }
+
+    .input-error {
+        font-size: 0.75rem;
+    }
+
+    .input-hint {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .input {
+        padding: var(--spacing-2);
+        font-size: 0.875rem;
+    }
+
+    .input-label {
+        font-size: 0.8125rem;
+    }
+}

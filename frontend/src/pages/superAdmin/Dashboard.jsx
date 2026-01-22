@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
 import { StatsCard } from '../../components/common/Card';
 import Table from '../../components/common/Table';
 import Button from '../../components/common/Button';
-import { Users, Building2, Briefcase, GraduationCap, CheckCircle, Clock, TrendingUp, RefreshCw } from 'lucide-react';
+import { Users, Building2, Briefcase, GraduationCap, CheckCircle, Clock, TrendingUp, RefreshCw, MoreVertical, Eye, XCircle } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import toast from 'react-hot-toast';
 import './SuperAdminDashboard.css';
@@ -11,6 +12,7 @@ import './SuperAdminDashboard.css';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 const SuperAdminDashboard = () => {
+    const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [analytics, setAnalytics] = useState(null);
     const [recentColleges, setRecentColleges] = useState([]);
@@ -18,6 +20,7 @@ const SuperAdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [showCharts, setShowCharts] = useState(true);
+    const [openDropdown, setOpenDropdown] = useState(null);
 
     useEffect(() => {
         fetchDashboardData();
@@ -28,6 +31,16 @@ const SuperAdminDashboard = () => {
         }, 30000);
 
         return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.action-dropdown-wrapper')) {
+                setOpenDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const fetchDashboardData = async (silent = false) => {
@@ -73,6 +86,16 @@ const SuperAdminDashboard = () => {
         }
     };
 
+    const handleRejectCollege = async (id) => {
+        try {
+            await superAdminAPI.approveCollege(id, false);
+            toast.success('College rejected');
+            fetchDashboardData();
+        } catch (error) {
+            toast.error('Failed to reject college');
+        }
+    };
+
     const handleApproveCompany = async (id) => {
         try {
             await superAdminAPI.approveCompany(id, true);
@@ -80,6 +103,16 @@ const SuperAdminDashboard = () => {
             fetchDashboardData();
         } catch (error) {
             toast.error('Failed to approve company');
+        }
+    };
+
+    const handleRejectCompany = async (id) => {
+        try {
+            await superAdminAPI.approveCompany(id, false);
+            toast.success('Company rejected');
+            fetchDashboardData();
+        } catch (error) {
+            toast.error('Failed to reject company');
         }
     };
 
@@ -98,10 +131,53 @@ const SuperAdminDashboard = () => {
         {
             header: 'Actions',
             accessor: '_id',
-            render: (id, row) => !row.isVerified && (
-                <Button size="sm" onClick={() => handleApproveCollege(id)}>
-                    Approve
-                </Button>
+            render: (id, row) => (
+                <div className="action-dropdown-wrapper">
+                    <button
+                        className="action-dropdown-trigger"
+                        onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
+                    >
+                        <MoreVertical size={18} />
+                    </button>
+                    {openDropdown === id && (
+                        <div className="action-dropdown-menu">
+                            <button
+                                className="action-dropdown-item"
+                                onClick={() => {
+                                    navigate(`/admin/colleges/${id}`);
+                                    setOpenDropdown(null);
+                                }}
+                            >
+                                <Eye size={16} />
+                                <span>View Details</span>
+                            </button>
+                            {!row.isVerified && (
+                                <>
+                                    <button
+                                        className="action-dropdown-item success"
+                                        onClick={() => {
+                                            handleApproveCollege(id);
+                                            setOpenDropdown(null);
+                                        }}
+                                    >
+                                        <CheckCircle size={16} />
+                                        <span>Approve</span>
+                                    </button>
+                                    <button
+                                        className="action-dropdown-item danger"
+                                        onClick={() => {
+                                            handleRejectCollege(id);
+                                            setOpenDropdown(null);
+                                        }}
+                                    >
+                                        <XCircle size={16} />
+                                        <span>Reject</span>
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
             )
         }
     ];
@@ -121,10 +197,53 @@ const SuperAdminDashboard = () => {
         {
             header: 'Actions',
             accessor: '_id',
-            render: (id, row) => !row.isApproved && (
-                <Button size="sm" onClick={() => handleApproveCompany(id)}>
-                    Approve
-                </Button>
+            render: (id, row) => (
+                <div className="action-dropdown-wrapper">
+                    <button
+                        className="action-dropdown-trigger"
+                        onClick={() => setOpenDropdown(openDropdown === `company-${id}` ? null : `company-${id}`)}
+                    >
+                        <MoreVertical size={18} />
+                    </button>
+                    {openDropdown === `company-${id}` && (
+                        <div className="action-dropdown-menu">
+                            <button
+                                className="action-dropdown-item"
+                                onClick={() => {
+                                    navigate(`/admin/companies/${id}`);
+                                    setOpenDropdown(null);
+                                }}
+                            >
+                                <Eye size={16} />
+                                <span>View Details</span>
+                            </button>
+                            {!row.isApproved && (
+                                <>
+                                    <button
+                                        className="action-dropdown-item success"
+                                        onClick={() => {
+                                            handleApproveCompany(id);
+                                            setOpenDropdown(null);
+                                        }}
+                                    >
+                                        <CheckCircle size={16} />
+                                        <span>Approve</span>
+                                    </button>
+                                    <button
+                                        className="action-dropdown-item danger"
+                                        onClick={() => {
+                                            handleRejectCompany(id);
+                                            setOpenDropdown(null);
+                                        }}
+                                    >
+                                        <XCircle size={16} />
+                                        <span>Reject</span>
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
             )
         }
     ];

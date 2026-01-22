@@ -601,3 +601,48 @@
         text-align: center;
     }
 }
+
+
+/* College Name Styling */
+.college-name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.dashboard-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0.25rem 0 0 0;
+    font-weight: 500;
+}
+
+.premium-header .header-icon {
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+    color: white;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .college-name {
+        font-size: 1.25rem;
+    }
+    
+    .dashboard-subtitle {
+        font-size: 0.875rem;
+    }
+    
+    .premium-header .header-icon {
+        width: 48px;
+        height: 48px;
+    }
+}

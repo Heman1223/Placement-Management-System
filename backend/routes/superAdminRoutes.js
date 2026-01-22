@@ -56,6 +56,9 @@ router.patch('/companies/:id/download-limit', validateObjectId('id'), superAdmin
 // Students (Platform-wide)
 router.get('/students', superAdminController.getAllStudents);
 
+// Jobs (Platform-wide)
+router.get('/jobs', superAdminController.getAllJobs);
+
 // Users
 router.get('/users', superAdminController.getAllUsers);
 router.patch('/users/:id/toggle-status', validateObjectId('id'), superAdminController.toggleUserStatus);

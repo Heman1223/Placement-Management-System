@@ -18,6 +18,7 @@ import CollegeDetail from './pages/superAdmin/CollegeDetail';
 import CollegeAdmins from './pages/superAdmin/CollegeAdmins';
 import Companies from './pages/superAdmin/Companies';
 import AddCompany from './pages/superAdmin/AddCompany';
+import CompanyDetail from './pages/superAdmin/CompanyDetail';
 import SuperAdminStudents from './pages/superAdmin/Students';
 import Users from './pages/superAdmin/Users';
 import ActivityLogs from './pages/superAdmin/ActivityLogs';
@@ -29,8 +30,8 @@ import Students from './pages/college/Students';
 import StudentDetail from './pages/college/StudentDetail';
 import StudentForm from './pages/college/StudentForm';
 import BulkUpload from './pages/college/BulkUpload';
-import Agencies from './pages/college/Agencies';
 import Placements from './pages/college/Placements';
+import CompanyActivity from './pages/college/CompanyActivity';
 import CollegeActivityLogs from './pages/college/ActivityLogs';
 import CollegeSettings from './pages/college/Settings';
 
@@ -38,6 +39,7 @@ import CollegeSettings from './pages/college/Settings';
 import CompanyDashboard from './pages/company/Dashboard';
 import Jobs from './pages/company/Jobs';
 import JobForm from './pages/company/JobForm';
+import Applicants from './pages/company/Applicants';
 import SearchStudents from './pages/company/SearchStudents';
 import Shortlist from './pages/company/Shortlist';
 
@@ -112,6 +114,7 @@ function App() {
             <Route path="college-admins" element={<CollegeAdmins />} />
             <Route path="companies" element={<Companies />} />
             <Route path="companies/new" element={<AddCompany />} />
+            <Route path="companies/:id" element={<CompanyDetail />} />
             <Route path="students" element={<SuperAdminStudents />} />
             <Route path="users" element={<Users />} />
             <Route path="activity-logs" element={<ActivityLogs />} />
@@ -131,7 +134,7 @@ function App() {
             <Route path="students/:id/edit" element={<StudentForm />} />
             <Route path="upload" element={<BulkUpload />} />
             <Route path="placements" element={<Placements />} />
-            <Route path="agencies" element={<Agencies />} />
+            <Route path="company-activity" element={<CompanyActivity />} />
             <Route path="activity-logs" element={<CollegeActivityLogs />} />
             <Route path="settings" element={<CollegeSettings />} />
           </Route>
@@ -146,6 +149,7 @@ function App() {
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/new" element={<JobForm />} />
             <Route path="jobs/:id/edit" element={<JobForm />} />
+            <Route path="jobs/:id/applicants" element={<Applicants />} />
             <Route path="search" element={<SearchStudents />} />
             <Route path="shortlist" element={<Shortlist />} />
           </Route>

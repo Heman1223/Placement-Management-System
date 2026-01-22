@@ -150,6 +150,7 @@ const Users = () => {
                         <tr>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Assignment</th>
                             <th>Status</th>
                             <th>Approved</th>
                             <th>Created</th>
@@ -160,7 +161,7 @@ const Users = () => {
                     <tbody>
                         {users.length === 0 ? (
                             <tr>
-                                <td colSpan="7" className="empty-state">
+                                <td colSpan="8" className="empty-state">
                                     No users found
                                 </td>
                             </tr>
@@ -176,6 +177,23 @@ const Users = () => {
                                         <span className={`badge ${getRoleBadgeClass(user.role)}`}>
                                             {formatRole(user.role)}
                                         </span>
+                                    </td>
+                                    <td>
+                                        {user.role === 'college_admin' && user.collegeProfile ? (
+                                            <span className="text-sm">
+                                                {user.collegeProfile.name} ({user.collegeProfile.code})
+                                            </span>
+                                        ) : user.role === 'company' && user.companyProfile ? (
+                                            <span className="text-sm">
+                                                {user.companyProfile.name}
+                                            </span>
+                                        ) : user.role === 'student' && user.studentProfile ? (
+                                            <span className="text-sm">
+                                                {user.studentProfile.name?.firstName} {user.studentProfile.name?.lastName}
+                                            </span>
+                                        ) : (
+                                            <span className="text-muted text-sm">Not Assigned</span>
+                                        )}
                                     </td>
                                     <td>
                                         <span className={`status-badge ${user.isActive ? 'status-active' : 'status-inactive'}`}>

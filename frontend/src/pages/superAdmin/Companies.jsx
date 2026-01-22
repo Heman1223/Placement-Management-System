@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
 import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
-import { CheckCircle, XCircle, Eye, Briefcase, Plus, Edit2, Power, Ban, Trash2, RotateCcw, Building2, Calendar, Download } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, Briefcase, Plus, Edit2, Power, Ban, Trash2, RotateCcw, Building2, Calendar, Download, MoreVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './AdminPages.css';
 
@@ -20,11 +21,22 @@ const Companies = () => {
     const [suspendForm, setSuspendForm] = useState({ reason: '', endDate: '' });
     const [accessModal, setAccessModal] = useState({ open: false, company: null });
     const [accessForm, setAccessForm] = useState({ selectedColleges: [], expiryDate: '', downloadLimit: 100 });
+    const [openDropdown, setOpenDropdown] = useState(null);
 
     useEffect(() => {
         fetchCompanies();
         fetchColleges();
     }, [filter]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.action-dropdown-wrapper')) {
+                setOpenDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const fetchCompanies = async (page = 1) => {
         setLoading(true);
@@ -169,15 +181,17 @@ const Companies = () => {
             header: 'Company',
             accessor: 'name',
             render: (name, row) => (
-                <div className="entity-cell">
-                    <div className="entity-icon company">
-                        <Briefcase size={20} />
+                <Link to={`/admin/companies/${row._id}`} className="entity-cell-link">
+                    <div className="entity-cell">
+                        <div className="entity-icon company">
+                            <Briefcase size={20} />
+                        </div>
+                        <div>
+                            <span className="entity-name">{name}</span>
+                            <span className="entity-meta">{row.type?.replace('_', ' ')}</span>
+                        </div>
                     </div>
-                    <div>
-                        <span className="entity-name">{name}</span>
-                        <span className="entity-meta">{row.type?.replace('_', ' ')}</span>
-                    </div>
-                </div>
+                </Link>
             )
         },
         {
@@ -208,78 +222,112 @@ const Companies = () => {
             header: 'Actions',
             accessor: '_id',
             render: (id, row) => (
-                <div className="action-buttons">
+                <div className="action-dropdown-wrapper">
                     <button
-                        className="action-btn"
-                        onClick={() => setDetailModal({ open: true, company: row })}
-                        title="View Details"
+                        className="action-dropdown-trigger"
+                        onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
                     >
-                        <Eye size={16} />
+                        <MoreVertical size={18} />
                     </button>
-                    {!row.isDeleted && (
-                        <>
-                            {!row.isApproved && (
+                    {openDropdown === id && (
+                        <div className="action-dropdown-menu">
+                            <button
+                                className="action-dropdown-item"
+                                onClick={() => {
+                                    setDetailModal({ open: true, company: row });
+                                    setOpenDropdown(null);
+                                }}
+                            >
+                                <Eye size={16} />
+                                <span>View Details</span>
+                            </button>
+                            {!row.isDeleted && (
                                 <>
-                                    <button
-                                        className="action-btn action-btn-success"
-                                        onClick={() => handleApprove(id, true)}
-                                        title="Approve"
-                                    >
-                                        <CheckCircle size={16} />
-                                    </button>
-                                    <button
-                                        className="action-btn action-btn-danger"
-                                        onClick={() => handleApprove(id, false)}
-                                        title="Reject"
-                                    >
-                                        <XCircle size={16} />
-                                    </button>
-                                </>
-                            )}
-                            {row.isApproved && (
-                                <>
-                                    {row.type === 'placement_agency' && (
-                                        <button
-                                            className="action-btn"
-                                            onClick={() => openAgencyAccessModal(row)}
-                                            title="Manage Access"
-                                        >
-                                            <Building2 size={16} />
-                                        </button>
+                                    {!row.isApproved && (
+                                        <>
+                                            <button
+                                                className="action-dropdown-item success"
+                                                onClick={() => {
+                                                    handleApprove(id, true);
+                                                    setOpenDropdown(null);
+                                                }}
+                                            >
+                                                <CheckCircle size={16} />
+                                                <span>Approve</span>
+                                            </button>
+                                            <button
+                                                className="action-dropdown-item danger"
+                                                onClick={() => {
+                                                    handleApprove(id, false);
+                                                    setOpenDropdown(null);
+                                                }}
+                                            >
+                                                <XCircle size={16} />
+                                                <span>Reject</span>
+                                            </button>
+                                        </>
                                     )}
-                                    <button
-                                        className={`action-btn ${row.isActive ? 'action-btn-warning' : 'action-btn-success'}`}
-                                        onClick={() => handleToggleActive(id, row.isActive)}
-                                        title={row.isActive ? 'Block' : 'Activate'}
-                                    >
-                                        <Power size={16} />
-                                    </button>
-                                    <button
-                                        className="action-btn action-btn-warning"
-                                        onClick={() => openSuspendModal(row)}
-                                        title={row.isSuspended ? 'Unsuspend' : 'Suspend'}
-                                    >
-                                        <Ban size={16} />
-                                    </button>
-                                    <button
-                                        className="action-btn action-btn-danger"
-                                        onClick={() => handleDelete(id)}
-                                        title="Delete"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                    {row.isApproved && (
+                                        <>
+                                            {row.type === 'placement_agency' && (
+                                                <button
+                                                    className="action-dropdown-item"
+                                                    onClick={() => {
+                                                        openAgencyAccessModal(row);
+                                                        setOpenDropdown(null);
+                                                    }}
+                                                >
+                                                    <Building2 size={16} />
+                                                    <span>Manage Access</span>
+                                                </button>
+                                            )}
+                                            <button
+                                                className={`action-dropdown-item ${row.isActive ? 'warning' : 'success'}`}
+                                                onClick={() => {
+                                                    handleToggleActive(id, row.isActive);
+                                                    setOpenDropdown(null);
+                                                }}
+                                            >
+                                                <Power size={16} />
+                                                <span>{row.isActive ? 'Block' : 'Activate'}</span>
+                                            </button>
+                                            <button
+                                                className="action-dropdown-item warning"
+                                                onClick={() => {
+                                                    openSuspendModal(row);
+                                                    setOpenDropdown(null);
+                                                }}
+                                            >
+                                                <Ban size={16} />
+                                                <span>{row.isSuspended ? 'Unsuspend' : 'Suspend'}</span>
+                                            </button>
+                                            <button
+                                                className="action-dropdown-item danger"
+                                                onClick={() => {
+                                                    handleDelete(id);
+                                                    setOpenDropdown(null);
+                                                }}
+                                            >
+                                                <Trash2 size={16} />
+                                                <span>Delete</span>
+                                            </button>
+                                        </>
+                                    )}
                                 </>
                             )}
-                        </>
-                    )}
-                    {row.isDeleted && (
-                        <button
-                            className="action-btn action-btn-success"
-                            onClick={() => handleRestore(id)}
-                            title="Restore"
-                        >
-                            <RotateCcw size={16} />
-                        </button>
+                            {row.isDeleted && (
+                                <button
+                                    className="action-dropdown-item success"
+                                    onClick={() => {
+                                        handleRestore(id);
+                                        setOpenDropdown(null);
+                                    }}
+                                >
+                                    <RotateCcw size={16} />
+                                    <span>Restore</span>
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
             )

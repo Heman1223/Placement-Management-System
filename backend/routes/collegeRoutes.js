@@ -33,6 +33,9 @@ router.post('/agencies/:id/grant-access', validateObjectId('id'), collegeControl
 router.delete('/agencies/:id/revoke-access', validateObjectId('id'), collegeController.revokeAgencyAccess);
 router.patch('/agencies/:id/access-settings', validateObjectId('id'), collegeController.updateAgencyAccessSettings);
 
+// Company Activity
+router.get('/company-activity', collegeController.getCompanyActivity);
+
 // Placement Tracking
 router.get('/placements', collegeController.getPlacementTracking);
 router.get('/placement-stats', collegeController.getPlacementStats);

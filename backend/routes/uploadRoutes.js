@@ -47,17 +47,13 @@ router.post('/resume', auth, (req, res, next) => {
 
         let resumeUrl = req.file.path;
         
-        // For PDFs, modify the URL to open in browser instead of downloading
-        // Change from: https://res.cloudinary.com/.../raw/upload/...
-        // To: https://res.cloudinary.com/.../image/upload/fl_attachment:false/...
-        if (req.file.mimetype === 'application/pdf') {
-            resumeUrl = resumeUrl.replace('/raw/upload/', '/image/upload/fl_attachment:false/');
-        }
+        // For PDFs uploaded with 'auto' resource type, Cloudinary stores them as 'image'
+        // The URL will be correct as-is and PDFs will display in browser
         
         console.log('Resume uploaded successfully:');
         console.log('- File:', req.file.originalname);
-        console.log('- Original URL:', req.file.path);
-        console.log('- Modified URL:', resumeUrl);
+        console.log('- URL:', resumeUrl);
+        console.log('- Mimetype:', req.file.mimetype);
         console.log('- User role:', req.user.role);
 
         // If student is uploading their own resume

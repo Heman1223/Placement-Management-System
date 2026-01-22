@@ -721,3 +721,501 @@
     padding: var(--spacing-8);
     color: var(--text-muted);
 }
+
+
+/* Job Cards */
+.jobs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-4);
+}
+
+.job-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    background: var(--bg-primary);
+    transition: all 0.2s;
+}
+
+.job-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.job-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-3);
+}
+
+.job-card-header h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.job-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.job-info-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.job-info-row svg {
+    flex-shrink: 0;
+    color: var(--text-muted);
+}
+
+.job-card-footer {
+    margin-top: var(--spacing-3);
+    padding-top: var(--spacing-3);
+    border-top: 1px solid var(--border-color);
+}
+
+.job-stats {
+    display: flex;
+    gap: var(--spacing-4);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.job-stats span {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-4);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+}
+
+.info-item .label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.info-item .value {
+    font-size: 1.125rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Entity Cell Link */
+.entity-cell-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.entity-cell-link:hover .entity-name {
+    color: var(--primary-600);
+}
+
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border: 1px solid #d1d5db !important;
+    background: white !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    color: #1f2937 !important;
+}
+
+.action-btn:hover {
+    background: #f3f4f6 !important;
+    border-color: #9ca3af !important;
+}
+
+.action-btn svg {
+    color: #1f2937 !important;
+}
+
+.action-btn-success {
+    color: #059669 !important;
+    border-color: #059669 !important;
+}
+
+.action-btn-success:hover {
+    background: #d1fae5 !important;
+}
+
+.action-btn-success svg {
+    color: #059669 !important;
+}
+
+.action-btn-danger {
+    color: #dc2626 !important;
+    border-color: #dc2626 !important;
+}
+
+.action-btn-danger:hover {
+    background: #fee2e2 !important;
+}
+
+.action-btn-danger svg {
+    color: #dc2626 !important;
+}
+
+.action-btn-warning {
+    color: #d97706 !important;
+    border-color: #d97706 !important;
+}
+
+.action-btn-warning:hover {
+    background: #fef3c7 !important;
+}
+
+.action-btn-warning svg {
+    color: #d97706 !important;
+}
+
+.action-btn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+
+/* Status Badges - Force Black Text */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1f2937 !important;
+}
+
+.status-badge.status-approved,
+.status-badge.status-active {
+    background-color: #d1fae5;
+    color: #065f46 !important;
+}
+
+.status-badge.status-pending {
+    background-color: #fef3c7;
+    color: #92400e !important;
+}
+
+.status-badge.status-rejected,
+.status-badge.status-inactive {
+    background-color: #fee2e2;
+    color: #991b1b !important;
+}
+
+.status-badge.status-suspended {
+    background-color: #fecaca;
+    color: #7f1d1d !important;
+}
+
+.status-badge.status-blocked {
+    background-color: #e5e7eb;
+    color: #1f2937 !important;
+}
+
+/* Ensure all table text is visible */
+.table td {
+    color: #1f2937 !important;
+}
+
+.table th {
+    color: #374151 !important;
+}
+
+/* Entity name should be black */
+.entity-name {
+    color: #1f2937 !important;
+}
+
+.entity-meta {
+    color: #6b7280 !important;
+}
+
+/* Make sure all action buttons are visible */
+.action-buttons button {
+    color: #1f2937 !important;
+}
+
+.action-buttons button svg {
+    color: inherit !important;
+}
+
+
+/* Additional Status Badge Variants */
+.status-badge.status-success {
+    background-color: #d1fae5;
+    color: #065f46 !important;
+}
+
+.status-badge.status-pending {
+    background-color: #fef3c7;
+    color: #92400e !important;
+}
+
+.status-badge.status-error {
+    background-color: #fee2e2;
+    color: #991b1b !important;
+}
+
+.status-badge.status-warning {
+    background-color: #fed7aa;
+    color: #9a3412 !important;
+}
+
+.status-badge.status-info {
+    background-color: #dbeafe;
+    color: #1e40af !important;
+}
+
+/* Verified/Unverified specific */
+.status-badge.status-verified {
+    background-color: #d1fae5;
+    color: #065f46 !important;
+}
+
+.status-badge.status-unverified {
+    background-color: #fef3c7;
+    color: #92400e !important;
+}
+
+
+/* Action Dropdown */
+.action-dropdown-wrapper {
+    position: relative;
+}
+
+.action-dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #1f2937;
+}
+
+.action-dropdown-trigger:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.action-dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 4px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    min-width: 180px;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.action-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    background: white;
+    color: #1f2937;
+    font-size: 0.875rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.action-dropdown-item:hover {
+    background: #f9fafb;
+}
+
+.action-dropdown-item svg {
+    flex-shrink: 0;
+    color: #6b7280;
+}
+
+.action-dropdown-item.success {
+    color: #059669;
+}
+
+.action-dropdown-item.success svg {
+    color: #059669;
+}
+
+.action-dropdown-item.danger {
+    color: #dc2626;
+}
+
+.action-dropdown-item.danger svg {
+    color: #dc2626;
+}
+
+.action-dropdown-item.warning {
+    color: #d97706;
+}
+
+.action-dropdown-item.warning svg {
+    color: #d97706;
+}
+
+.action-dropdown-item + .action-dropdown-item {
+    border-top: 1px solid #f3f4f6;
+}
+
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .admin-page {
+        padding: var(--spacing-3);
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-3);
+    }
+
+    .page-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .page-header p {
+        font-size: 0.875rem;
+    }
+
+    .filter-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .filter-tab {
+        font-size: 0.875rem;
+        padding: var(--spacing-2) var(--spacing-3);
+    }
+
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .entity-cell {
+        gap: var(--spacing-2);
+    }
+
+    .entity-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .entity-name {
+        font-size: 0.875rem;
+    }
+
+    .entity-meta {
+        font-size: 0.75rem;
+    }
+
+    .action-dropdown-trigger {
+        width: 28px;
+        height: 28px;
+    }
+
+    .action-dropdown-menu {
+        min-width: 160px;
+    }
+
+    .action-dropdown-item {
+        padding: 8px 12px;
+        font-size: 0.8125rem;
+        gap: 10px;
+    }
+
+    .status-badge {
+        font-size: 0.6875rem;
+        padding: 2px 8px;
+    }
+
+    .info-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .jobs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .job-card {
+        padding: var(--spacing-3);
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header h1 {
+        font-size: 1.125rem;
+    }
+
+    .action-dropdown-trigger {
+        width: 24px;
+        height: 24px;
+    }
+
+    .action-dropdown-menu {
+        min-width: 140px;
+    }
+
+    .action-dropdown-item {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+}

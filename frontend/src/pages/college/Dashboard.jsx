@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { collegeAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import { StatsCard } from '../../components/common/Card';
 import { GraduationCap, UserCheck, Briefcase, TrendingUp, Plus, Upload, BarChart3, Users, ArrowUpRight, Award, Sparkles, Clock, Building2, Star, RefreshCw } from 'lucide-react';
 import Button from '../../components/common/Button';
@@ -9,9 +10,44 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import './CollegeDashboard.css';
 
 const CollegeDashboard = () => {
+    const { user, loading: authLoading } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [collegeProfile, setCollegeProfile] = useState(null);
+
+    // Debug: Log user object to see what we have
+    console.log('Dashboard - Full user object:', user);
+    console.log('Dashboard - user.profile:', user?.profile);
+    console.log('Dashboard - user.profile?.name:', user?.profile?.name);
+
+    // Fetch college profile if not available in user object
+    useEffect(() => {
+        const loadCollegeProfile = async () => {
+            if (user?.profile) {
+                setCollegeProfile(user.profile);
+            } else if (user?.role === 'college_admin') {
+                // Fallback: fetch profile separately if not in user object
+                try {
+                    const response = await collegeAPI.getProfile();
+                    setCollegeProfile(response.data.data);
+                } catch (error) {
+                    console.error('Failed to load college profile:', error);
+                }
+            }
+        };
+        
+        if (user) {
+            loadCollegeProfile();
+        }
+    }, [user]);
+
+    const collegeName = collegeProfile?.name || user?.profile?.name || 'College';
+
+    // If auth is still loading, show loading screen
+    if (authLoading) {
+        return <div className="loading-screen"><div className="loading-spinner" /></div>;
+    }
 
     useEffect(() => {
         fetchStats();
@@ -73,11 +109,11 @@ const CollegeDashboard = () => {
             <div className="dashboard-header premium-header">
                 <div className="header-content">
                     <div className="header-icon">
-                        <GraduationCap size={28} />
+                        <Building2 size={32} />
                     </div>
                     <div className="header-text">
-                        <h1>College Dashboard</h1>
-                        <p>Manage your students and track placement progress</p>
+                        <h1 className="college-name">{collegeName}</h1>
+                        <p className="dashboard-subtitle">Admin Dashboard</p>
                     </div>
                 </div>
                 <Button 
@@ -136,15 +172,6 @@ const CollegeDashboard = () => {
                         <span className="stat-label">Pending Approvals</span>
                     </div>
                     <div className="stat-badge warning">Pending</div>
-                </div>
-                <div className="stat-card stat-info">
-                    <div className="stat-icon">
-                        <Building2 size={24} />
-                    </div>
-                    <div className="stat-content">
-                        <span className="stat-value">{stats?.overview?.agenciesWithAccess || 0}</span>
-                        <span className="stat-label">Agencies with Access</span>
-                    </div>
                 </div>
                 <div className="stat-card stat-purple">
                     <div className="stat-icon">

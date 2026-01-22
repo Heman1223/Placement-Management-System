@@ -13,7 +13,9 @@ const StudentForm = () => {
     const navigate = useNavigate();
     const isEdit = Boolean(id);
 
-    const [loading, setLoading] = useState(false);
+    console.log('StudentForm mounted:', { id, isEdit });
+
+    const [loading, setLoading] = useState(isEdit); // Start with loading=true if editing
     const [saving, setSaving] = useState(false);
     const [departments, setDepartments] = useState([]);
 
@@ -59,8 +61,30 @@ const StudentForm = () => {
         setLoading(true);
         try {
             const response = await collegeAPI.getStudent(id);
-            setFormData(response.data.data);
+            const studentData = response.data.data;
+            
+            // Ensure all nested objects are properly initialized
+            setFormData({
+                name: studentData.name || { firstName: '', lastName: '' },
+                email: studentData.email || '',
+                phone: studentData.phone || '',
+                gender: studentData.gender || '',
+                department: studentData.department || '',
+                batch: studentData.batch || new Date().getFullYear(),
+                rollNumber: studentData.rollNumber || '',
+                cgpa: studentData.cgpa || '',
+                backlogs: studentData.backlogs || { active: 0, history: 0 },
+                education: {
+                    tenth: studentData.education?.tenth || { percentage: '', board: '' },
+                    twelfth: studentData.education?.twelfth || { percentage: '', board: '', stream: '' }
+                },
+                skills: studentData.skills || [],
+                linkedinUrl: studentData.linkedinUrl || '',
+                githubUrl: studentData.githubUrl || '',
+                resumeUrl: studentData.resumeUrl || ''
+            });
         } catch (error) {
+            console.error('Error loading student:', error);
             toast.error('Failed to load student data');
             navigate('/college/students');
         } finally {
