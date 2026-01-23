@@ -18,6 +18,7 @@ router.put('/students/:id', validateObjectId('id'), collegeController.updateStud
 router.delete('/students/:id', validateObjectId('id'), collegeController.deleteStudent);
 router.patch('/students/:id/verify', validateObjectId('id'), collegeController.verifyStudent);
 router.post('/students/:id/reset-password', validateObjectId('id'), collegeController.resetStudentPassword);
+router.get('/students/:id/placement-activity', validateObjectId('id'), collegeController.getStudentPlacementActivity);
 
 // Bulk upload
 router.post('/students/bulk', collegeController.bulkUploadStudents);
@@ -26,12 +27,15 @@ router.post('/students/bulk', collegeController.bulkUploadStudents);
 router.get('/departments', collegeController.getDepartments);
 
 // Agency Management
-router.get('/agencies', collegeController.getAgencies);
-router.get('/agency-requests', collegeController.getAgencyRequests);
-router.get('/agencies/:id/activity', validateObjectId('id'), collegeController.getAgencyActivity);
-router.post('/agencies/:id/grant-access', validateObjectId('id'), collegeController.grantAgencyAccess);
-router.delete('/agencies/:id/revoke-access', validateObjectId('id'), collegeController.revokeAgencyAccess);
-router.patch('/agencies/:id/access-settings', validateObjectId('id'), collegeController.updateAgencyAccessSettings);
+// Company Access Management
+router.get('/companies', collegeController.getConnectedCompanies);
+router.get('/company-requests', collegeController.getCompanyRequests);
+router.post('/company-requests/:id/respond', validateObjectId('id'), collegeController.respondToCompanyRequest);
+router.delete('/companies/:id/revoke', validateObjectId('id'), collegeController.revokeCompanyAccess);
+router.patch('/companies/:id/settings', validateObjectId('id'), collegeController.updateCompanyAccessSettings);
+
+// Placement Drives
+router.get('/drives', collegeController.getPlacementDrives);
 
 // Company Activity
 router.get('/company-activity', collegeController.getCompanyActivity);

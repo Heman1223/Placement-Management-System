@@ -153,9 +153,16 @@ const StudentJobs = () => {
                                             <p className="company-name">{job.company?.name}</p>
                                         </div>
                                     </div>
-                                    <span className={`job-type-badge ${job.type}`}>
-                                        {job.type.replace('_', ' ')}
-                                    </span>
+                                    <div className="flex gap-2">
+                                        {job.isPlacementDrive && (
+                                            <span className="job-type-badge placement-drive">
+                                                Campus Drive
+                                            </span>
+                                        )}
+                                        <span className={`job-type-badge ${job.type}`}>
+                                            {job.type.replace('_', ' ')}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div className="job-details">

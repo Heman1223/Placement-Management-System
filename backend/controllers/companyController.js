@@ -26,7 +26,10 @@ const getDashboardStats = asyncHandler(async (req, res) => {
         Application.countDocuments({ job: { $in: companyJobIds } }),
         Application.countDocuments({ job: { $in: companyJobIds }, status: 'shortlisted' }),
         Application.countDocuments({ job: { $in: companyJobIds }, status: 'hired' }),
-        Company.findById(companyId).populate('agencyAccess.allowedColleges.college', 'name')
+        Company.findById(companyId).populate({
+            path: 'collegeAccess.college',
+            select: 'name'
+        })
     ]);
 
     // Get unique students viewed (from applications)
@@ -36,7 +39,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     // Count approved colleges (for agencies) or all active colleges (for companies)
     let approvedColleges = 0;
     if (company.type === 'placement_agency') {
-        approvedColleges = company.agencyAccess?.allowedColleges?.length || 0;
+        approvedColleges = company.collegeAccess?.filter(ca => ca.status === 'approved').length || 0;
     } else {
         approvedColleges = await College.countDocuments({ isVerified: true, isActive: true });
     }
@@ -201,7 +204,10 @@ const searchStudents = asyncHandler(async (req, res) => {
     // Filter by approved colleges only
     if (company.type === 'placement_agency') {
         // For agencies, only show students from colleges they have access to
-        const allowedCollegeIds = company.agencyAccess?.allowedColleges?.map(ac => ac.college) || [];
+        const allowedCollegeIds = company.collegeAccess
+            ?.filter(ca => ca.status === 'approved')
+            .map(ca => ca.college) || [];
+            
         if (allowedCollegeIds.length > 0) {
             query.college = { $in: allowedCollegeIds };
         } else {
@@ -318,7 +324,10 @@ const getStudentProfile = asyncHandler(async (req, res) => {
 
     // Check if company has access to this student's college
     if (company.type === 'placement_agency') {
-        const allowedCollegeIds = company.agencyAccess?.allowedColleges?.map(ac => ac.college.toString()) || [];
+        const allowedCollegeIds = company.collegeAccess
+            ?.filter(ca => ca.status === 'approved')
+            .map(ca => ca.college.toString()) || [];
+            
         if (!allowedCollegeIds.includes(student.college._id.toString())) {
             return res.status(403).json({
                 success: false,
@@ -388,6 +397,14 @@ const shortlistStudent = asyncHandler(async (req, res) => {
     let application = await Application.findOne({ student: studentId, job: jobId });
 
     if (application) {
+        // Prevent duplicate shortlisting
+        if (application.status === 'shortlisted') {
+            return res.status(400).json({
+                success: false,
+                message: 'Student is already shortlisted for this job'
+            });
+        }
+
         // Update existing application
         application.status = 'shortlisted';
         application.companyNotes = notes || '';
@@ -790,6 +807,7 @@ const getShortlistDetails = asyncHandler(async (req, res) => {
 
     // Verify job belongs to company
     const job = await Job.findById(application.job._id);
+
     if (job.company.toString() !== companyId.toString()) {
         return res.status(403).json({
             success: false,
@@ -802,6 +820,63 @@ const getShortlistDetails = asyncHandler(async (req, res) => {
         data: application
     });
 });
+
+/**
+ * @desc    Request access to a college
+ * @route   POST /api/company/request-access
+ * @access  Company
+ */
+const requestCollegeAccess = asyncHandler(async (req, res) => {
+    const companyId = req.user.companyProfile._id;
+    const { collegeId } = req.body;
+
+    if (!collegeId) {
+        return res.status(400).json({ success: false, message: 'College ID is required' });
+    }
+
+    const company = await Company.findById(companyId);
+    
+    // Check if already requested
+    const existingRequest = company.collegeAccess.find(ca => ca.college.toString() === collegeId);
+    if (existingRequest) {
+        return res.status(400).json({ 
+            success: false, 
+            message: `Request already exists with status: ${existingRequest.status}` 
+        });
+    }
+
+    company.collegeAccess.push({
+        college: collegeId,
+        status: 'pending',
+        requestedAt: new Date()
+    });
+
+    await company.save();
+
+    res.json({
+        success: true,
+        message: 'Access request sent successfully'
+    });
+});
+
+/**
+ * @desc    Get list of colleges with access status
+ * @route   GET /api/company/my-colleges
+ * @access  Company
+ */
+const getRequestedColleges = asyncHandler(async (req, res) => {
+    const companyId = req.user.companyProfile._id;
+    
+    const company = await Company.findById(companyId)
+        .populate('collegeAccess.college', 'name code city state logo');
+
+    res.json({
+        success: true,
+        data: company.collegeAccess
+    });
+});
+
+
 
 /**
  * @desc    Update shortlist status with notes
@@ -1169,6 +1244,8 @@ module.exports = {
     getSavedSearchFilters,
     deleteSearchFilter,
     getShortlistDetails,
+    requestCollegeAccess,
+    getRequestedColleges,
     updateShortlistStatus,
     addShortlistNote,
     removeFromShortlist,

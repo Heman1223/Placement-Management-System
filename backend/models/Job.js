@@ -6,6 +6,18 @@ const jobSchema = new mongoose.Schema({
         ref: 'Company',
         required: [true, 'Company is required']
     },
+    
+    // Placement Drive Details
+    college: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'College' // If present, this job is a placement drive for this college
+    },
+    isPlacementDrive: {
+        type: Boolean,
+        default: false
+    },
+    driveDate: Date,
+    registrationEndDate: Date,
 
     // Job Details
     title: {

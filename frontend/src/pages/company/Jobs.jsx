@@ -66,7 +66,15 @@ const Jobs = () => {
     };
 
     const columns = [
-        { header: 'Title', accessor: 'title' },
+        { 
+            header: 'Title', 
+            accessor: 'title',
+            render: (val, row) => (
+                <Link to={`/company/jobs/${row._id}`} className="text-primary-600 hover:text-primary-800 font-medium">
+                    {val}
+                </Link>
+            )
+        },
         {
             header: 'Type',
             accessor: 'type',
@@ -109,7 +117,7 @@ const Jobs = () => {
                     {openDropdown === id && (
                         <div className="action-dropdown-menu">
                             <Link 
-                                to={`/company/jobs/${id}/applicants`}
+                                to={`/company/jobs/${id}?tab=applicants`}
                                 className="action-dropdown-item"
                                 onClick={() => setOpenDropdown(null)}
                             >

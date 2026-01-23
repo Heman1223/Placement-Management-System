@@ -838,3 +838,112 @@
         text-align: center;
     }
 }
+
+/* College Selection View */
+.college-selection-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    padding: var(--spacing-4);
+}
+
+.college-select-card {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    padding: var(--spacing-8) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.select-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%);
+    color: var(--primary-600);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-6);
+}
+
+.college-select-card h2 {
+    font-size: 1.75rem;
+    color: var(--gray-900);
+    margin: 0 0 var(--spacing-2);
+}
+
+.college-select-card p {
+    color: var(--gray-600);
+    margin: 0 0 var(--spacing-8);
+    font-size: 1.1rem;
+    max-width: 80%;
+}
+
+.college-select-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+}
+
+.college-main-select {
+    width: 100%;
+    padding: var(--spacing-4) var(--spacing-5);
+    padding-right: var(--spacing-10);
+    font-size: 1.1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    background-color: white;
+    cursor: pointer;
+    appearance: none;
+    transition: all 0.2s ease;
+    color: var(--gray-800);
+    font-weight: 500;
+}
+
+.college-main-select:hover {
+    border-color: var(--primary-300);
+}
+
+.college-main-select:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.select-arrow {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--gray-500);
+}
+
+/* Active College Banner */
+.active-college-banner {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-3) var(--spacing-5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-6);
+    border: 1px solid var(--primary-100);
+    background: linear-gradient(to right, var(--primary-50), white);
+}
+
+.college-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    color: var(--primary-800);
+    font-size: 1.05rem;
+}
+
+.college-info strong {
+    font-weight: 700;
+}

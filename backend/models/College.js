@@ -68,6 +68,18 @@ const collegeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    // Rejection tracking
+    isRejected: {
+        type: Boolean,
+        default: false
+    },
+    rejectedAt: {
+        type: Date
+    },
+    rejectedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
     // Active status
     isActive: {
         type: Boolean,
@@ -145,6 +157,7 @@ const collegeSchema = new mongoose.Schema({
 // Indexes
 collegeSchema.index({ code: 1 });
 collegeSchema.index({ isVerified: 1 });
+collegeSchema.index({ isRejected: 1 });
 collegeSchema.index({ isActive: 1 });
 collegeSchema.index({ isDeleted: 1 });
 collegeSchema.index({ 'address.city': 1, 'address.state': 1 });

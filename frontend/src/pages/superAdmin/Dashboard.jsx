@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
-import { StatsCard } from '../../components/common/Card';
-import Table from '../../components/common/Table';
-import Button from '../../components/common/Button';
-import { Users, Building2, Briefcase, GraduationCap, CheckCircle, Clock, TrendingUp, RefreshCw, MoreVertical, Eye, XCircle } from 'lucide-react';
-import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import api from '../../services/api';
+import { motion } from 'framer-motion';
+import { 
+    Users, Building2, Briefcase, GraduationCap, 
+    TrendingUp, RefreshCw, ArrowUpRight, 
+    Search, Bell, MapPin, ShieldCheck, Clock, Star
+} from 'lucide-react';
+import { 
+    BarChart, Bar, PieChart, Pie, XAxis, YAxis, 
+    CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell 
+} from 'recharts';
 import toast from 'react-hot-toast';
 import './SuperAdminDashboard.css';
 
@@ -15,55 +21,39 @@ const SuperAdminDashboard = () => {
     const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [analytics, setAnalytics] = useState(null);
-    const [recentColleges, setRecentColleges] = useState([]);
-    const [recentCompanies, setRecentCompanies] = useState([]);
+    const [starStudents, setStarStudents] = useState([]);
+    const [recentData, setRecentData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [showCharts, setShowCharts] = useState(true);
-    const [openDropdown, setOpenDropdown] = useState(null);
 
     useEffect(() => {
         fetchDashboardData();
-        
-        // Auto-refresh every 30 seconds
-        const interval = setInterval(() => {
-            fetchDashboardData(true);
-        }, 30000);
-
+        const interval = setInterval(() => fetchDashboardData(true), 60000);
         return () => clearInterval(interval);
-    }, []);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (!event.target.closest('.action-dropdown-wrapper')) {
-                setOpenDropdown(null);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const fetchDashboardData = async (silent = false) => {
         if (!silent) setLoading(true);
         try {
-            const [statsRes, analyticsRes] = await Promise.all([
+            const [statsRes, analyticsRes, starStudentsRes] = await Promise.all([
                 superAdminAPI.getStats(),
-                superAdminAPI.getAnalytics()
+                superAdminAPI.getAnalytics(),
+                superAdminAPI.getAllStudents({ isStarStudent: true, limit: 5 })
             ]);
             
             const { stats, recent } = statsRes.data.data;
             setStats(stats);
-            setRecentColleges(recent.colleges);
-            setRecentCompanies(recent.companies);
             setAnalytics(analyticsRes.data.data);
+            setStarStudents(starStudentsRes.data.data.students || []);
             
-            if (silent) {
-                console.log('Dashboard data refreshed');
-            }
+            const merged = [
+                ...(recent.colleges || []).map(c => ({ ...c, type: 'College', date: c.createdAt })),
+                ...(recent.companies || []).map(c => ({ ...c, type: 'Company', date: c.createdAt }))
+            ].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            setRecentData(merged);
         } catch (error) {
-            if (!silent) {
-                toast.error('Failed to load dashboard data');
-            }
+            if (!silent) toast.error('Failed to load dashboard data');
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -73,359 +63,440 @@ const SuperAdminDashboard = () => {
     const handleRefresh = () => {
         setRefreshing(true);
         fetchDashboardData();
-        toast.success('Dashboard refreshed');
+        toast.success('Dashboard updated');
     };
-
-    const handleApproveCollege = async (id) => {
-        try {
-            await superAdminAPI.approveCollege(id, true);
-            toast.success('College approved successfully');
-            fetchDashboardData();
-        } catch (error) {
-            toast.error('Failed to approve college');
-        }
-    };
-
-    const handleRejectCollege = async (id) => {
-        try {
-            await superAdminAPI.approveCollege(id, false);
-            toast.success('College rejected');
-            fetchDashboardData();
-        } catch (error) {
-            toast.error('Failed to reject college');
-        }
-    };
-
-    const handleApproveCompany = async (id) => {
-        try {
-            await superAdminAPI.approveCompany(id, true);
-            toast.success('Company approved successfully');
-            fetchDashboardData();
-        } catch (error) {
-            toast.error('Failed to approve company');
-        }
-    };
-
-    const handleRejectCompany = async (id) => {
-        try {
-            await superAdminAPI.approveCompany(id, false);
-            toast.success('Company rejected');
-            fetchDashboardData();
-        } catch (error) {
-            toast.error('Failed to reject company');
-        }
-    };
-
-    const collegeColumns = [
-        { header: 'Name', accessor: 'name' },
-        { header: 'Code', accessor: 'code' },
-        {
-            header: 'Status',
-            accessor: 'isVerified',
-            render: (val) => (
-                <span className={`status-badge ${val ? 'status-success' : 'status-pending'}`}>
-                    {val ? 'Verified' : 'Pending'}
-                </span>
-            )
-        },
-        {
-            header: 'Actions',
-            accessor: '_id',
-            render: (id, row) => (
-                <div className="action-dropdown-wrapper">
-                    <button
-                        className="action-dropdown-trigger"
-                        onClick={() => setOpenDropdown(openDropdown === id ? null : id)}
-                    >
-                        <MoreVertical size={18} />
-                    </button>
-                    {openDropdown === id && (
-                        <div className="action-dropdown-menu">
-                            <button
-                                className="action-dropdown-item"
-                                onClick={() => {
-                                    navigate(`/admin/colleges/${id}`);
-                                    setOpenDropdown(null);
-                                }}
-                            >
-                                <Eye size={16} />
-                                <span>View Details</span>
-                            </button>
-                            {!row.isVerified && (
-                                <>
-                                    <button
-                                        className="action-dropdown-item success"
-                                        onClick={() => {
-                                            handleApproveCollege(id);
-                                            setOpenDropdown(null);
-                                        }}
-                                    >
-                                        <CheckCircle size={16} />
-                                        <span>Approve</span>
-                                    </button>
-                                    <button
-                                        className="action-dropdown-item danger"
-                                        onClick={() => {
-                                            handleRejectCollege(id);
-                                            setOpenDropdown(null);
-                                        }}
-                                    >
-                                        <XCircle size={16} />
-                                        <span>Reject</span>
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    )}
-                </div>
-            )
-        }
-    ];
-
-    const companyColumns = [
-        { header: 'Name', accessor: 'name' },
-        { header: 'Type', accessor: 'type', render: (val) => val?.replace('_', ' ') },
-        {
-            header: 'Status',
-            accessor: 'isApproved',
-            render: (val) => (
-                <span className={`status-badge ${val ? 'status-success' : 'status-pending'}`}>
-                    {val ? 'Approved' : 'Pending'}
-                </span>
-            )
-        },
-        {
-            header: 'Actions',
-            accessor: '_id',
-            render: (id, row) => (
-                <div className="action-dropdown-wrapper">
-                    <button
-                        className="action-dropdown-trigger"
-                        onClick={() => setOpenDropdown(openDropdown === `company-${id}` ? null : `company-${id}`)}
-                    >
-                        <MoreVertical size={18} />
-                    </button>
-                    {openDropdown === `company-${id}` && (
-                        <div className="action-dropdown-menu">
-                            <button
-                                className="action-dropdown-item"
-                                onClick={() => {
-                                    navigate(`/admin/companies/${id}`);
-                                    setOpenDropdown(null);
-                                }}
-                            >
-                                <Eye size={16} />
-                                <span>View Details</span>
-                            </button>
-                            {!row.isApproved && (
-                                <>
-                                    <button
-                                        className="action-dropdown-item success"
-                                        onClick={() => {
-                                            handleApproveCompany(id);
-                                            setOpenDropdown(null);
-                                        }}
-                                    >
-                                        <CheckCircle size={16} />
-                                        <span>Approve</span>
-                                    </button>
-                                    <button
-                                        className="action-dropdown-item danger"
-                                        onClick={() => {
-                                            handleRejectCompany(id);
-                                            setOpenDropdown(null);
-                                        }}
-                                    >
-                                        <XCircle size={16} />
-                                        <span>Reject</span>
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    )}
-                </div>
-            )
-        }
-    ];
 
     if (loading) {
-        return <div className="loading-screen"><div className="loading-spinner" /></div>;
+        return (
+            <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+                    <p className="text-slate-400 font-medium">Syncing Platform Data...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className="dashboard">
-            <div className="dashboard-header">
-                <div>
-                    <h1>Super Admin Dashboard</h1>
-                    <p>Platform overview and management</p>
+        <div className="dashboard p-8">
+            {/* Premium Header Banner */}
+            <div className="premium-header-banner mb-12">
+                <div className="premium-header-text">
+                    <h1>Network Overview</h1>
+                    <p>Comprehensive monitoring of university registrations and placement metrics.</p>
                 </div>
-                <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
-                    <Button 
-                        variant="outline" 
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                    >
-                        <RefreshCw size={18} className={refreshing ? 'spinning' : ''} />
-                        Refresh
-                    </Button>
-                    <Button 
-                        variant="outline" 
-                        onClick={() => setShowCharts(!showCharts)}
-                    >
-                        <TrendingUp size={18} />
-                        {showCharts ? 'Hide' : 'Show'} Analytics
-                    </Button>
-                </div>
+                <button 
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all border border-white/10 text-white font-bold text-sm" 
+                    onClick={handleRefresh} 
+                    disabled={refreshing}
+                >
+                    <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+                    {refreshing ? 'Syncing...' : 'Refresh Data'}
+                </button>
             </div>
 
-            {/* Stats Grid */}
-            <div className="stats-grid">
-                <StatsCard
-                    title="Total Users"
-                    value={stats?.users || 0}
-                    icon={Users}
-                    color="primary"
-                />
-                <StatsCard
-                    title="Colleges"
-                    value={stats?.colleges?.total || 0}
-                    icon={Building2}
-                    color="success"
-                />
-                <StatsCard
-                    title="Companies"
-                    value={stats?.companies?.total || 0}
-                    icon={Briefcase}
-                    color="warning"
-                />
-                <StatsCard
-                    title="Students"
-                    value={stats?.students?.total || 0}
-                    icon={GraduationCap}
-                    color="primary"
-                />
+            {/* Premium Statistics Grid */}
+            <div className="premium-stat-grid mb-16">
+                <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                    <div className="premium-stat-icon bg-blue-500/10 text-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                        <Building2 size={20} />
+                    </div>
+                    <div className="stat-v2-info">
+                        <span className="stat-label">Colleges</span>
+                        <span className="stat-value">{stats?.colleges?.total || 0}</span>
+                    </div>
+                </motion.div>
+                <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                    <div className="premium-stat-icon bg-emerald-500/10 text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                        <Briefcase size={20} />
+                    </div>
+                    <div className="stat-v2-info">
+                        <span className="stat-label">Companies</span>
+                        <span className="stat-value">{stats?.companies?.total || 0}</span>
+                    </div>
+                </motion.div>
+                <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                    <div className="premium-stat-icon bg-purple-500/10 text-purple-500 shadow-[0_0_20px_rgba(139,92,246,0.2)]">
+                        <GraduationCap size={20} />
+                    </div>
+                    <div className="stat-v2-info">
+                        <span className="stat-label">Students</span>
+                        <span className="stat-value">{stats?.students?.total || 0}</span>
+                    </div>
+                </motion.div>
+                <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                    <div className="premium-stat-icon bg-amber-500/10 text-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                        <TrendingUp size={20} />
+                    </div>
+                    <div className="stat-v2-info">
+                        <span className="stat-label">Placement</span>
+                        <span className="stat-value">{stats?.students?.total > 0 ? ((stats.students.placed / stats.students.total) * 100).toFixed(1) : 0}%</span>
+                    </div>
+                </motion.div>
             </div>
 
-            {/* Pending Approvals Summary */}
-            <div className="pending-summary">
-                <div className="pending-item">
-                    <Clock size={20} />
-                    <span>{stats?.colleges?.pending || 0} colleges pending approval</span>
-                </div>
-                <div className="pending-item">
-                    <Clock size={20} />
-                    <span>{stats?.companies?.pending || 0} companies pending approval</span>
-                </div>
-                <div className="pending-item">
-                    <CheckCircle size={20} />
-                    <span>{stats?.students?.placed || 0} students placed</span>
-                </div>
-            </div>
+            {/* Star Students Showcase - Premium Section */}
+            {starStudents.length > 0 && (
+                <div className="mb-16">
+                    <div className="flex items-center gap-4 mb-8">
+                        <Star size={20} className="text-amber-400 fill-amber-400" />
+                        <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Star Students / Top Talent</h2>
+                        <div className="h-px bg-white/5 flex-1" />
+                    </div>
 
-            {/* Analytics Charts */}
-            {showCharts && analytics && (
-                <div className="analytics-section">
-                    <h2>Analytics & Insights</h2>
-                    
-                    <div className="charts-grid">
-                        {/* Placement by College */}
-                        {analytics.placementByCollege?.length > 0 && (
-                            <div className="chart-card">
-                                <h3>Top Colleges by Placement Rate</h3>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={analytics.placementByCollege.slice(0, 5)}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="collegeName" angle={-45} textAnchor="end" height={100} />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Bar dataKey="placementRate" fill="#3b82f6" name="Placement %" />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {starStudents.map(student => (
+                            <div key={student._id} className="bg-[#1e293b] border border-amber-500/20 rounded-2xl p-6 relative overflow-hidden group hover:border-amber-500/40 transition-all">
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Star size={48} className="fill-current text-amber-500" />
+                                </div>
+                                <div className="relative z-10 flex items-start gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-amber-500/20">
+                                        {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-white text-lg group-hover:text-amber-400 transition-colors">
+                                            {student.name?.firstName} {student.name?.lastName}
+                                        </h3>
+                                        <div className="flex items-center gap-2 text-slate-400 text-xs font-medium uppercase tracking-wide mt-1">
+                                            <Building2 size={12} />
+                                            <span className="truncate max-w-[150px]">{student.college?.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-3">
+                                            <span className="px-2 py-1 rounded bg-white/5 border border-white/10 text-xs font-mono text-slate-300">
+                                                {student.department}
+                                            </span>
+                                            {student.cgpa && (
+                                                <span className="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-xs font-bold text-amber-400">
+                                                    CGPA: {student.cgpa}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        )}
-
-                        {/* Students by Department */}
-                        {analytics.studentsByDepartment?.length > 0 && (
-                            <div className="chart-card">
-                                <h3>Students by Department</h3>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <PieChart>
-                                        <Pie
-                                            data={analytics.studentsByDepartment}
-                                            dataKey="count"
-                                            nameKey="_id"
-                                            cx="50%"
-                                            cy="50%"
-                                            outerRadius={100}
-                                            label
-                                        >
-                                            {analytics.studentsByDepartment.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        )}
-
-                        {/* Company Types */}
-                        {analytics.companyTypes?.length > 0 && (
-                            <div className="chart-card">
-                                <h3>Company Distribution</h3>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={analytics.companyTypes}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="_id" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Bar dataKey="count" fill="#10b981" name="Companies" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        )}
-
-                        {/* Top Skills */}
-                        {analytics.topSkills?.length > 0 && (
-                            <div className="chart-card">
-                                <h3>Top Skills in Demand</h3>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={analytics.topSkills.slice(0, 8)} layout="vertical">
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis type="number" />
-                                        <YAxis dataKey="_id" type="category" width={100} />
-                                        <Tooltip />
-                                        <Bar dataKey="count" fill="#f59e0b" name="Students" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        )}
+                        ))}
                     </div>
                 </div>
             )}
 
-            {/* Recent Tables */}
-            <div className="dashboard-tables">
-                <div className="dashboard-table-section">
-                    <h2>Recent College Registrations</h2>
-                    <Table
-                        columns={collegeColumns}
-                        data={recentColleges}
-                        emptyMessage="No recent colleges"
-                    />
+            {/* Analytics Section - Charts First */}
+            <div className="analytics-section mb-16">
+                <div className="flex items-center gap-4 mb-10">
+                    <ShieldCheck size={20} className="text-slate-500" />
+                    <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Institutional Intelligence Matrix</h2>
+                    <div className="h-px bg-white/5 flex-1" />
                 </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* Placement Performance Chart Card */}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        className="bg-[#1e293b] border border-white/5 rounded-[2.5rem] p-10 shadow-2xl"
+                    >
+                        <div className="flex items-center justify-between mb-10">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                    <TrendingUp size={22} className="text-blue-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white tracking-tight">Placement Velocity</h3>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Efficiency by Academic Unit</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="h-[320px] relative">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={analytics?.placementByCollege?.slice(0, 5)}>
+                                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                                    <XAxis 
+                                        dataKey="collegeName" 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }}
+                                        dy={10}
+                                    />
+                                    <YAxis 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
+                                    />
+                                    <Tooltip 
+                                        cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                                        contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px' }}
+                                        itemStyle={{ color: '#fff', fontSize: '13px', fontWeight: '900' }}
+                                        labelStyle={{ color: '#64748b', fontSize: '10px', marginBottom: '5px', fontWeight: 'bold' }}
+                                    />
+                                    <Bar dataKey="placementRate" fill="url(#blueBarGradient)" radius={[10, 10, 4, 4]} barSize={40} />
+                                    <defs>
+                                        <linearGradient id="blueBarGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#60a5fa" />
+                                            <stop offset="100%" stopColor="#2563eb" />
+                                        </linearGradient>
+                                    </defs>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
 
-                <div className="dashboard-table-section">
-                    <h2>Recent Company Registrations</h2>
-                    <Table
-                        columns={companyColumns}
-                        data={recentCompanies}
-                        emptyMessage="No recent companies"
-                    />
+                    {/* Student Demographics Chart Card */}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-[#1e293b] border border-white/5 rounded-[2.5rem] p-10 shadow-2xl"
+                    >
+                        <div className="flex items-center justify-between mb-10">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                                    <Users size={22} className="text-indigo-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white tracking-tight">Talent Distribution</h3>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Departmental Concentration</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="h-[320px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={analytics?.studentsByDepartment}
+                                        dataKey="count"
+                                        nameKey="_id"
+                                        innerRadius={75}
+                                        outerRadius={105}
+                                        paddingAngle={10}
+                                        stroke="none"
+                                    >
+                                        {analytics?.studentsByDepartment?.map((_, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip 
+                                        contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px' }}
+                                    />
+                                    <Legend 
+                                        verticalAlign="bottom" 
+                                        height={40} 
+                                        iconType="circle"
+                                        wrapperStyle={{ fontSize: '9px' }}
+                                        formatter={(value) => <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">{value}</span>}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+
+                    {/* Top Skills in Demand Chart */}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-[#1e293b] border border-white/5 rounded-[2.5rem] p-10 shadow-2xl"
+                    >
+                        <div className="flex items-center justify-between mb-10">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                                    <GraduationCap size={22} className="text-purple-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white tracking-tight">Top Skills in Demand</h3>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Market Requirements</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="h-[320px] relative">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={analytics?.topSkills?.slice(0, 6) || []}>
+                                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                                    <XAxis 
+                                        dataKey="_id" 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }}
+                                        dy={10}
+                                    />
+                                    <YAxis 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
+                                    />
+                                    <Tooltip 
+                                        cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                                        contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px' }}
+                                        itemStyle={{ color: '#fff', fontSize: '13px', fontWeight: '900' }}
+                                        labelStyle={{ color: '#64748b', fontSize: '10px', marginBottom: '5px', fontWeight: 'bold' }}
+                                    />
+                                    <Bar dataKey="count" fill="url(#purpleBarGradient)" radius={[10, 10, 4, 4]} barSize={40} />
+                                    <defs>
+                                        <linearGradient id="purpleBarGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#a78bfa" />
+                                            <stop offset="100%" stopColor="#7c3aed" />
+                                        </linearGradient>
+                                    </defs>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
+
+                    {/* Company Distribution Chart */}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3 }}
+                        className="bg-[#1e293b] border border-white/5 rounded-[2.5rem] p-10 shadow-2xl"
+                    >
+                        <div className="flex items-center justify-between mb-10">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                                    <Briefcase size={22} className="text-emerald-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white tracking-tight">Company Distribution</h3>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Industry Breakdown</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="h-[320px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={analytics?.companiesByIndustry || []}
+                                        dataKey="count"
+                                        nameKey="_id"
+                                        innerRadius={75}
+                                        outerRadius={105}
+                                        paddingAngle={10}
+                                        stroke="none"
+                                    >
+                                        {analytics?.companiesByIndustry?.map((_, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip 
+                                        contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px' }}
+                                    />
+                                    <Legend 
+                                        verticalAlign="bottom" 
+                                        height={40} 
+                                        iconType="circle"
+                                        wrapperStyle={{ fontSize: '9px' }}
+                                        formatter={(value) => <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">{value}</span>}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
+
+            {/* Recent Colleges and Companies Section */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16"
+            >
+                {/* Recent Colleges */}
+                <div className="content-section bg-[#1e293b] border border-white/5 rounded-[2rem] p-10 shadow-2xl">
+                    <div className="flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                                <Building2 size={20} className="text-blue-500" />
+                            </div>
+                            <h2 className="text-xl font-bold text-white tracking-tight">Recent Colleges</h2>
+                        </div>
+                        <button onClick={() => navigate('/admin/colleges')} className="text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors">View Directory</button>
+                    </div>
+
+                    <div className="recent-list space-y-5">
+                        {recentData.filter(item => item.type === 'College').slice(0, 5).map((item, idx) => (
+                            <motion.div 
+                                key={idx} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.5 + idx * 0.05 }}
+                                className="recent-item p-5 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center gap-5 cursor-pointer"
+                                onClick={() => navigate(`/admin/colleges/${item._id}`)}
+                            >
+                                <div className="w-14 h-14 flex items-center justify-center bg-slate-900 border border-white/5 rounded-xl text-blue-400 shadow-inner">
+                                    <Building2 size={28} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-[15px] font-bold text-white leading-tight mb-1">{item.name}</h3>
+                                    <div className="flex items-center gap-2 text-slate-500">
+                                        <MapPin size={12} />
+                                        <span className="text-xs font-medium">{item.city || 'Remote'}</span>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter ${item.isVerified ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
+                                        {item.isVerified ? 'Verified' : 'Pending'}
+                                    </span>
+                                    <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-slate-600 font-bold uppercase">
+                                        <Clock size={10} />
+                                        {new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Recent Companies */}
+                <div className="content-section bg-[#1e293b] border border-white/5 rounded-[2rem] p-10 shadow-2xl">
+                    <div className="flex justify-between items-center mb-8">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                                <Briefcase size={20} className="text-emerald-500" />
+                            </div>
+                            <h2 className="text-xl font-bold text-white tracking-tight">Recent Companies</h2>
+                        </div>
+                        <button onClick={() => navigate('/admin/companies')} className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:text-emerald-300 transition-colors">View Sector</button>
+                    </div>
+
+                    <div className="recent-list space-y-5">
+                        {recentData.filter(item => item.type === 'Company').slice(0, 5).map((item, idx) => (
+                            <motion.div 
+                                key={idx} 
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.5 + idx * 0.05 }}
+                                className="recent-item p-5 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center gap-5 cursor-pointer"
+                                onClick={() => navigate(`/admin/companies/${item._id}`)}
+                            >
+                                <div className="w-14 h-14 flex items-center justify-center bg-slate-900 border border-white/5 rounded-xl text-emerald-400 shadow-inner">
+                                    <Briefcase size={28} />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-[15px] font-bold text-white leading-tight mb-1">{item.name}</h3>
+                                    <div className="flex items-center gap-2 text-slate-500">
+                                        <MapPin size={12} />
+                                        <span className="text-xs font-medium">{item.industry || 'Professional Services'}</span>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter ${item.isApproved ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'}`}>
+                                        {item.isApproved ? 'Approved' : 'Pending'}
+                                    </span>
+                                    <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-slate-600 font-bold uppercase">
+                                        <Clock size={10} />
+                                        {new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
+
+
         </div>
     );
 };

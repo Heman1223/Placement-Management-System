@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
 import toast from 'react-hot-toast';
+import { ArrowLeft, Bell } from 'lucide-react';
 import './AdminPages.css';
 
 const AddCollege = () => {
@@ -48,9 +49,17 @@ const AddCollege = () => {
 
     return (
         <div className="admin-page">
-            <div className="page-header">
-                <h1>Add New College</h1>
-                <p className="subtitle">Create a new college and admin account</p>
+            <div className="colleges-header">
+                <div className="header-title-area">
+                    <button onClick={() => navigate('/admin/colleges')} className="back-btn mb-2" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--slate-400)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}>
+                        <ArrowLeft size={16} />
+                        Back to Colleges
+                    </button>
+                    <h1>Registration Hub</h1>
+                    <p>Super Admin Portal</p>
+                </div>
+                <div className="header-controls">
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="form-container">

@@ -139,6 +139,11 @@
     color: #4c51bf;
 }
 
+.job-type-badge.placement-drive {
+    background: #7c3aed;
+    color: white;
+}
+
 .job-details {
     display: flex;
     flex-direction: column;

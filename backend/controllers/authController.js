@@ -352,11 +352,29 @@ const getLoginHistory = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * @desc    Get public colleges list for registration
+ * @route   GET /api/auth/colleges
+ * @access  Public
+ */
+const getPublicColleges = asyncHandler(async (req, res) => {
+    const colleges = await College.find({ 
+        isDeleted: false,
+        isActive: true
+    }).select('name _id code city state phone');
+
+    res.json({
+        success: true,
+        data: colleges
+    });
+});
+
 module.exports = {
     register,
     login,
     getProfile,
     updatePassword,
     logout,
-    getLoginHistory
+    getLoginHistory,
+    getPublicColleges
 };

@@ -8,6 +8,24 @@ const { asyncHandler } = require('../middleware');
  */
 const createJob = asyncHandler(async (req, res) => {
     const companyId = req.user.companyProfile._id;
+    const { college } = req.body;
+
+    // If creating a placement drive for a college, verify access
+    if (college) {
+        const company = await Company.findById(companyId);
+        const hasAccess = company.collegeAccess.some(
+            ca => ca.college.toString() === college && ca.status === 'approved'
+        );
+        
+        if (!hasAccess) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have approved access to create placement drives for this college'
+            });
+        }
+        req.body.isPlacementDrive = true;
+    }
+
     const job = await Job.create({
         ...req.body,
         company: companyId,
@@ -59,6 +77,26 @@ const updateJob = asyncHandler(async (req, res) => {
     if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
 
     const wasOpen = job.status === 'open';
+
+    // If updating placement drive status, verify access
+    if (req.body.college) {
+        const company = await Company.findById(companyId);
+        const hasAccess = company.collegeAccess.some(
+            ca => ca.college.toString() === req.body.college && ca.status === 'approved'
+        );
+        
+        if (!hasAccess) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have approved access to create placement drives for this college'
+            });
+        }
+        req.body.isPlacementDrive = true;
+    } else if (req.body.college === null || req.body.college === '') {
+        req.body.isPlacementDrive = false;
+        req.body.college = null;
+    }
+
     job = await Job.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
 
     if (wasOpen && job.status !== 'open') {

@@ -20,28 +20,31 @@ import Companies from './pages/superAdmin/Companies';
 import AddCompany from './pages/superAdmin/AddCompany';
 import CompanyDetail from './pages/superAdmin/CompanyDetail';
 import SuperAdminStudents from './pages/superAdmin/Students';
+import StudentDetail from './pages/superAdmin/StudentDetail';
 import Users from './pages/superAdmin/Users';
-import ActivityLogs from './pages/superAdmin/ActivityLogs';
+
 import Settings from './pages/superAdmin/Settings';
 
 // College Pages
 import CollegeDashboard from './pages/college/Dashboard';
 import Students from './pages/college/Students';
-import StudentDetail from './pages/college/StudentDetail';
+import CollegeStudentDetail from './pages/college/StudentDetail';
 import StudentForm from './pages/college/StudentForm';
 import BulkUpload from './pages/college/BulkUpload';
 import Placements from './pages/college/Placements';
 import CompanyActivity from './pages/college/CompanyActivity';
 import CollegeActivityLogs from './pages/college/ActivityLogs';
 import CollegeSettings from './pages/college/Settings';
+import Partnerships from './pages/college/Partnerships';
 
 // Company Pages
 import CompanyDashboard from './pages/company/Dashboard';
 import Jobs from './pages/company/Jobs';
 import JobForm from './pages/company/JobForm';
-import Applicants from './pages/company/Applicants';
+import CompanyJobDetail from './pages/company/JobDetail';
 import SearchStudents from './pages/company/SearchStudents';
 import Shortlist from './pages/company/Shortlist';
+import ConnectedColleges from './pages/company/ConnectedColleges';
 
 // Student Pages
 import StudentDashboard from './pages/student/Dashboard';
@@ -116,8 +119,9 @@ function App() {
             <Route path="companies/new" element={<AddCompany />} />
             <Route path="companies/:id" element={<CompanyDetail />} />
             <Route path="students" element={<SuperAdminStudents />} />
+            <Route path="students/:id" element={<StudentDetail />} />
             <Route path="users" element={<Users />} />
-            <Route path="activity-logs" element={<ActivityLogs />} />
+
             <Route path="settings" element={<Settings />} />
           </Route>
 
@@ -130,13 +134,14 @@ function App() {
             <Route index element={<CollegeDashboard />} />
             <Route path="students" element={<Students />} />
             <Route path="students/new" element={<StudentForm />} />
-            <Route path="students/:id" element={<StudentDetail />} />
+            <Route path="students/:id" element={<CollegeStudentDetail />} />
             <Route path="students/:id/edit" element={<StudentForm />} />
             <Route path="upload" element={<BulkUpload />} />
             <Route path="placements" element={<Placements />} />
             <Route path="company-activity" element={<CompanyActivity />} />
             <Route path="activity-logs" element={<CollegeActivityLogs />} />
             <Route path="settings" element={<CollegeSettings />} />
+            <Route path="partnerships" element={<Partnerships />} />
           </Route>
 
           {/* Company Routes */}
@@ -148,10 +153,12 @@ function App() {
             <Route index element={<CompanyDashboard />} />
             <Route path="jobs" element={<Jobs />} />
             <Route path="jobs/new" element={<JobForm />} />
+            <Route path="jobs/:id" element={<CompanyJobDetail />} />
             <Route path="jobs/:id/edit" element={<JobForm />} />
-            <Route path="jobs/:id/applicants" element={<Applicants />} />
+            <Route path="jobs/:id/applicants" element={<CompanyJobDetail />} />
             <Route path="search" element={<SearchStudents />} />
             <Route path="shortlist" element={<Shortlist />} />
+            <Route path="partnerships" element={<ConnectedColleges />} />
           </Route>
 
           {/* Student Routes */}

@@ -25,10 +25,17 @@ const StudentForm = () => {
         phone: '',
         gender: '',
         department: '',
+        course: '',
         batch: new Date().getFullYear(),
+        admissionYear: new Date().getFullYear() - 4,
+        section: '',
         rollNumber: '',
         cgpa: '',
         backlogs: { active: 0, history: 0 },
+        city: '',
+        state: '',
+        enrollmentStatus: 'active',
+        placementEligible: true,
         education: {
             tenth: { percentage: '', board: '' },
             twelfth: { percentage: '', board: '', stream: '' }
@@ -70,10 +77,17 @@ const StudentForm = () => {
                 phone: studentData.phone || '',
                 gender: studentData.gender || '',
                 department: studentData.department || '',
+                course: studentData.course || '',
                 batch: studentData.batch || new Date().getFullYear(),
+                admissionYear: studentData.admissionYear || new Date().getFullYear() - 4,
+                section: studentData.section || '',
                 rollNumber: studentData.rollNumber || '',
                 cgpa: studentData.cgpa || '',
                 backlogs: studentData.backlogs || { active: 0, history: 0 },
+                city: studentData.city || '',
+                state: studentData.state || '',
+                enrollmentStatus: studentData.enrollmentStatus || 'active',
+                placementEligible: studentData.placementEligible !== undefined ? studentData.placementEligible : true,
                 education: {
                     tenth: studentData.education?.tenth || { percentage: '', board: '' },
                     twelfth: studentData.education?.twelfth || { percentage: '', board: '', stream: '' }
@@ -212,8 +226,9 @@ const StudentForm = () => {
             </div>
 
             <form onSubmit={handleSubmit}>
-                {/* Personal Information */}
-                <Card title="Personal Information" className="form-card">
+                {/* 1. Basic Identity (Mandatory) */}
+                <Card title="1️⃣ Basic Identity (Mandatory)" className="form-card">
+                    <p className="text-sm text-gray-600 mb-4">These come from college records</p>
                     <div className="form-grid">
                         <Input
                             label="First Name"
@@ -228,39 +243,20 @@ const StudentForm = () => {
                             required
                         />
                         <Input
-                            label="Email"
+                            label="Roll Number / Registration Number"
+                            value={formData.rollNumber}
+                            onChange={(e) => handleChange('rollNumber', e.target.value)}
+                            required
+                        />
+                        <Input
+                            label="College Email ID"
                             type="email"
                             value={formData.email}
                             onChange={(e) => handleChange('email', e.target.value)}
                             required
                         />
-                        <Input
-                            label="Phone"
-                            value={formData.phone}
-                            onChange={(e) => handleChange('phone', e.target.value)}
-                            required
-                        />
                         <div className="input-wrapper">
-                            <label className="input-label">Gender</label>
-                            <select
-                                className="input"
-                                value={formData.gender}
-                                onChange={(e) => handleChange('gender', e.target.value)}
-                            >
-                                <option value="">Select Gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                    </div>
-                </Card>
-
-                {/* Academic Information */}
-                <Card title="Academic Information" className="form-card">
-                    <div className="form-grid">
-                        <div className="input-wrapper">
-                            <label className="input-label">Department <span className="input-required">*</span></label>
+                            <label className="input-label">Branch / Department <span className="input-required">*</span></label>
                             <select
                                 className="input"
                                 value={formData.department}
@@ -271,11 +267,39 @@ const StudentForm = () => {
                                 {departments.map(dept => (
                                     <option key={dept} value={dept}>{dept}</option>
                                 ))}
-                                <option value="__new">+ Add New</option>
                             </select>
                         </div>
                         <div className="input-wrapper">
-                            <label className="input-label">Batch <span className="input-required">*</span></label>
+                            <label className="input-label">Course / Degree <span className="input-required">*</span></label>
+                            <select
+                                className="input"
+                                value={formData.course}
+                                onChange={(e) => handleChange('course', e.target.value)}
+                                required
+                            >
+                                <option value="">Select Course</option>
+                                <option value="B.Tech">B.Tech</option>
+                                <option value="M.Tech">M.Tech</option>
+                                <option value="MBA">MBA</option>
+                                <option value="MCA">MCA</option>
+                                <option value="B.Sc">B.Sc</option>
+                                <option value="M.Sc">M.Sc</option>
+                                <option value="BBA">BBA</option>
+                                <option value="BCA">BCA</option>
+                                <option value="B.Com">B.Com</option>
+                                <option value="M.Com">M.Com</option>
+                                <option value="BA">BA</option>
+                                <option value="MA">MA</option>
+                                <option value="B.Pharm">B.Pharm</option>
+                                <option value="M.Pharm">M.Pharm</option>
+                                <option value="MBBS">MBBS</option>
+                                <option value="BDS">BDS</option>
+                                <option value="LLB">LLB</option>
+                                <option value="LLM">LLM</option>
+                            </select>
+                        </div>
+                        <div className="input-wrapper">
+                            <label className="input-label">Graduation Year / Batch <span className="input-required">*</span></label>
                             <select
                                 className="input"
                                 value={formData.batch}
@@ -287,40 +311,128 @@ const StudentForm = () => {
                                 ))}
                             </select>
                         </div>
+                        <div className="input-wrapper">
+                            <label className="input-label">Gender</label>
+                            <select
+                                className="input"
+                                value={formData.gender}
+                                onChange={(e) => handleChange('gender', e.target.value)}
+                            >
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                                <option value="prefer_not_to_say">Prefer not to say</option>
+                            </select>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* 2. Academic Information (Verified Data) */}
+                <Card title="2️⃣ Academic Information (Verified Data)" className="form-card">
+                    <p className="text-sm text-gray-600 mb-4">Data the college already trusts</p>
+                    <div className="form-grid">
                         <Input
-                            label="Roll Number"
-                            value={formData.rollNumber}
-                            onChange={(e) => handleChange('rollNumber', e.target.value)}
-                            required
-                        />
-                        <Input
-                            label="CGPA"
+                            label="Current CGPA / Percentage"
                             type="number"
                             step="0.01"
                             min="0"
                             max="10"
                             value={formData.cgpa}
                             onChange={(e) => handleChange('cgpa', parseFloat(e.target.value))}
+                            placeholder="Enter CGPA (0-10)"
                         />
+                        <Input
+                            label="Admission Year"
+                            type="number"
+                            min="2000"
+                            max={new Date().getFullYear()}
+                            value={formData.admissionYear}
+                            onChange={(e) => handleChange('admissionYear', parseInt(e.target.value))}
+                        />
+                        <Input
+                            label="Section (if applicable)"
+                            value={formData.section}
+                            onChange={(e) => handleChange('section', e.target.value)}
+                            placeholder="e.g., A, B, C"
+                        />
+                        <div className="input-wrapper">
+                            <label className="input-label">Enrollment Status</label>
+                            <select
+                                className="input"
+                                value={formData.enrollmentStatus}
+                                onChange={(e) => handleChange('enrollmentStatus', e.target.value)}
+                            >
+                                <option value="active">Active</option>
+                                <option value="passed_out">Passed Out</option>
+                                <option value="on_hold">On Hold</option>
+                                <option value="dropped">Dropped</option>
+                            </select>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* 3. Contact Information (Basic) */}
+                <Card title="3️⃣ Contact Information (Basic)" className="form-card">
+                    <p className="text-sm text-gray-600 mb-4">Keep this minimal</p>
+                    <div className="form-grid">
+                        <Input
+                            label="Student Mobile Number"
+                            value={formData.phone}
+                            onChange={(e) => handleChange('phone', e.target.value)}
+                            placeholder="Optional but helpful"
+                        />
+                        <Input
+                            label="City"
+                            value={formData.city}
+                            onChange={(e) => handleChange('city', e.target.value)}
+                            placeholder="Optional"
+                        />
+                        <Input
+                            label="State"
+                            value={formData.state}
+                            onChange={(e) => handleChange('state', e.target.value)}
+                            placeholder="Optional"
+                        />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">📌 Personal address is NOT required</p>
+                </Card>
+
+                {/* 4. Placement Eligibility Flags (Very Important) */}
+                <Card title="4️⃣ Placement Eligibility Flags (Very Important)" className="form-card">
+                    <p className="text-sm text-gray-600 mb-4">These save time later</p>
+                    <div className="form-grid">
+                        <div className="input-wrapper">
+                            <label className="input-label">Placement Eligible</label>
+                            <select
+                                className="input"
+                                value={formData.placementEligible.toString()}
+                                onChange={(e) => handleChange('placementEligible', e.target.value === 'true')}
+                            >
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
                         <Input
                             label="Active Backlogs"
                             type="number"
                             min="0"
                             value={formData.backlogs.active}
-                            onChange={(e) => handleChange('backlogs.active', parseInt(e.target.value))}
+                            onChange={(e) => handleChange('backlogs.active', parseInt(e.target.value) || 0)}
                         />
                         <Input
-                            label="Backlog History"
+                            label="Backlog History (Total)"
                             type="number"
                             min="0"
                             value={formData.backlogs.history}
-                            onChange={(e) => handleChange('backlogs.history', parseInt(e.target.value))}
+                            onChange={(e) => handleChange('backlogs.history', parseInt(e.target.value) || 0)}
                         />
                     </div>
                 </Card>
 
-                {/* Education History */}
-                <Card title="Education History" className="form-card">
+                {/* Education History - Optional */}
+                <Card title="📚 Education History (Optional)" className="form-card">
+                    <p className="text-sm text-gray-600 mb-4">Students can fill this later in their profile</p>
                     <div className="education-section">
                         <h4>10th Standard</h4>
                         <div className="form-grid">
@@ -368,8 +480,9 @@ const StudentForm = () => {
                     </div>
                 </Card>
 
-                {/* Skills */}
-                <Card title="Skills" className="form-card">
+                {/* Skills - Optional */}
+                <Card title="💡 Skills (Optional)" className="form-card">
+                    <p className="text-sm text-gray-600 mb-4">Students can add skills later in their profile</p>
                     <div className="skills-input">
                         <Input
                             placeholder="Add a skill..."
@@ -391,8 +504,9 @@ const StudentForm = () => {
                     </div>
                 </Card>
 
-                {/* Links & Resume */}
-                <Card title="Profile Links & Resume" className="form-card">
+                {/* Links & Resume - Optional */}
+                <Card title="🔗 Profile Links & Resume (Optional)" className="form-card">
+                    <p className="text-sm text-gray-600 mb-4">Students can complete this later</p>
                     <div className="form-grid">
                         <Input
                             label="LinkedIn URL"

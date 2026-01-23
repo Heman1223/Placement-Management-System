@@ -16,6 +16,10 @@ router.post('/bulk-download', isApproved, companyController.bulkDownloadStudents
 // Profile
 router.put('/profile', companyController.updateProfile);
 
+// College Access Management
+router.post('/request-access', isApproved, companyController.requestCollegeAccess);
+router.get('/my-colleges', isApproved, companyController.getRequestedColleges);
+
 // Student search (requires approval)
 router.get('/students/search', isApproved, validatePagination, companyController.searchStudents);
 router.get('/students/:id', isApproved, validateObjectId('id'), companyController.getStudentProfile);

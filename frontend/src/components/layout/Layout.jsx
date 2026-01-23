@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
 
 const Layout = ({ title }) => {
+    const { isSuperAdmin } = useAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -17,7 +19,7 @@ const Layout = ({ title }) => {
     };
 
     return (
-        <div className="layout">
+        <div className={`layout ${isSuperAdmin ? 'layout-admin-dark' : ''}`}>
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggle={toggleSidebar}

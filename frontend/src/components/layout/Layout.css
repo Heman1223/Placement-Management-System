@@ -3,12 +3,21 @@
     min-height: 100vh;
 }
 
+.layout-admin-dark {
+    background: #0f172a;
+}
+
+.layout-admin-dark .layout-content {
+    background: #0f172a !important;
+    color: white;
+}
+
 .layout-main {
     flex: 1;
     margin-left: var(--sidebar-width);
     display: flex;
     flex-direction: column;
-    transition: margin-left var(--transition-normal);
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .layout-main-expanded {

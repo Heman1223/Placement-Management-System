@@ -1,26 +1,37 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { companyAPI, jobAPI } from '../../services/api';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
-import { Search, Filter, Star, ExternalLink, Mail, Github, Linkedin, Building2, GraduationCap, Sparkles, Briefcase, Eye, Phone, Calendar, Award, FileText, User } from 'lucide-react';
+import { Search, Filter, Star, ExternalLink, Mail, Github, Linkedin, Building2, GraduationCap, Sparkles, Briefcase, Eye, ChevronDown, ChevronUp, Clock, MapPin, X, Award, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './SearchStudents.css';
 
 const SearchStudents = () => {
+    const location = useLocation();
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
+    const [hasSearched, setHasSearched] = useState(false);
+    
+    // Data for dropdowns
     const [jobs, setJobs] = useState([]);
     const [colleges, setColleges] = useState([]);
+    
+    // UI States
     const [showFilters, setShowFilters] = useState(true);
+    const [selectedCollege, setSelectedCollege] = useState(null); // New state for selected college
+    
+    // Action States
     const [shortlistingId, setShortlistingId] = useState(null);
     const [shortlistModal, setShortlistModal] = useState({ open: false, student: null });
     const [selectedJobForShortlist, setSelectedJobForShortlist] = useState('');
     const [shortlistNotes, setShortlistNotes] = useState('');
     const [studentDetailModal, setStudentDetailModal] = useState({ open: false, student: null, loading: false });
 
+    // Filter States
     const [filters, setFilters] = useState({
         keyword: '',
         department: '',
@@ -28,11 +39,12 @@ const SearchStudents = () => {
         minCgpa: '',
         maxBacklogs: '',
         skills: '',
-        college: '',
+        // college: '', // Removing college from generic filters as it's now a primary selection
         placementStatus: 'not_placed',
         experience: ''
     });
 
+    // Saved Filters
     const [savedFilters, setSavedFilters] = useState([]);
     const [showSaveFilterModal, setShowSaveFilterModal] = useState(false);
     const [filterName, setFilterName] = useState('');
@@ -44,18 +56,27 @@ const SearchStudents = () => {
         fetchSavedFilters();
     }, []);
 
-    // Auto-search when filters change (with debounce for keyword)
+    // Effect to handle navigation from Partnerships page
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            // Only search if at least one filter is set (excluding empty strings)
-            const hasFilters = Object.values(filters).some(value => value !== '');
-            if (hasFilters) {
-                searchStudents(1);
+        if (location.state?.collegeId && colleges.length > 0) {
+            const college = colleges.find(c => c._id === location.state.collegeId);
+            if (college) {
+                setSelectedCollege(college);
+                setHasSearched(true);
             }
-        }, 500); // 500ms debounce for keyword search
+        }
+    }, [location.state, colleges]);
 
-        return () => clearTimeout(timeoutId);
-    }, [filters]);
+    // Effect for Real-time Search
+    useEffect(() => {
+        if (selectedCollege) {
+            const timeoutId = setTimeout(() => {
+                searchStudents(1);
+            }, 500); // Debounce search by 500ms
+            return () => clearTimeout(timeoutId);
+        }
+    }, [filters, selectedCollege]);
+
 
     const fetchJobs = async () => {
         try {
@@ -84,6 +105,29 @@ const SearchStudents = () => {
         }
     };
 
+    const handleCollegeSelect = (collegeId) => {
+        if (!collegeId) return;
+        const college = colleges.find(c => c._id === collegeId);
+        setSelectedCollege(college);
+        // Initial search is handled by useEffect
+    };
+
+    const handleBackToCollegeSelect = () => {
+        setSelectedCollege(null);
+        setStudents([]);
+        setHasSearched(false);
+        setFilters({
+            keyword: '',
+            department: '',
+            batch: '',
+            minCgpa: '',
+            maxBacklogs: '',
+            skills: '',
+            placementStatus: 'not_placed',
+            experience: ''
+        });
+    };
+
     const handleSaveFilter = async () => {
         if (!filterName.trim()) {
             toast.error('Please enter a filter name');
@@ -91,7 +135,7 @@ const SearchStudents = () => {
         }
 
         try {
-            await companyAPI.saveSearchFilter(filterName, filters);
+            await companyAPI.saveSearchFilter(filterName, { ...filters, college: selectedCollege?._id });
             toast.success('Filter saved successfully');
             setShowSaveFilterModal(false);
             setFilterName('');
@@ -102,8 +146,10 @@ const SearchStudents = () => {
     };
 
     const handleLoadFilter = (savedFilter) => {
-        setFilters(savedFilter.filters);
+        const { college, ...restFilters } = savedFilter.filters;
+        setFilters(restFilters);
         setShowSavedFilters(false);
+        setHasSearched(true); 
         toast.success(`Loaded filter: ${savedFilter.name}`);
     };
 
@@ -119,11 +165,15 @@ const SearchStudents = () => {
         }
     };
 
-    const searchStudents = async (page = 1) => {
+    const searchStudents = async (page = 1, searchFilters = filters) => {
+        if (!selectedCollege) return;
+        
         setLoading(true);
+        setHasSearched(true);
         try {
             const params = {
-                ...filters,
+                ...searchFilters,
+                college: selectedCollege?._id, // Enforce selected college
                 page,
                 limit: 12
             };
@@ -137,7 +187,7 @@ const SearchStudents = () => {
             setStudents(response.data.data.students);
             setPagination(response.data.data.pagination);
         } catch (error) {
-            toast.error('Search failed');
+            console.error("Search failed", error);
         } finally {
             setLoading(false);
         }
@@ -155,16 +205,10 @@ const SearchStudents = () => {
             minCgpa: '',
             maxBacklogs: '',
             skills: '',
-            college: '',
             placementStatus: '',
             experience: ''
         });
-        setStudents([]); // Clear results
-        setPagination({ current: 1, pages: 1, total: 0 });
-    };
-
-    const handleSearch = () => {
-        searchStudents(1);
+        // Search triggered by useEffect
     };
 
     const handleShortlist = (student) => {
@@ -185,14 +229,16 @@ const SearchStudents = () => {
 
         const student = shortlistModal.student;
         setShortlistingId(student._id);
+        const modalStudentName = student.name?.firstName; 
         setShortlistModal({ open: false, student: null });
 
         try {
             await companyAPI.shortlist(student._id, selectedJobForShortlist, shortlistNotes);
-            toast.success(`${student.name?.firstName} shortlisted successfully!`);
+            toast.success(`${modalStudentName} shortlisted successfully!`);
         } catch (error) {
             console.error('Shortlist error:', error);
-            toast.error(error.response?.data?.message || 'Failed to shortlist');
+            const msg = error.response?.data?.message || 'Failed to shortlist';
+            toast.error(msg);
         } finally {
             setShortlistingId(null);
         }
@@ -225,325 +271,268 @@ const SearchStudents = () => {
                     </div>
                     <div>
                         <h1>Find Talent</h1>
-                        <p>Discover exceptional candidates matching your requirements</p>
+                        <p>Search and filter to find the perfect candidates</p>
                     </div>
                 </div>
             </div>
 
-            {/* Filters */}
-            <Card className="filters-card glass-card">
-                <div className="filters-header">
-                    <h3><Filter size={18} /> Search Filters</h3>
-                    <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
-                        {savedFilters.length > 0 && (
-                            <button
-                                className="toggle-filters"
-                                onClick={() => setShowSavedFilters(!showSavedFilters)}
-                            >
-                                Saved ({savedFilters.length})
-                            </button>
-                        )}
-                        <button
-                            className="toggle-filters"
-                            onClick={() => setShowFilters(!showFilters)}
-                        >
-                            {showFilters ? 'Hide' : 'Show'}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Saved Filters Dropdown */}
-                {showSavedFilters && savedFilters.length > 0 && (
-                    <div className="saved-filters-section">
-                        <h4>Saved Filters</h4>
-                        <div className="saved-filters-list">
-                            {savedFilters.map((sf, index) => (
-                                <div key={index} className="saved-filter-item">
-                                    <button
-                                        className="load-filter-btn"
-                                        onClick={() => handleLoadFilter(sf)}
-                                    >
-                                        {sf.name}
-                                    </button>
-                                    <button
-                                        className="delete-filter-btn"
-                                        onClick={() => handleDeleteFilter(sf.name)}
-                                        title="Delete filter"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            ))}
+            {/* College Selection View (Initial State) */}
+            {!selectedCollege ? (
+                <div className="college-selection-container">
+                    <Card className="college-select-card">
+                        <div className="select-icon-wrapper">
+                            <Building2 size={48} />
                         </div>
+                        <h2>Select a College to Begin</h2>
+                        <p>Choose a college from the list below to view and filter their students.</p>
+                        
+                        <div className="college-select-wrapper">
+                            <select 
+                                className="college-main-select"
+                                onChange={(e) => handleCollegeSelect(e.target.value)}
+                                defaultValue=""
+                            >
+                                <option value="" disabled>Select College / Institute</option>
+                                {colleges.map(c => (
+                                    <option key={c._id} value={c._id}>{c.name}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="select-arrow" size={20} />
+                        </div>
+                    </Card>
+                </div>
+            ) : (
+                /* Main Search Section (After Selection) */
+                <div className="search-container">
+                    <div className="active-college-banner">
+                        <div className="college-info">
+                            <Building2 size={20} />
+                            <span>Viewing students from: <strong>{selectedCollege.name}</strong></span>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={handleBackToCollegeSelect}>Change College</Button>
                     </div>
-                )}
 
-                {showFilters && (
-                    <div className="filters-grid">
-                        <div className="filter-row">
+                    {/* Search Bar & Filters */}
+                    <Card className="search-card">
+                        <div className="keyword-search-bar">
                             <Input
-                                label="Keyword Search"
-                                placeholder="Search by name, email, roll number, skills..."
+                                placeholder="Search by name, skills, or keywords..."
                                 value={filters.keyword}
                                 onChange={(e) => handleFilterChange('keyword', e.target.value)}
                                 icon={Search}
+                                className="main-search-input"
                             />
-                        </div>
-
-                        <div className="filter-row">
-                            <Input
-                                label="Skills"
-                                placeholder="JavaScript, React, Python..."
-                                value={filters.skills}
-                                onChange={(e) => handleFilterChange('skills', e.target.value)}
-                                icon={Search}
-                            />
-                        </div>
-
-                        <div className="filter-row filter-row-3">
-                            <div className="input-wrapper">
-                                <label className="input-label"><Building2 size={14} /> College</label>
-                                <select
-                                    className="input"
-                                    value={filters.college}
-                                    onChange={(e) => handleFilterChange('college', e.target.value)}
-                                >
-                                    <option value="">All Colleges</option>
-                                    {colleges.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="input-wrapper">
-                                <label className="input-label"><GraduationCap size={14} /> Department</label>
-                                <select
-                                    className="input"
-                                    value={filters.department}
-                                    onChange={(e) => handleFilterChange('department', e.target.value)}
-                                >
-                                    <option value="">All Departments</option>
-                                    {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                                </select>
-                            </div>
-
-                            <div className="input-wrapper">
-                                <label className="input-label">Batch</label>
-                                <select
-                                    className="input"
-                                    value={filters.batch}
-                                    onChange={(e) => handleFilterChange('batch', e.target.value)}
-                                >
-                                    <option value="">All Batches</option>
-                                    {batches.map(y => <option key={y} value={y}>{y}</option>)}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="filter-row filter-row-3">
-                            <Input
-                                label="Minimum CGPA"
-                                type="number"
-                                step="0.1"
-                                min="0"
-                                max="10"
-                                placeholder="e.g., 7.0"
-                                value={filters.minCgpa}
-                                onChange={(e) => handleFilterChange('minCgpa', e.target.value)}
-                            />
-                            <Input
-                                label="Max Backlogs"
-                                type="number"
-                                min="0"
-                                placeholder="e.g., 0"
-                                value={filters.maxBacklogs}
-                                onChange={(e) => handleFilterChange('maxBacklogs', e.target.value)}
-                            />
-                            <div className="input-wrapper">
-                                <label className="input-label">Experience</label>
-                                <select
-                                    className="input"
-                                    value={filters.experience}
-                                    onChange={(e) => handleFilterChange('experience', e.target.value)}
-                                >
-                                    <option value="">Any</option>
-                                    <option value="internship">Has Internship</option>
-                                    <option value="projects">Has Projects</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="filter-row filter-row-3">
-                            <div className="input-wrapper">
-                                <label className="input-label">Placement Status</label>
-                                <select
-                                    className="input"
-                                    value={filters.placementStatus}
-                                    onChange={(e) => handleFilterChange('placementStatus', e.target.value)}
-                                >
-                                    <option value="">All</option>
-                                    <option value="not_placed">Not Placed</option>
-                                    <option value="in_process">In Process</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="filter-actions">
-                            <Button variant="secondary" onClick={handleClearFilters}>
-                                Clear All
+                            {/* Removed explicit Search button, search is now real-time */}
+                            <Button variant="secondary" onClick={() => setShowFilters(!showFilters)} icon={Filter}>
+                                Filters
                             </Button>
-                            <Button variant="secondary" onClick={() => setShowSaveFilterModal(true)}>
-                                Save Filter
-                            </Button>
-                            <Button onClick={handleSearch} icon={Search}>
-                                Search Talent
-                            </Button>
+                            {savedFilters.length > 0 && (
+                                <Button variant="ghost" onClick={() => setShowSavedFilters(!showSavedFilters)}>
+                                    Saved
+                                </Button>
+                            )}
                         </div>
-                    </div>
-                )}
-            </Card>
 
-            {/* Results */}
-            {loading ? (
-                <div className="loading-screen"><div className="loading-spinner" /></div>
-            ) : students.length > 0 ? (
-                <>
-                    <div className="results-header">
-                        <span className="results-count">
-                            <Sparkles size={16} />
-                            {pagination.total} talented candidates found
-                        </span>
-                    </div>
-
-                    <div className="students-grid">
-                        {students.map(student => (
-                            <Card key={student._id} className="student-card premium-card" hoverable>
-                                <div className="student-header">
-                                    <div className="student-avatar">
-                                        {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
-                                    </div>
-                                    <div className="student-info">
-                                        <h3>{student.name?.firstName} {student.name?.lastName}</h3>
-                                        <p>{student.department} • {student.batch}</p>
-                                    </div>
-                                    <Button
-                                        size="sm"
-                                        icon={Star}
-                                        className="shortlist-btn"
-                                        onClick={() => handleShortlist(student)}
-                                        disabled={shortlistingId === student._id}
-                                    >
-                                        {shortlistingId === student._id ? 'Adding...' : 'Shortlist'}
-                                    </Button>
-                                </div>
-
-                                <div className="student-details">
-                                    <div className="detail-item">
-                                        <span className="detail-label">CGPA</span>
-                                        <span className="detail-value cgpa-badge">{student.cgpa?.toFixed(2) || '-'}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">College</span>
-                                        <span className="detail-value">{student.college?.name || '-'}</span>
-                                    </div>
-                                </div>
-
-                                {student.skills?.length > 0 && (
-                                    <div className="student-skills">
-                                        {student.skills.slice(0, 5).map((skill, i) => (
-                                            <span key={i} className="skill-tag">{skill}</span>
-                                        ))}
-                                        {student.skills.length > 5 && (
-                                            <span className="skill-more">+{student.skills.length - 5}</span>
-                                        )}
-                                    </div>
-                                )}
-
-                                <div className="student-actions">
-                                    <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        icon={Eye}
-                                        onClick={() => viewStudentDetails(student._id)}
-                                    >
-                                        View Details
-                                    </Button>
-                                </div>
-
-                                <div className="student-links">
-                                    {student.email && (
-                                        <a href={`mailto:${student.email}`} title="Email" className="link-btn">
-                                            <Mail size={16} />
-                                        </a>
-                                    )}
-                                    {student.linkedinUrl && (
-                                        <a href={student.linkedinUrl} target="_blank" rel="noopener noreferrer" title="LinkedIn" className="link-btn linkedin">
-                                            <Linkedin size={16} />
-                                        </a>
-                                    )}
-                                    {student.githubUrl && (
-                                        <a href={student.githubUrl} target="_blank" rel="noopener noreferrer" title="GitHub" className="link-btn github">
-                                            <Github size={16} />
-                                        </a>
-                                    )}
-                                    {student.resumeUrl && (
-                                        <a 
-                                            href={student.resumeUrl} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer" 
-                                            title="Resume" 
-                                            className="link-btn resume"
-                                            onClick={async (e) => {
-                                                try {
-                                                    const response = await companyAPI.logResumeView(student._id);
-                                                    if (response.data.limits) {
-                                                        console.log('Download limits:', response.data.limits);
-                                                    }
-                                                } catch (error) {
-                                                    if (error.response?.status === 429) {
-                                                        e.preventDefault();
-                                                        toast.error(error.response.data.message || 'Download limit exceeded');
-                                                    }
-                                                }
-                                            }}
+                        {/* Expanded Filters */}
+                        {showFilters && (
+                            <div className="expanded-filters">
+                                <div className="filters-grid">
+                                    <div className="filter-column">
+                                        <label>Academic</label>
+                                        <select
+                                            className="filter-select"
+                                            value={filters.department}
+                                            onChange={(e) => handleFilterChange('department', e.target.value)}
                                         >
-                                            <FileText size={16} />
-                                        </a>
-                                    )}
+                                            <option value="">All Departments</option>
+                                            {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                                        </select>
+                                        <select
+                                            className="filter-select mt-2"
+                                            value={filters.batch}
+                                            onChange={(e) => handleFilterChange('batch', e.target.value)}
+                                        >
+                                            <option value="">All Batches</option>
+                                            {batches.map(y => <option key={y} value={y}>{y}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="filter-column">
+                                        <label>Criteria</label>
+                                        <div className="row-inputs">
+                                            <Input
+                                                type="number"
+                                                placeholder="Min CGPA"
+                                                value={filters.minCgpa}
+                                                onChange={(e) => handleFilterChange('minCgpa', e.target.value)}
+                                                step="0.1"
+                                                max="10"
+                                            />
+                                            <Input
+                                                type="number"
+                                                placeholder="Max Backlogs"
+                                                value={filters.maxBacklogs}
+                                                onChange={(e) => handleFilterChange('maxBacklogs', e.target.value)}
+                                                min="0"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="filter-column">
+                                        <label>Details</label>
+                                        {/* College select removed from here as it's global now */}
+                                        <select
+                                            className="filter-select"
+                                            value={filters.placementStatus}
+                                            onChange={(e) => handleFilterChange('placementStatus', e.target.value)}
+                                        >
+                                            <option value="">All Statuses</option>
+                                            <option value="not_placed">Not Placed</option>
+                                            <option value="in_process">In Process</option>
+                                        </select>
+                                        <select
+                                            className="filter-select mt-2"
+                                            value={filters.experience}
+                                            onChange={(e) => handleFilterChange('experience', e.target.value)}
+                                        >
+                                            <option value="">Any Experience</option>
+                                            <option value="internship">Has Internship</option>
+                                            <option value="projects">Has Projects</option>
+                                        </select>
+                                    </div>
+                                    <div className="filter-column">
+                                        <label>Skills & Experience</label>
+                                        <Input
+                                            placeholder="Specific Skills (comma separated)"
+                                            value={filters.skills}
+                                            onChange={(e) => handleFilterChange('skills', e.target.value)}
+                                        />
+                                    </div>
                                 </div>
-                            </Card>
-                        ))}
-                    </div>
+                                <div className="filter-footer">
+                                    <Button variant="ghost" onClick={handleClearFilters} size="sm">
+                                        Clear All
+                                    </Button>
+                                    <Button variant="ghost" onClick={() => setShowSaveFilterModal(true)} size="sm">
+                                        Save as Preset
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </Card>
 
-                    {pagination.pages > 1 && (
-                        <div className="pagination">
-                            <Button
-                                variant="secondary"
-                                disabled={pagination.current === 1}
-                                onClick={() => searchStudents(pagination.current - 1)}
-                            >
-                                Previous
-                            </Button>
-                            <span className="page-info">Page {pagination.current} of {pagination.pages}</span>
-                            <Button
-                                variant="secondary"
-                                disabled={pagination.current === pagination.pages}
-                                onClick={() => searchStudents(pagination.current + 1)}
-                            >
-                                Next
-                            </Button>
+                    {/* Saved Filters Panel */}
+                    {showSavedFilters && (
+                        <div className="saved-filters-panel">
+                            <div className="panel-header">
+                                <h3>Saved Filters</h3>
+                                <button onClick={() => setShowSavedFilters(false)}><X size={16} /></button>
+                            </div>
+                            <div className="saved-list">
+                                {savedFilters.length === 0 ? (
+                                    <p className="empty-msg">No saved filters</p>
+                                ) : (
+                                    savedFilters.map((sf, index) => (
+                                        <div key={index} className="saved-filter-item">
+                                            <span onClick={() => handleLoadFilter(sf)}>{sf.name}</span>
+                                            <button onClick={() => handleDeleteFilter(sf.name)} className="delete-btn">
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     )}
-                </>
-            ) : (
-                <div className="no-results">
-                    <div className="no-results-icon">
-                        <Search size={48} />
+
+                    {/* Results Area */}
+                    <div className="results-container">
+                        {loading ? (
+                            <div className="loading-screen"><div className="loading-spinner" /></div>
+                        ) : students.length === 0 ? (
+                            <div className="no-results-state">
+                                <h3>No candidates found</h3>
+                                <p>Try adjusting your search filters to see more results.</p>
+                                <Button variant="secondary" onClick={handleClearFilters}>Clear Filters</Button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="results-header">
+                                    <span>Found {pagination.total} candidates</span>
+                                </div>
+                                <div className="students-grid">
+                                    {students.map(student => (
+                                        <Card key={student._id} className="student-card" hoverable>
+                                            <div className="student-header">
+                                                <div className="student-avatar-placeholder">
+                                                    {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
+                                                </div>
+                                                <div className="student-basic-info">
+                                                    <div className="flex items-center gap-2">
+                                                        <h3>{student.name?.firstName} {student.name?.lastName}</h3>
+                                                        {student.isStarStudent && (
+                                                            <div className="group relative">
+                                                                <Star size={16} className="text-amber-400 fill-amber-400" />
+                                                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-slate-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                                    Star Student
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <p>{student.department}</p>
+                                                </div>
+                                                <Button 
+                                                    size="sm"
+                                                    className="shortlist-icon-btn"
+                                                    onClick={() => handleShortlist(student)}
+                                                    title="Shortlist"
+                                                    disabled={shortlistingId === student._id}
+                                                >
+                                                    <Star size={18} />
+                                                </Button>
+                                            </div>
+                                            <div className="student-tags">
+                                                <span className="tag batch-tag">Batch {student.batch}</span>
+                                                <span className="tag cgpa-tag">CGPA: {student.cgpa?.toFixed(2)}</span>
+                                            </div>
+                                            <div className="student-skills-preview">
+                                                {student.skills?.slice(0, 3).map((skill, i) => (
+                                                    <span key={i} className="skill-pill">{skill}</span>
+                                                ))}
+                                                {student.skills?.length > 3 && <span>+{student.skills.length - 3}</span>}
+                                            </div>
+                                            <div className="student-card-actions">
+                                                <Button variant="secondary" fullWidth onClick={() => viewStudentDetails(student._id)}>
+                                                    View Profile
+                                                </Button>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                                {pagination.pages > 1 && (
+                                    <div className="pagination">
+                                        <Button
+                                            variant="secondary"
+                                            disabled={pagination.current === 1}
+                                            onClick={() => searchStudents(pagination.current - 1)}
+                                        >
+                                            Previous
+                                        </Button>
+                                        <span>Page {pagination.current} of {pagination.pages}</span>
+                                        <Button
+                                            variant="secondary"
+                                            disabled={pagination.current === pagination.pages}
+                                            onClick={() => searchStudents(pagination.current + 1)}
+                                        >
+                                            Next
+                                        </Button>
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </div>
-                    <h3>Discover Top Talent</h3>
-                    <p>Use the filters above to find candidates matching your requirements</p>
                 </div>
             )}
 
-            {/* Shortlist Modal - Select Job */}
+            {/* Shortlist Modal */}
             <Modal
                 isOpen={shortlistModal.open}
                 onClose={() => setShortlistModal({ open: false, student: null })}
@@ -592,6 +581,26 @@ const SearchStudents = () => {
                     </div>
                 </div>
             </Modal>
+            
+            <Modal
+                isOpen={showSaveFilterModal}
+                onClose={() => setShowSaveFilterModal(false)}
+                title="Save Filter Preset"
+                size="sm"
+            >
+                <div className="save-filter-modal">
+                    <Input
+                        label="Filter Name"
+                        placeholder="e.g., CS High CGPA"
+                        value={filterName}
+                        onChange={(e) => setFilterName(e.target.value)}
+                    />
+                    <div className="modal-actions mt-4">
+                        <Button variant="secondary" onClick={() => setShowSaveFilterModal(false)}>Cancel</Button>
+                        <Button onClick={handleSaveFilter}>Save Filter</Button>
+                    </div>
+                </div>
+            </Modal>
 
             {/* Student Detail Modal */}
             <Modal
@@ -606,8 +615,7 @@ const SearchStudents = () => {
                     </div>
                 ) : studentDetailModal.student && (
                     <div className="student-detail-modal">
-                        {/* Header Section */}
-                        <div className="detail-header">
+                         <div className="detail-header">
                             <div className="detail-avatar">
                                 {studentDetailModal.student.name?.firstName?.[0]}
                                 {studentDetailModal.student.name?.lastName?.[0]}
@@ -619,7 +627,7 @@ const SearchStudents = () => {
                             </div>
                         </div>
 
-                        {/* Contact Information */}
+                        {/* Contact */}
                         <div className="detail-section">
                             <h4><Mail size={16} /> Contact Information</h4>
                             <div className="detail-grid">
@@ -631,78 +639,23 @@ const SearchStudents = () => {
                                     <span className="field-label">Phone</span>
                                     <span className="field-value">{studentDetailModal.student.phone || 'Not provided'}</span>
                                 </div>
-                                {studentDetailModal.student.dateOfBirth && (
-                                    <div className="detail-field">
-                                        <span className="field-label">Date of Birth</span>
-                                        <span className="field-value">{new Date(studentDetailModal.student.dateOfBirth).toLocaleDateString()}</span>
-                                    </div>
-                                )}
-                                {studentDetailModal.student.gender && (
-                                    <div className="detail-field">
-                                        <span className="field-label">Gender</span>
-                                        <span className="field-value" style={{ textTransform: 'capitalize' }}>{studentDetailModal.student.gender.replace('_', ' ')}</span>
-                                    </div>
-                                )}
                             </div>
                         </div>
 
-                        {/* Academic Information */}
+                        {/* Academic */}
                         <div className="detail-section">
                             <h4><GraduationCap size={16} /> Academic Information</h4>
                             <div className="detail-grid">
                                 <div className="detail-field">
-                                    <span className="field-label">Roll Number</span>
-                                    <span className="field-value">{studentDetailModal.student.rollNumber}</span>
-                                </div>
-                                <div className="detail-field">
                                     <span className="field-label">CGPA</span>
                                     <span className="field-value cgpa-highlight">{studentDetailModal.student.cgpa?.toFixed(2) || '-'}</span>
                                 </div>
-                                {studentDetailModal.student.percentage && (
-                                    <div className="detail-field">
-                                        <span className="field-label">Percentage</span>
-                                        <span className="field-value">{studentDetailModal.student.percentage}%</span>
-                                    </div>
-                                )}
                                 <div className="detail-field">
-                                    <span className="field-label">Active Backlogs</span>
+                                    <span className="field-label">Backlogs</span>
                                     <span className="field-value">{studentDetailModal.student.backlogs?.active || 0}</span>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Education History */}
-                        {studentDetailModal.student.education && (
-                            <div className="detail-section">
-                                <h4><Award size={16} /> Education History</h4>
-                                <div className="education-grid">
-                                    {studentDetailModal.student.education.tenth?.percentage && (
-                                        <div className="education-card">
-                                            <span className="edu-level">10th</span>
-                                            <span className="edu-percent">{studentDetailModal.student.education.tenth.percentage}%</span>
-                                            <span className="edu-board">{studentDetailModal.student.education.tenth.board}</span>
-                                            <span className="edu-year">{studentDetailModal.student.education.tenth.yearOfPassing}</span>
-                                        </div>
-                                    )}
-                                    {studentDetailModal.student.education.twelfth?.percentage && (
-                                        <div className="education-card">
-                                            <span className="edu-level">12th</span>
-                                            <span className="edu-percent">{studentDetailModal.student.education.twelfth.percentage}%</span>
-                                            <span className="edu-board">{studentDetailModal.student.education.twelfth.board}</span>
-                                            <span className="edu-year">{studentDetailModal.student.education.twelfth.yearOfPassing}</span>
-                                        </div>
-                                    )}
-                                    {studentDetailModal.student.education.diploma?.percentage && (
-                                        <div className="education-card">
-                                            <span className="edu-level">Diploma</span>
-                                            <span className="edu-percent">{studentDetailModal.student.education.diploma.percentage}%</span>
-                                            <span className="edu-board">{studentDetailModal.student.education.diploma.branch}</span>
-                                            <span className="edu-year">{studentDetailModal.student.education.diploma.yearOfPassing}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
 
                         {/* Skills */}
                         {studentDetailModal.student.skills?.length > 0 && (
@@ -711,24 +664,6 @@ const SearchStudents = () => {
                                 <div className="skills-list">
                                     {studentDetailModal.student.skills.map((skill, i) => (
                                         <span key={i} className="skill-tag">{skill}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Certifications */}
-                        {studentDetailModal.student.certifications?.length > 0 && (
-                            <div className="detail-section">
-                                <h4><Award size={16} /> Certifications</h4>
-                                <div className="certifications-list">
-                                    {studentDetailModal.student.certifications.map((cert, i) => (
-                                        <div key={i} className="cert-item">
-                                            <strong>{cert.name}</strong>
-                                            <span>{cert.issuer}</span>
-                                            {cert.credentialUrl && (
-                                                <a href={cert.credentialUrl} target="_blank" rel="noopener noreferrer">View Credential</a>
-                                            )}
-                                        </div>
                                     ))}
                                 </div>
                             </div>
@@ -743,24 +678,9 @@ const SearchStudents = () => {
                                         <div key={i} className="project-item">
                                             <h5>{project.title}</h5>
                                             <p>{project.description}</p>
-                                            {project.technologies?.length > 0 && (
-                                                <div className="project-tech">
-                                                    {project.technologies.map((tech, j) => (
-                                                        <span key={j} className="tech-tag">{tech}</span>
-                                                    ))}
-                                                </div>
-                                            )}
                                             <div className="project-links">
-                                                {project.projectUrl && (
-                                                    <a href={project.projectUrl} target="_blank" rel="noopener noreferrer">
-                                                        <ExternalLink size={14} /> Live Demo
-                                                    </a>
-                                                )}
-                                                {project.githubUrl && (
-                                                    <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                                                        <Github size={14} /> Source Code
-                                                    </a>
-                                                )}
+                                                {project.projectUrl && <a href={project.projectUrl} target="_blank" rel="noreferrer"><ExternalLink size={14}/> Demo</a>}
+                                                {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noreferrer"><Github size={14}/> Code</a>}
                                             </div>
                                         </div>
                                     ))}
@@ -768,100 +688,24 @@ const SearchStudents = () => {
                             </div>
                         )}
 
-                        {/* Links */}
+                        {/* Resume */}
                         <div className="detail-section">
-                            <h4><ExternalLink size={16} /> Links & Resume</h4>
-                            <div className="links-grid">
-                                {studentDetailModal.student.resumeUrl && (
-                                    <a 
-                                        href={studentDetailModal.student.resumeUrl} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className="profile-link resume"
-                                        onClick={async (e) => {
-                                            try {
-                                                const response = await companyAPI.logResumeView(studentDetailModal.student._id);
-                                                if (response.data.limits) {
-                                                    console.log('Download limits:', response.data.limits);
-                                                }
-                                            } catch (error) {
-                                                if (error.response?.status === 429) {
-                                                    e.preventDefault();
-                                                    toast.error(error.response.data.message || 'Download limit exceeded');
-                                                }
-                                            }
-                                        }}
-                                    >
-                                        <FileText size={18} /> Resume
-                                    </a>
-                                )}
-                                {studentDetailModal.student.linkedinUrl && (
-                                    <a href={studentDetailModal.student.linkedinUrl} target="_blank" rel="noopener noreferrer" className="profile-link linkedin">
-                                        <Linkedin size={18} /> LinkedIn
-                                    </a>
-                                )}
-                                {studentDetailModal.student.githubUrl && (
-                                    <a href={studentDetailModal.student.githubUrl} target="_blank" rel="noopener noreferrer" className="profile-link github">
-                                        <Github size={18} /> GitHub
-                                    </a>
-                                )}
-                                {studentDetailModal.student.portfolioUrl && (
-                                    <a href={studentDetailModal.student.portfolioUrl} target="_blank" rel="noopener noreferrer" className="profile-link portfolio">
-                                        <ExternalLink size={18} /> Portfolio
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Placement Status */}
-                        <div className="detail-section">
-                            <h4><User size={16} /> Placement Status</h4>
-                            <span className={`placement-status-badge status-${studentDetailModal.student.placementStatus}`}>
-                                {studentDetailModal.student.placementStatus?.replace('_', ' ')}
-                            </span>
-                        </div>
-
-                        {/* Footer Actions */}
-                        <div className="detail-footer">
-                            <Button variant="secondary" onClick={() => setStudentDetailModal({ open: false, student: null, loading: false })}>
-                                Close
-                            </Button>
-                            <Button icon={Star} onClick={() => {
-                                setStudentDetailModal({ open: false, student: null, loading: false });
-                                handleShortlist(studentDetailModal.student);
-                            }}>
-                                Shortlist
-                            </Button>
+                            <h4><FileText size={16} /> Documents</h4>
+                            {studentDetailModal.student.resumeUrl ? (
+                                <a 
+                                    href={studentDetailModal.student.resumeUrl} 
+                                    target="_blank" 
+                                    rel="noreferrer" 
+                                    className="profile-link resume"
+                                >
+                                    <FileText size={18}/> View Resume
+                                </a>
+                            ) : (
+                                <p className="text-muted">No resume uploaded</p>
+                            )}
                         </div>
                     </div>
                 )}
-            </Modal>
-            {/* Save Filter Modal */}
-            <Modal
-                isOpen={showSaveFilterModal}
-                onClose={() => setShowSaveFilterModal(false)}
-                title="Save Search Filter"
-                size="sm"
-            >
-                <div style={{ padding: 'var(--spacing-2)' }}>
-                    <p style={{ marginBottom: 'var(--spacing-4)', color: 'var(--gray-600)' }}>
-                        Save your current search filters for quick access later
-                    </p>
-                    <Input
-                        label="Filter Name"
-                        placeholder="e.g., CS Students 8+ CGPA"
-                        value={filterName}
-                        onChange={(e) => setFilterName(e.target.value)}
-                    />
-                    <div style={{ display: 'flex', gap: 'var(--spacing-3)', marginTop: 'var(--spacing-4)', justifyContent: 'flex-end' }}>
-                        <Button variant="secondary" onClick={() => setShowSaveFilterModal(false)}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handleSaveFilter}>
-                            Save Filter
-                        </Button>
-                    </div>
-                </div>
             </Modal>
         </div>
     );

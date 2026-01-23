@@ -10,6 +10,7 @@ const StudentDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [student, setStudent] = useState(null);
+    const [placementActivity, setPlacementActivity] = useState([]);
     const [loading, setLoading] = useState(true);
     const [completeness, setCompleteness] = useState(null);
 
@@ -19,9 +20,13 @@ const StudentDetail = () => {
 
     const fetchStudent = async () => {
         try {
-            const response = await collegeAPI.getStudent(id);
-            setStudent(response.data.data);
-            setCompleteness(response.data.data.profileCompleteness);
+            const [studentRes, activityRes] = await Promise.all([
+                collegeAPI.getStudent(id),
+                collegeAPI.getStudentPlacementActivity(id)
+            ]);
+            setStudent(studentRes.data.data);
+            setCompleteness(studentRes.data.data.profileCompleteness);
+            setPlacementActivity(activityRes.data.data.timeline);
         } catch (error) {
             toast.error('Failed to load student details');
             navigate('/college/students');
@@ -328,6 +333,52 @@ const StudentDetail = () => {
                                     </span>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Placement Activity Timeline */}
+                {placementActivity.length > 0 && (
+                    <div className="detail-card full-width">
+                        <h2><Briefcase size={20} /> Placement Activity</h2>
+                        <div className="timeline-section">
+                            <div className="timeline">
+                                {placementActivity.map((activity, index) => (
+                                    <div key={index} className="timeline-item">
+                                        <div className={`timeline-badge ${activity.action.toLowerCase().replace(' ', '_')}`} />
+                                        <div className="timeline-content">
+                                            <div className="timeline-header">
+                                                <div>
+                                                    <h4>{activity.action}</h4>
+                                                    <div className="timeline-company">{activity.company.name}</div>
+                                                </div>
+                                                <span className="timeline-date">
+                                                    {new Date(activity.date).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            
+                                            {activity.job && (
+                                                <div className="timeline-details">
+                                                    <strong>Role:</strong> {activity.job.title}
+                                                </div>
+                                            )}
+                                            
+                                            {activity.details?.notes && (
+                                                <div className="timeline-details">
+                                                    <strong>Notes:</strong> {activity.details.notes}
+                                                </div>
+                                            )}
+
+                                            {activity.action === 'PLACED' && (
+                                                <div className="timeline-details">
+                                                    <div><strong>Package:</strong> ₹{activity.details.package} LPA</div>
+                                                    <div><strong>Joining:</strong> {new Date(activity.details.joiningDate).toLocaleDateString()}</div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}

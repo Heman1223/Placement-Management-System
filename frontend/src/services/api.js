@@ -57,7 +57,8 @@ export const authAPI = {
     getProfile: () => api.get('/auth/profile'),
     updatePassword: (data) => api.put('/auth/password', data),
     logout: () => api.post('/auth/logout'),
-    getLoginHistory: () => api.get('/auth/login-history')
+    getLoginHistory: () => api.get('/auth/login-history'),
+    getPublicColleges: () => api.get('/auth/colleges')
 };
 
 // Super Admin endpoints
@@ -87,7 +88,10 @@ export const superAdminAPI = {
     removeCollegeFromAgency: (id, collegeId) => api.delete(`/super-admin/companies/${id}/colleges/${collegeId}`),
     setAgencyAccessExpiry: (id, expiryDate) => api.patch(`/super-admin/companies/${id}/access-expiry`, { expiryDate }),
     setAgencyDownloadLimit: (id, limit) => api.patch(`/super-admin/companies/${id}/download-limit`, { limit }),
+
     getAllStudents: (params) => api.get('/super-admin/students', { params }),
+    getStudent: (id) => api.get(`/super-admin/students/${id}`),
+    toggleStarStudent: (id) => api.patch(`/super-admin/students/${id}/toggle-star`), // Adding this too since I used it
     getUsers: (params) => api.get('/super-admin/users', { params }),
     toggleUserStatus: (id) => api.patch(`/super-admin/users/${id}/toggle-status`),
     resetUserPassword: (id, newPassword) => api.post(`/super-admin/users/${id}/reset-password`, { newPassword }),
@@ -123,20 +127,21 @@ export const collegeAPI = {
     uploadResume: (formData) => api.post('/upload/resume', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
-    getAgencies: () => api.get('/college/agencies'),
-    getAgencyRequests: () => api.get('/college/agency-requests'),
-    getAgencyActivity: (id) => api.get(`/college/agencies/${id}/activity`),
-    grantAgencyAccess: (id, data) => api.post(`/college/agencies/${id}/grant-access`, data),
-    revokeAgencyAccess: (id) => api.delete(`/college/agencies/${id}/revoke-access`),
-    updateAgencyAccessSettings: (id, data) => api.patch(`/college/agencies/${id}/access-settings`, data),
+    getConnectedCompanies: () => api.get('/college/companies'),
+    getCompanyRequests: () => api.get('/college/company-requests'),
+    respondToCompanyRequest: (id, data) => api.post(`/college/company-requests/${id}/respond`, data),
+    revokeCompanyAccess: (id) => api.delete(`/college/companies/${id}/revoke`),
+    updateCompanyAccessSettings: (id, data) => api.patch(`/college/companies/${id}/settings`, data),
     getCompanyActivity: () => api.get('/college/company-activity'),
     getPlacementTracking: (type) => api.get('/college/placements', { params: { type } }),
     getPlacementStats: () => api.get('/college/placement-stats'),
     exportPlacementReport: (type) => api.get('/college/placement-report', { params: { type }, responseType: 'blob' }),
+    getPlacementDrives: (params) => api.get('/college/drives', { params }), // Added
     getCollegeProfile: () => api.get('/college/profile'),
     updateCollegeProfile: (data) => api.patch('/college/profile', data),
     getCollegeSettings: () => api.get('/college/settings'),
-    updateCollegeSettings: (data) => api.patch('/college/settings', data)
+    updateCollegeSettings: (data) => api.patch('/college/settings', data),
+    getStudentPlacementActivity: (id) => api.get(`/college/students/${id}/placement-activity`)
 };
 // Company endpoints
 export const companyAPI = {
@@ -145,6 +150,8 @@ export const companyAPI = {
     searchStudents: (params) => api.get('/company/students/search', { params }),
     getStudent: (id) => api.get(`/company/students/${id}`),
     getColleges: () => api.get('/company/colleges'),
+    requestCollegeAccess: (data) => api.post('/company/request-access', data), // Added
+    getRequestedColleges: () => api.get('/company/my-colleges'), // Added
     shortlist: (studentId, jobId, notes) => api.post('/company/shortlist', { studentId, jobId, notes }),
     getShortlist: (params) => api.get('/company/shortlist', { params }),
     getShortlistDetails: (id) => api.get(`/company/shortlist/${id}`),

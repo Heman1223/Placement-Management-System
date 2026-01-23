@@ -44,9 +44,21 @@ const studentSchema = new mongoose.Schema({
         required: [true, 'Department is required'],
         trim: true
     },
+    course: {
+        type: String,
+        trim: true
+        // e.g., B.Tech, M.Tech, MBA, MCA, B.Sc, M.Sc, etc.
+    },
     batch: {
         type: Number,
         required: [true, 'Batch year is required']
+    },
+    admissionYear: {
+        type: Number
+    },
+    section: {
+        type: String,
+        trim: true
     },
     rollNumber: {
         type: String,
@@ -66,6 +78,29 @@ const studentSchema = new mongoose.Schema({
     backlogs: {
         active: { type: Number, default: 0 },
         history: { type: Number, default: 0 }
+    },
+    
+    // Contact & Location
+    city: {
+        type: String,
+        trim: true
+    },
+    state: {
+        type: String,
+        trim: true
+    },
+    
+    // Enrollment Status
+    enrollmentStatus: {
+        type: String,
+        enum: ['active', 'passed_out', 'on_hold', 'dropped'],
+        default: 'active'
+    },
+    
+    // Placement Eligibility
+    placementEligible: {
+        type: Boolean,
+        default: true
     },
 
     // Education History
@@ -160,7 +195,19 @@ const studentSchema = new mongoose.Schema({
         type: String,
         enum: ['manual', 'bulk_upload', 'self_registration'],
         default: 'manual'
+    },
+    
+    // Star Student Feature
+    isStarStudent: {
+        type: Boolean,
+        default: false
+    },
+    starredAt: Date,
+    starredBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
+
 }, {
     timestamps: true
 });
@@ -176,6 +223,7 @@ studentSchema.index({ batch: 1 });
 studentSchema.index({ cgpa: -1 });
 studentSchema.index({ placementStatus: 1 });
 studentSchema.index({ skills: 1 });
+studentSchema.index({ isStarStudent: -1 }); // Priority sort
 studentSchema.index({ 'name.firstName': 'text', 'name.lastName': 'text', skills: 'text' });
 
 // Compound index for college uniqueness

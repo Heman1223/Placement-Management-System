@@ -65,12 +65,14 @@ const Settings = () => {
         setSaving(true);
         try {
             await collegeAPI.updateCollegeProfile({
+                university: profile.university,
                 contactEmail: profile.contactEmail,
                 phone: profile.phone,
                 website: profile.website,
                 address: profile.address,
                 departments: profile.departments,
-                description: profile.description
+                description: profile.description,
+                logo: profile.logo
             });
             toast.success('Profile updated successfully');
         } catch (error) {
@@ -176,10 +178,60 @@ const Settings = () => {
                             <div className="form-group">
                                 <label>University</label>
                                 <Input
-                                    value={profile.university}
-                                    disabled
+                                    value={profile.university || ''}
+                                    onChange={(e) => setProfile({ ...profile, university: e.target.value })}
+                                    placeholder="Enter university name"
                                 />
-                                <span className="help-text">Contact super admin to change</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="settings-section">
+                        <h3>College Logo</h3>
+                        <p className="section-description">Upload or update your college logo</p>
+
+                        <div className="logo-upload-container">
+                            {profile.logo && (
+                                <div className="logo-preview">
+                                    <img src={profile.logo} alt="College Logo" />
+                                </div>
+                            )}
+                            
+                            <div className="logo-actions">
+                                <input
+                                    type="file"
+                                    id="logo-upload"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={async (e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            try {
+                                                const formData = new FormData();
+                                                formData.append('file', file);
+                                                const response = await collegeAPI.uploadResume(formData);
+                                                setProfile({ ...profile, logo: response.data.url });
+                                                toast.success('Logo uploaded successfully');
+                                            } catch (error) {
+                                                toast.error('Failed to upload logo');
+                                            }
+                                        }
+                                    }}
+                                />
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => document.getElementById('logo-upload').click()}
+                                >
+                                    {profile.logo ? 'Change Logo' : 'Upload Logo'}
+                                </Button>
+                                {profile.logo && (
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() => setProfile({ ...profile, logo: '' })}
+                                    >
+                                        Remove Logo
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -287,13 +339,63 @@ const Settings = () => {
 
                         <div className="departments-manager">
                             <div className="add-department">
-                                <Input
-                                    value={newDepartment}
-                                    onChange={(e) => setNewDepartment(e.target.value)}
-                                    placeholder="Enter department name"
-                                    onKeyDown={(e) => e.key === 'Enter' && handleAddDepartment()}
-                                />
-                                <Button onClick={handleAddDepartment}>Add</Button>
+                                <select
+                                    className="department-select"
+                                    value=""
+                                    onChange={(e) => {
+                                        const dept = e.target.value;
+                                        if (dept && !profile.departments.includes(dept)) {
+                                            setProfile({
+                                                ...profile,
+                                                departments: [...profile.departments, dept]
+                                            });
+                                        }
+                                    }}
+                                >
+                                    <option value="">Select a department to add</option>
+                                    <option value="Computer Science & Engineering">Computer Science & Engineering</option>
+                                    <option value="Information Technology">Information Technology</option>
+                                    <option value="Electronics & Communication Engineering">Electronics & Communication Engineering</option>
+                                    <option value="Electrical Engineering">Electrical Engineering</option>
+                                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                                    <option value="Civil Engineering">Civil Engineering</option>
+                                    <option value="Chemical Engineering">Chemical Engineering</option>
+                                    <option value="Aerospace Engineering">Aerospace Engineering</option>
+                                    <option value="Biotechnology">Biotechnology</option>
+                                    <option value="Automobile Engineering">Automobile Engineering</option>
+                                    <option value="Industrial Engineering">Industrial Engineering</option>
+                                    <option value="Production Engineering">Production Engineering</option>
+                                    <option value="Instrumentation Engineering">Instrumentation Engineering</option>
+                                    <option value="Artificial Intelligence & Machine Learning">Artificial Intelligence & Machine Learning</option>
+                                    <option value="Data Science">Data Science</option>
+                                    <option value="Cyber Security">Cyber Security</option>
+                                    <option value="Business Administration (MBA)">Business Administration (MBA)</option>
+                                    <option value="Master of Computer Applications (MCA)">Master of Computer Applications (MCA)</option>
+                                    <option value="Commerce">Commerce</option>
+                                    <option value="Economics">Economics</option>
+                                    <option value="Mathematics">Mathematics</option>
+                                    <option value="Physics">Physics</option>
+                                    <option value="Chemistry">Chemistry</option>
+                                    <option value="Biology">Biology</option>
+                                    <option value="English">English</option>
+                                    <option value="Psychology">Psychology</option>
+                                    <option value="Sociology">Sociology</option>
+                                    <option value="Political Science">Political Science</option>
+                                    <option value="History">History</option>
+                                    <option value="Law">Law</option>
+                                    <option value="Pharmacy">Pharmacy</option>
+                                    <option value="Nursing">Nursing</option>
+                                    <option value="Medicine (MBBS)">Medicine (MBBS)</option>
+                                    <option value="Dentistry">Dentistry</option>
+                                    <option value="Architecture">Architecture</option>
+                                    <option value="Fashion Design">Fashion Design</option>
+                                    <option value="Hotel Management">Hotel Management</option>
+                                    <option value="Mass Communication">Mass Communication</option>
+                                    <option value="Journalism">Journalism</option>
+                                    <option value="Agriculture">Agriculture</option>
+                                    <option value="Forestry">Forestry</option>
+                                    <option value="Environmental Science">Environmental Science</option>
+                                </select>
                             </div>
 
                             <div className="departments-list">

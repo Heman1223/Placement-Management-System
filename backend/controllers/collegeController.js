@@ -30,10 +30,15 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     // Get agencies with access to this college
     const { Company } = require('../models');
     const agenciesWithAccess = await Company.countDocuments({
-        type: 'agency',
+        type: 'placement_agency',
         isApproved: true,
         isActive: true,
-        'agencyAccess.allowedColleges': collegeId
+        'collegeAccess': {
+            $elemMatch: {
+                college: collegeId,
+                status: 'approved'
+            }
+        }
     });
 
     // Department-wise breakdown
@@ -716,266 +721,217 @@ const resetStudentPassword = asyncHandler(async (req, res) => {
  * @route   GET /api/college/agencies
  * @access  College Admin
  */
-const getAgencies = asyncHandler(async (req, res) => {
+/**
+ * @desc    Get companies/agencies with access to this college
+ * @route   GET /api/college/companies
+ * @access  College Admin
+ */
+const getConnectedCompanies = asyncHandler(async (req, res) => {
     const collegeId = req.user.collegeProfile._id;
     const { Company } = require('../models');
 
-    // Get all approved agencies that have access to this college
-    const agencies = await Company.find({
-        type: 'placement_agency',
+    // Get all approved companies that have access to this college
+    const companies = await Company.find({
         isApproved: true,
-        'agencyAccess.allowedColleges.college': collegeId
-    }).select('name industry contactPerson agencyAccess isActive isSuspended');
-
-    // Get agency activity from activity logs
-    const { ActivityLog } = require('../models');
-    
-    const agenciesWithActivity = await Promise.all(agencies.map(async (agency) => {
-        const agencyUser = await User.findOne({ companyProfile: agency._id });
-        
-        if (!agencyUser) {
-            return {
-                ...agency.toObject(),
-                activity: {
-                    profilesAccessed: 0,
-                    shortlistsMade: 0,
-                    downloadsCount: 0
-                }
-            };
-        }
-
-        const [profilesAccessed, shortlistsMade] = await Promise.all([
-            ActivityLog.countDocuments({
-                user: agencyUser._id,
-                action: 'view_student',
-                targetModel: 'Student'
-            }),
-            ActivityLog.countDocuments({
-                user: agencyUser._id,
-                action: 'shortlist_student'
-            })
-        ]);
-
-        // Get access details for this college
-        const accessDetails = agency.agencyAccess.allowedColleges.find(
-            c => c.college.toString() === collegeId.toString()
-        );
-
-        return {
-            ...agency.toObject(),
-            activity: {
-                profilesAccessed,
-                shortlistsMade,
-                downloadsCount: agency.agencyAccess.downloadCount || 0,
-                downloadLimit: agency.agencyAccess.downloadLimit,
-                accessExpiryDate: agency.agencyAccess.accessExpiryDate
+        'collegeAccess': {
+            $elemMatch: {
+                college: collegeId,
+                status: 'approved'
             }
-        };
-    }));
-
-    res.json({
-        success: true,
-        data: agenciesWithActivity
-    });
-});
-
-/**
- * @desc    Get agency access requests for this college
- * @route   GET /api/college/agency-requests
- * @access  College Admin
- */
-const getAgencyRequests = asyncHandler(async (req, res) => {
-    const collegeId = req.user.collegeProfile._id;
-    const { Company } = require('../models');
-
-    // Get agencies that are approved but don't have access to this college yet
-    const allAgencies = await Company.find({
-        type: 'placement_agency',
-        isApproved: true,
-        isActive: true,
-        isDeleted: false
-    }).select('name industry contactPerson agencyAccess');
-
-    // Filter to show only agencies that don't have access yet
-    const requestableAgencies = allAgencies.filter(agency => {
-        if (!agency.agencyAccess || !agency.agencyAccess.allowedColleges) {
-            return true; // No access granted yet
         }
-        const hasAccess = agency.agencyAccess.allowedColleges.some(
-            ac => ac.college && ac.college.toString() === collegeId.toString()
+    }).select('name type industry contactPerson collegeAccess isActive logo');
+
+    // Add access details to the response
+    const companiesWithDetails = companies.map(company => {
+        const access = company.collegeAccess.find(
+            ca => ca.college.toString() === collegeId.toString()
         );
-        return !hasAccess;
-    });
-
-    res.json({
-        success: true,
-        data: requestableAgencies
-    });
-});
-
-/**
- * @desc    Grant agency access to college
- * @route   POST /api/college/agencies/:id/grant-access
- * @access  College Admin
- */
-const grantAgencyAccess = asyncHandler(async (req, res) => {
-    const collegeId = req.user.collegeProfile._id;
-    const agencyId = req.params.id;
-    const { accessExpiryDate, downloadLimit } = req.body;
-    const { Company } = require('../models');
-
-    // Find the agency
-    const agency = await Company.findOne({
-        _id: agencyId,
-        type: 'placement_agency',
-        isApproved: true,
-        isActive: true
-    });
-
-    if (!agency) {
-        return res.status(404).json({
-            success: false,
-            message: 'Agency not found or not approved'
-        });
-    }
-
-    // Initialize agencyAccess if it doesn't exist
-    if (!agency.agencyAccess) {
-        agency.agencyAccess = {
-            allowedColleges: [],
-            downloadLimit: downloadLimit || 100,
-            downloadCount: 0
+        return {
+            _id: company._id,
+            name: company.name,
+            type: company.type,
+            industry: company.industry,
+            contactPerson: company.contactPerson,
+            logo: company.logo,
+            isActive: company.isActive,
+            accessDetails: access
         };
-    }
-
-    // Check if agency already has access
-    const hasAccess = agency.agencyAccess.allowedColleges.some(
-        ac => ac.college && ac.college.toString() === collegeId.toString()
-    );
-
-    if (hasAccess) {
-        return res.status(400).json({
-            success: false,
-            message: 'Agency already has access to your college'
-        });
-    }
-
-    // Grant access
-    agency.agencyAccess.allowedColleges.push({
-        college: collegeId,
-        grantedAt: new Date(),
-        grantedBy: req.userId
     });
-
-    if (accessExpiryDate) {
-        agency.agencyAccess.accessExpiryDate = new Date(accessExpiryDate);
-    }
-
-    if (downloadLimit) {
-        agency.agencyAccess.downloadLimit = downloadLimit;
-    }
-
-    await agency.save();
 
     res.json({
         success: true,
-        message: 'Agency access granted successfully',
-        data: agency
+        data: companiesWithDetails
     });
 });
 
 /**
- * @desc    Revoke agency access from college
- * @route   DELETE /api/college/agencies/:id/revoke-access
+ * @desc    Get company access requests
+ * @route   GET /api/college/company-requests
  * @access  College Admin
  */
-const revokeAgencyAccess = asyncHandler(async (req, res) => {
+const getCompanyRequests = asyncHandler(async (req, res) => {
     const collegeId = req.user.collegeProfile._id;
-    const agencyId = req.params.id;
     const { Company } = require('../models');
 
-    // Find the agency
-    const agency = await Company.findOne({
-        _id: agencyId,
-        type: 'placement_agency'
+    const requests = await Company.find({
+        isApproved: true,
+        'collegeAccess': {
+            $elemMatch: {
+                college: collegeId,
+                status: 'pending'
+            }
+        }
+    }).select('name type industry contactPerson collegeAccess logo website');
+
+    const formattedRequests = requests.map(company => {
+        const access = company.collegeAccess.find(
+            ca => ca.college.toString() === collegeId.toString()
+        );
+        return {
+            _id: company._id,
+            name: company.name,
+            type: company.type,
+            industry: company.industry,
+            website: company.website,
+            logo: company.logo,
+            contactPerson: company.contactPerson,
+            requestedAt: access.requestedAt
+        };
     });
 
-    if (!agency) {
-        return res.status(404).json({
-            success: false,
-            message: 'Agency not found'
-        });
-    }
+    res.json({
+        success: true,
+        data: formattedRequests
+    });
+});
 
-    // Check if agency has access
-    if (!agency.agencyAccess || !agency.agencyAccess.allowedColleges) {
+/**
+ * @desc    Respond to company access request
+ * @route   POST /api/college/company-request/:id/respond
+ * @access  College Admin
+ */
+const respondToCompanyRequest = asyncHandler(async (req, res) => {
+    const collegeId = req.user.collegeProfile._id;
+    const companyId = req.params.id;
+    const { status, remarks } = req.body; // status: 'approved' or 'rejected'
+    const { Company } = require('../models');
+
+    if (!['approved', 'rejected'].includes(status)) {
         return res.status(400).json({
             success: false,
-            message: 'Agency does not have access to your college'
+            message: 'Invalid status. Must be approved or rejected'
         });
     }
 
-    const accessIndex = agency.agencyAccess.allowedColleges.findIndex(
-        ac => ac.college && ac.college.toString() === collegeId.toString()
+    const company = await Company.findById(companyId);
+
+    if (!company) {
+        return res.status(404).json({
+            success: false,
+            message: 'Company not found'
+        });
+    }
+
+    // Find the access request
+    const accessIndex = company.collegeAccess.findIndex(
+        ca => ca.college.toString() === collegeId.toString()
     );
 
     if (accessIndex === -1) {
-        return res.status(400).json({
+        return res.status(404).json({
             success: false,
-            message: 'Agency does not have access to your college'
+            message: 'Access request not found'
         });
     }
 
-    // Remove access
-    agency.agencyAccess.allowedColleges.splice(accessIndex, 1);
-    await agency.save();
+    // Update status
+    company.collegeAccess[accessIndex].status = status;
+    company.collegeAccess[accessIndex].respondedAt = new Date();
+    company.collegeAccess[accessIndex].remarks = remarks || '';
+
+    await company.save();
 
     res.json({
         success: true,
-        message: 'Agency access revoked successfully'
+        message: `Request ${status} successfully`,
+        data: {
+            companyId: company._id,
+            status,
+            respondedAt: company.collegeAccess[accessIndex].respondedAt
+        }
     });
 });
 
 /**
- * @desc    Update agency access settings
- * @route   PATCH /api/college/agencies/:id/access-settings
+ * @desc    Revoke company access
+ * @route   DELETE /api/college/companies/:id/revoke
  * @access  College Admin
  */
-const updateAgencyAccessSettings = asyncHandler(async (req, res) => {
+const revokeCompanyAccess = asyncHandler(async (req, res) => {
     const collegeId = req.user.collegeProfile._id;
-    const agencyId = req.params.id;
-    const { accessExpiryDate, downloadLimit } = req.body;
+    const companyId = req.params.id;
     const { Company } = require('../models');
 
-    // Find the agency
-    const agency = await Company.findOne({
-        _id: agencyId,
-        type: 'placement_agency',
-        'agencyAccess.allowedColleges.college': collegeId
-    });
+    const company = await Company.findById(companyId);
 
-    if (!agency) {
+    if (!company) {
         return res.status(404).json({
             success: false,
-            message: 'Agency not found or does not have access to your college'
+            message: 'Company not found'
         });
     }
 
-    // Update settings
-    if (accessExpiryDate !== undefined) {
-        agency.agencyAccess.accessExpiryDate = accessExpiryDate ? new Date(accessExpiryDate) : null;
-    }
+    // Remove the college from access list
+    company.collegeAccess = company.collegeAccess.filter(
+        ca => ca.college.toString() !== collegeId.toString()
+    );
 
-    if (downloadLimit !== undefined) {
-        agency.agencyAccess.downloadLimit = downloadLimit;
-    }
-
-    await agency.save();
+    await company.save();
 
     res.json({
         success: true,
-        message: 'Agency access settings updated successfully',
-        data: agency
+        message: 'Access revoked successfully'
+    });
+});
+
+/**
+ * @desc    Update company access settings (limits)
+ * @route   PATCH /api/college/companies/:id/settings
+ * @access  College Admin
+ */
+const updateCompanyAccessSettings = asyncHandler(async (req, res) => {
+    const collegeId = req.user.collegeProfile._id;
+    const companyId = req.params.id;
+    const { downloadLimit, expiryDate } = req.body;
+    const { Company } = require('../models');
+
+    const company = await Company.findOne({
+        _id: companyId,
+        'collegeAccess.college': collegeId
+    });
+
+    if (!company) {
+        return res.status(404).json({
+            success: false,
+            message: 'Company not found or access not linked'
+        });
+    }
+
+    const accessIndex = company.collegeAccess.findIndex(
+        ca => ca.college.toString() === collegeId.toString()
+    );
+
+    if (downloadLimit !== undefined) {
+        company.collegeAccess[accessIndex].downloadLimit = downloadLimit;
+    }
+    
+    // Logic for expiry could be added if schema supports it, for now just limits
+    
+    await company.save();
+
+    res.json({
+        success: true,
+        message: 'Settings updated successfully'
     });
 });
 
@@ -1312,12 +1268,14 @@ const updateCollegeProfile = asyncHandler(async (req, res) => {
 
     // Only allow updating specific fields
     const allowedFields = [
+        'university',
         'contactEmail',
         'phone',
         'website',
         'address',
         'departments',
-        'description'
+        'description',
+        'logo'
     ];
 
     const updates = {};
@@ -1602,6 +1560,258 @@ const getCompanyActivity = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * @desc    Get student placement activity timeline
+ * @route   GET /api/college/students/:id/placement-activity
+ * @access  College Admin
+ */
+const getStudentPlacementActivity = asyncHandler(async (req, res) => {
+    const collegeId = req.user.collegeProfile._id;
+    const studentId = req.params.id;
+
+    // Verify student belongs to this college
+    const student = await Student.findOne({
+        _id: studentId,
+        college: collegeId
+    }).populate('user', 'email');
+
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
+    const { Application, Job, Company, Shortlist } = require('../models');
+
+    // Get all applications by this student
+    const applications = await Application.find({ student: studentId })
+        .populate({
+            path: 'job',
+            select: 'title location jobType salary',
+            populate: {
+                path: 'company',
+                select: 'name logo industry'
+            }
+        })
+        .sort({ createdAt: -1 })
+        .lean();
+
+    // Get all shortlists for this student
+    const shortlists = await Shortlist.find({ student: studentId })
+        .populate('company', 'name logo industry')
+        .populate('job', 'title location')
+        .sort({ createdAt: -1 })
+        .lean();
+
+    // Build timeline combining applications and shortlists
+    const timeline = [];
+
+    // Add applications to timeline
+    applications.forEach(app => {
+        if (app.job && app.job.company) {
+            timeline.push({
+                type: 'application',
+                action: getApplicationAction(app.status),
+                company: app.job.company,
+                job: {
+                    title: app.job.title,
+                    location: app.job.location,
+                    jobType: app.job.jobType,
+                    salary: app.job.salary
+                },
+                status: app.status,
+                date: app.updatedAt || app.createdAt,
+                details: {
+                    appliedAt: app.createdAt,
+                    currentStatus: app.status
+                }
+            });
+        }
+    });
+
+    // Add shortlists to timeline
+    shortlists.forEach(shortlist => {
+        timeline.push({
+            type: 'shortlist',
+            action: 'SHORTLISTED',
+            company: shortlist.company,
+            job: shortlist.job ? {
+                title: shortlist.job.title,
+                location: shortlist.job.location
+            } : null,
+            status: shortlist.status,
+            date: shortlist.createdAt,
+            details: {
+                notes: shortlist.notes,
+                shortlistedAt: shortlist.createdAt
+            }
+        });
+    });
+
+    // Add placement details if student is placed
+    if (student.placementStatus === 'placed' && student.placementDetails) {
+        timeline.push({
+            type: 'placement',
+            action: 'PLACED',
+            company: {
+                name: student.placementDetails.company
+            },
+            status: 'placed',
+            date: student.placementDetails.joiningDate || student.updatedAt,
+            details: {
+                role: student.placementDetails.role,
+                package: student.placementDetails.package,
+                joiningDate: student.placementDetails.joiningDate
+            }
+        });
+    }
+
+    // Sort timeline by date (newest first)
+    timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    res.json({
+        success: true,
+        data: {
+            student: {
+                _id: student._id,
+                name: student.name,
+                rollNumber: student.rollNumber,
+                email: student.email,
+                department: student.department,
+                batch: student.batch,
+                placementStatus: student.placementStatus
+            },
+            timeline,
+            summary: {
+                totalApplications: applications.length,
+                totalShortlists: shortlists.length,
+                isPlaced: student.placementStatus === 'placed',
+                placementDetails: student.placementStatus === 'placed' ? student.placementDetails : null
+            }
+        }
+    });
+});
+
+// Helper function to get action text based on application status
+function getApplicationAction(status) {
+    const actionMap = {
+        'pending': 'APPLIED',
+        'reviewed': 'UNDER REVIEW',
+        'shortlisted': 'SHORTLISTED',
+        'interviewed': 'INTERVIEWED',
+        'offered': 'OFFERED',
+        'hired': 'HIRED',
+        'rejected': 'REJECTED',
+        'withdrawn': 'WITHDRAWN'
+    };
+    return actionMap[status] || 'APPLIED';
+}
+
+
+
+/**
+ * @desc    Get placement drives
+ * @route   GET /api/college/drives
+ * @access  College Admin
+ */
+const getPlacementDrives = asyncHandler(async (req, res) => {
+    const collegeId = req.user.collegeProfile._id;
+    const { status } = req.query;
+    const { Job, Application } = require('../models');
+
+    const query = { 
+        college: collegeId,
+        isPlacementDrive: true 
+    };
+
+    if (status) {
+        if (status === 'upcoming') {
+            query.driveDate = { $gte: new Date() };
+        } else if (status === 'past') {
+            query.driveDate = { $lt: new Date() };
+        }
+    }
+
+    const drives = await Job.find(query)
+        .populate('company', 'name logo industry')
+        .sort({ driveDate: 1 })
+        .lean();
+
+    // Get stats for each drive
+    const drivesWithStats = await Promise.all(drives.map(async (drive) => {
+        const stats = await Application.aggregate([
+            { $match: { job: drive._id } },
+            { 
+                $group: {
+                    _id: '$status',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const applicationCount = stats.reduce((sum, s) => sum + s.count, 0);
+        
+        return {
+            ...drive,
+            stats: {
+                totalApplications: applicationCount,
+                breakdown: stats.reduce((acc, curr) => {
+                    acc[curr._id] = curr.count;
+                    return acc;
+                }, {})
+            }
+        };
+    }));
+
+    res.json({
+        success: true,
+        data: drivesWithStats
+    });
+});
+
+/**
+ * @desc    Toggle student star status
+ * @route   PATCH /api/college/students/:id/toggle-star
+ * @access  College Admin
+ */
+const toggleStarStudent = asyncHandler(async (req, res) => {
+    const collegeId = req.user.collegeProfile._id;
+    const { id } = req.params;
+
+    const student = await Student.findOne({
+        _id: id,
+        college: collegeId
+    });
+
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
+    // Toggle status
+    student.isStarStudent = !student.isStarStudent;
+    
+    // Update metadata
+    if (student.isStarStudent) {
+        student.starredAt = new Date();
+        student.starredBy = req.userId;
+    } else {
+        student.starredAt = null;
+        student.starredBy = null;
+    }
+    
+    await student.save();
+
+    res.json({
+        success: true,
+        message: `Student ${student.isStarStudent ? 'marked as Star Student' : 'removed from Star Students'}`,
+        data: { isStarStudent: student.isStarStudent }
+    });
+});
+
 module.exports = {
     getDashboardStats,
     getStudents,
@@ -1614,18 +1824,22 @@ module.exports = {
     getDepartments,
     exportStudents,
     resetStudentPassword,
-    getAgencies,
-    getAgencyRequests,
+    getConnectedCompanies,
+    getCompanyRequests,
+    respondToCompanyRequest,
+    revokeCompanyAccess,
+    updateCompanyAccessSettings,
     getAgencyActivity,
-    grantAgencyAccess,
-    revokeAgencyAccess,
     getCompanyActivity,
-    updateAgencyAccessSettings,
     getPlacementTracking,
     getPlacementStats,
     exportPlacementReport,
     getCollegeProfile,
     updateCollegeProfile,
     getCollegeSettings,
-    updateCollegeSettings
+    updateCollegeSettings,
+    getStudentPlacementActivity,
+    getStudentPlacementActivity,
+    getPlacementDrives,
+    toggleStarStudent
 };

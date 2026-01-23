@@ -20,7 +20,7 @@ const Sidebar = ({ collapsed, onToggle, mobileOpen }) => {
                 { path: '/admin/companies', icon: Briefcase, label: 'Companies' },
                 { path: '/admin/students', icon: GraduationCap, label: 'Students' },
                 { path: '/admin/users', icon: Users, label: 'Users' },
-                { path: '/admin/activity-logs', icon: Activity, label: 'Activity Logs' }
+
             ];
         }
 
@@ -30,7 +30,8 @@ const Sidebar = ({ collapsed, onToggle, mobileOpen }) => {
                 { path: '/college/students', icon: GraduationCap, label: 'Students' },
                 { path: '/college/upload', icon: Upload, label: 'Bulk Upload' },
                 { path: '/college/placements', icon: BarChart3, label: 'Placements' },
-                { path: '/college/company-activity', icon: Building2, label: 'Company Activity' },
+                { path: '/college/partnerships', icon: Building2, label: 'Industry Partnerships' },
+                { path: '/college/company-activity', icon: Activity, label: 'Company Activity' },
                 { path: '/college/activity-logs', icon: Activity, label: 'Activity Logs' }
             ];
         }
@@ -39,6 +40,7 @@ const Sidebar = ({ collapsed, onToggle, mobileOpen }) => {
             return [
                 { path: '/company', icon: LayoutDashboard, label: 'Dashboard' },
                 { path: '/company/jobs', icon: Briefcase, label: 'My Jobs' },
+                { path: '/company/partnerships', icon: Building2, label: 'University Partnerships' },
                 { path: '/company/search', icon: Search, label: 'Find Talent' },
                 { path: '/company/shortlist', icon: Star, label: 'Shortlisted' }
             ];

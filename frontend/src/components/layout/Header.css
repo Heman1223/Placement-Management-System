@@ -9,6 +9,27 @@
     position: sticky;
     top: 0;
     z-index: 50;
+    transition: all 0.3s ease;
+}
+
+.layout-admin-dark .header {
+    background: #0f172a;
+    border-bottom-color: #1e293b;
+}
+
+.layout-admin-dark .header-title {
+    color: white;
+}
+
+.layout-admin-dark .header-menu-btn,
+.layout-admin-dark .header-icon-btn {
+    color: #94a3b8;
+}
+
+.layout-admin-dark .header-menu-btn:hover,
+.layout-admin-dark .header-icon-btn:hover {
+    background: #1e293b;
+    color: white;
 }
 
 .header-left {

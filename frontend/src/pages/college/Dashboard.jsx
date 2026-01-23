@@ -15,6 +15,7 @@ const CollegeDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [collegeProfile, setCollegeProfile] = useState(null);
+    const [starStudents, setStarStudents] = useState([]);
 
     // Debug: Log user object to see what we have
     console.log('Dashboard - Full user object:', user);
@@ -66,6 +67,10 @@ const CollegeDashboard = () => {
             const response = await collegeAPI.getStats();
             setStats(response.data.data);
             
+            // Fetch star students
+            const studentsRes = await collegeAPI.getStudents({ isStarStudent: true, limit: 5 });
+            setStarStudents(studentsRes.data.data.students || []);
+
             if (silent) {
                 console.log('Dashboard data refreshed');
             }
@@ -138,6 +143,46 @@ const CollegeDashboard = () => {
                     </Link>
                 ))}
             </div>
+
+            {/* Star Students Section */}
+            {starStudents.length > 0 && (
+                <div className="section-container mb-8">
+                    <div className="flex items-center gap-3 mb-4 px-1">
+                        <Star size={20} className="text-amber-500 fill-amber-500" />
+                        <h2 className="text-lg font-bold text-slate-700">Star Students</h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {starStudents.map(student => (
+                            <div key={student._id} className="bg-white p-4 rounded-xl shadow-sm border border-amber-100 flex items-start gap-4 hover:shadow-md transition-shadow">
+                                <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg border border-amber-200">
+                                    {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="font-bold text-slate-800 truncate">
+                                            {student.name?.firstName} {student.name?.lastName}
+                                        </h3>
+                                        <div className="bg-amber-100 text-amber-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">
+                                            Star
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-slate-500 font-medium mt-0.5">{student.department}</p>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                                            Batch {student.batch}
+                                        </span>
+                                        {student.cgpa && (
+                                            <span className="text-xs font-bold text-blue-600">
+                                                CGPA: {student.cgpa}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Stats Grid - Enhanced with new metrics */}
             <div className="stats-grid enhanced-stats">

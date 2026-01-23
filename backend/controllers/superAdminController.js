@@ -73,8 +73,12 @@ const getColleges = asyncHandler(async (req, res) => {
         query.isDeleted = false;
     }
 
-    if (status === 'pending') query.isVerified = false;
+    if (status === 'pending') {
+        query.isVerified = false;
+        query.isRejected = false; // Pending means not verified AND not rejected
+    }
     if (status === 'verified') query.isVerified = true;
+    if (status === 'rejected') query.isRejected = true;
 
     if (search) {
         query.$or = [
@@ -124,10 +128,20 @@ const approveCollege = asyncHandler(async (req, res) => {
         });
     }
 
-    college.isVerified = approved;
     if (approved) {
+        // Approve the college
+        college.isVerified = true;
         college.verifiedAt = new Date();
         college.verifiedBy = req.userId;
+        college.isRejected = false; // Clear rejection if previously rejected
+        college.rejectedAt = null;
+        college.rejectedBy = null;
+    } else {
+        // Reject the college
+        college.isVerified = false;
+        college.isRejected = true;
+        college.rejectedAt = new Date();
+        college.rejectedBy = req.userId;
     }
     await college.save();
 
@@ -156,8 +170,13 @@ const getCompanies = asyncHandler(async (req, res) => {
         query.isDeleted = false;
     }
 
-    if (status === 'pending') query.isApproved = false;
+    if (status === 'pending') {
+        query.isApproved = false;
+        query.isRejected = false;
+    }
     if (status === 'approved') query.isApproved = true;
+    if (status === 'rejected') query.isRejected = true;
+    
     if (type) query.type = type;
 
     if (search) {
@@ -208,10 +227,18 @@ const approveCompany = asyncHandler(async (req, res) => {
         });
     }
 
-    company.isApproved = approved;
     if (approved) {
+        company.isApproved = true;
         company.approvedAt = new Date();
         company.approvedBy = req.userId;
+        company.isRejected = false;
+        company.rejectedAt = null;
+        company.rejectedBy = null;
+    } else {
+        company.isApproved = false;
+        company.isRejected = true;
+        company.rejectedAt = new Date();
+        company.rejectedBy = req.userId;
     }
     await company.save();
 
@@ -802,7 +829,9 @@ const getAllStudents = asyncHandler(async (req, res) => {
         placementStatus,
         minCGPA,
         maxCGPA,
-        skills
+
+        skills,
+        isStarStudent
     } = req.query;
 
     const query = {};
@@ -822,6 +851,10 @@ const getAllStudents = asyncHandler(async (req, res) => {
 
     // Department filter
     if (department) query.department = department;
+
+    // Star Student filter
+    if (isStarStudent === 'true') query.isStarStudent = true;
+
 
     // Batch filter
     if (batch) query.batch = parseInt(batch);
@@ -1291,28 +1324,28 @@ const assignCollegesToAgency = asyncHandler(async (req, res) => {
         });
     }
 
-    const newColleges = collegeIds.map(collegeId => ({
-        college: collegeId,
-        grantedAt: new Date(),
-        grantedBy: req.userId
-    }));
-
-    const existingCollegeIds = company.agencyAccess.allowedColleges.map(
-        ac => ac.college.toString()
-    );
-    const uniqueNewColleges = newColleges.filter(
-        nc => !existingCollegeIds.includes(nc.college.toString())
+    const existingCollegeIds = company.collegeAccess.map(
+        ca => ca.college.toString()
     );
 
-    company.agencyAccess.allowedColleges.push(...uniqueNewColleges);
+    const newColleges = collegeIds
+        .filter(id => !existingCollegeIds.includes(id))
+        .map(collegeId => ({
+            college: collegeId,
+            status: 'approved',
+            requestedAt: new Date(),
+            respondedAt: new Date()
+        }));
+
+    company.collegeAccess.push(...newColleges);
     await company.save();
 
-    await company.populate('agencyAccess.allowedColleges.college', 'name code');
+    await company.populate('collegeAccess.college', 'name code');
 
     res.json({
         success: true,
         message: 'Colleges assigned successfully',
-        data: company.agencyAccess
+        data: company.collegeAccess
     });
 });
 
@@ -1332,8 +1365,8 @@ const removeCollegeFromAgency = asyncHandler(async (req, res) => {
         });
     }
 
-    company.agencyAccess.allowedColleges = company.agencyAccess.allowedColleges.filter(
-        ac => ac.college.toString() !== collegeId
+    company.collegeAccess = company.collegeAccess.filter(
+        ca => ca.college.toString() !== collegeId
     );
     await company.save();
 
@@ -1349,31 +1382,10 @@ const removeCollegeFromAgency = asyncHandler(async (req, res) => {
  * @access  Super Admin
  */
 const setAgencyAccessExpiry = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { expiryDate } = req.body;
-
-    const company = await Company.findById(id);
-    if (!company) {
-        return res.status(404).json({
-            success: false,
-            message: 'Company not found'
-        });
-    }
-
-    if (company.type !== 'placement_agency') {
-        return res.status(400).json({
-            success: false,
-            message: 'This operation is only for placement agencies'
-        });
-    }
-
-    company.agencyAccess.accessExpiryDate = expiryDate ? new Date(expiryDate) : null;
-    await company.save();
-
-    res.json({
-        success: true,
-        message: 'Access expiry date updated successfully',
-        data: { accessExpiryDate: company.agencyAccess.accessExpiryDate }
+    // Feature temporarily disabled or check schema
+    return res.status(501).json({
+        success: false,
+        message: 'Feature not implemented for new schema'
     });
 });
 
@@ -1394,23 +1406,14 @@ const setAgencyDownloadLimit = asyncHandler(async (req, res) => {
         });
     }
 
-    if (company.type !== 'placement_agency') {
-        return res.status(400).json({
-            success: false,
-            message: 'This operation is only for placement agencies'
-        });
-    }
-
-    company.agencyAccess.downloadLimit = parseInt(limit);
+    company.downloadTracking.dailyLimit = parseInt(limit);
     await company.save();
 
     res.json({
         success: true,
         message: 'Download limit updated successfully',
         data: { 
-            downloadLimit: company.agencyAccess.downloadLimit,
-            downloadCount: company.agencyAccess.downloadCount,
-            remaining: company.agencyAccess.downloadLimit - company.agencyAccess.downloadCount
+            dailyLimit: company.downloadTracking.dailyLimit
         }
     });
 });
@@ -1425,8 +1428,7 @@ const getAgencyDetails = asyncHandler(async (req, res) => {
 
     const company = await Company.findById(id)
         .populate('user', 'email isActive')
-        .populate('agencyAccess.allowedColleges.college', 'name code')
-        .populate('agencyAccess.allowedColleges.grantedBy', 'email');
+        .populate('collegeAccess.college', 'name code');
 
     if (!company) {
         return res.status(404).json({
@@ -1438,6 +1440,70 @@ const getAgencyDetails = asyncHandler(async (req, res) => {
     res.json({
         success: true,
         data: company
+    });
+});
+
+
+
+
+
+/**
+ * @desc    Get single student details
+ * @route   GET /api/super-admin/students/:id
+ * @access  Super Admin
+ */
+const getStudentDetails = asyncHandler(async (req, res) => {
+    const student = await Student.findById(req.params.id)
+        .populate('college', 'name city state')
+        .populate('user', 'email isActive isApproved');
+
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
+    res.json({
+        success: true,
+        data: student
+    });
+});
+
+/**
+ * @desc    Toggle student star status
+ * @route   PATCH /api/super-admin/students/:id/toggle-star
+ * @access  Super Admin
+ */
+const toggleStarStudent = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const student = await Student.findById(id);
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
+    // Toggle status
+    student.isStarStudent = !student.isStarStudent;
+    
+    // Update metadata
+    if (student.isStarStudent) {
+        student.starredAt = new Date();
+        student.starredBy = req.userId;
+    } else {
+        student.starredAt = null;
+        student.starredBy = null;
+    }
+    
+    await student.save();
+
+    res.json({
+        success: true,
+        message: `Student ${student.isStarStudent ? 'marked as Star Student' : 'removed from Star Students'}`,
+        data: { isStarStudent: student.isStarStudent }
     });
 });
 
@@ -1511,5 +1577,8 @@ module.exports = {
     getCollegeAdmin,
     updateCollegeAdmin,
     toggleCollegeAdminBlock,
-    getAllJobs
+
+    getAllJobs,
+    toggleStarStudent,
+    getStudentDetails
 };

@@ -80,6 +80,17 @@ const companySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    // Rejection tracking
+    isRejected: {
+        type: Boolean,
+        default: false
+    },
+    rejectedAt: Date,
+    rejectedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+
 
     // Active/Blocked status
     isActive: {
@@ -117,33 +128,24 @@ const companySchema = new mongoose.Schema({
         ref: 'User'
     },
 
-    // Agency-specific access control (for placement agencies)
-    agencyAccess: {
-        // Colleges this agency can access
-        allowedColleges: [{
-            college: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'College'
-            },
-            grantedAt: Date,
-            grantedBy: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'User'
-            }
-        }],
-        // Access expiry
-        accessExpiryDate: Date,
-        // Download limits
-        downloadLimit: {
-            type: Number,
-            default: 100 // Number of student profiles they can download
+    // College Access Control (for placement drives)
+    collegeAccess: [{
+        college: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'College'
         },
-        downloadCount: {
-            type: Number,
-            default: 0
+        status: {
+            type: String,
+            enum: ['pending', 'approved', 'rejected'],
+            default: 'pending'
         },
-        lastDownloadAt: Date
-    },
+        requestedAt: {
+            type: Date,
+            default: Date.now
+        },
+        respondedAt: Date,
+        remarks: String
+    }],
 
     // Download tracking for all companies
     downloadTracking: {
@@ -239,6 +241,7 @@ const companySchema = new mongoose.Schema({
 companySchema.index({ type: 1 });
 companySchema.index({ industry: 1 });
 companySchema.index({ isApproved: 1 });
+companySchema.index({ isRejected: 1 });
 companySchema.index({ isActive: 1 });
 companySchema.index({ isSuspended: 1 });
 companySchema.index({ isDeleted: 1 });

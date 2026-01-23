@@ -443,3 +443,109 @@
         transform: translateY(0);
     }
 }
+
+/* Timeline Styles */
+.timeline-section {
+    padding-left: var(--spacing-4);
+}
+
+.timeline {
+    position: relative;
+    padding: var(--spacing-4) 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 20px;
+    width: 2px;
+    background: var(--gray-200);
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 50px;
+    margin-bottom: var(--spacing-6);
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-badge {
+    position: absolute;
+    left: 10px;
+    top: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--gray-300);
+    z-index: 1;
+}
+
+.timeline-badge.placed { border-color: var(--success-500); background: var(--success-50); }
+.timeline-badge.offered { border-color: var(--success-500); background: var(--success-50); }
+.timeline-badge.shortlisted { border-color: var(--primary-500); background: var(--primary-50); }
+.timeline-badge.interviewed { border-color: var(--warning-500); background: var(--warning-50); }
+.timeline-badge.applied { border-color: var(--gray-500); background: var(--gray-50); }
+.timeline-badge.rejected { border-color: var(--error-500); background: var(--error-50); }
+
+.timeline-content {
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    border: 1px solid var(--gray-200);
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-2);
+}
+
+.timeline-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.timeline-date {
+    font-size: 0.8125rem;
+    color: var(--gray-500);
+    white-space: nowrap;
+}
+
+.timeline-company {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    margin-bottom: var(--spacing-2);
+    font-weight: 500;
+}
+
+.timeline-details {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-top: var(--spacing-2);
+    padding-top: var(--spacing-2);
+    border-top: 1px solid var(--gray-200);
+}
+
+.timeline-tag {
+    display: inline-flex;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-left: var(--spacing-2);
+}
+
+.timeline-tag.placed { background: var(--success-100); color: var(--success-700); }
+.timeline-tag.offered { background: var(--success-100); color: var(--success-700); }
+.timeline-tag.shortlisted { background: var(--primary-100); color: var(--primary-700); }
+.timeline-tag.interviewed { background: var(--warning-100); color: var(--warning-700); }
+.timeline-tag.rejected { background: var(--error-100); color: var(--error-700); }

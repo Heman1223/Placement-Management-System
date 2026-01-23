@@ -133,6 +133,10 @@ const getEligibleJobs = asyncHandler(async (req, res) => {
     const query = {
         status: 'open',
         applicationDeadline: { $gte: new Date() },
+        $or: [
+            { isPlacementDrive: { $ne: true } },
+            { isPlacementDrive: true, college: student.college }
+        ],
         'eligibility.allowedDepartments': student.department,
         'eligibility.allowedBatches': student.batch,
         'eligibility.minCgpa': { $lte: student.cgpa || 0 },
@@ -241,6 +245,27 @@ const applyForJob = asyncHandler(async (req, res) => {
             success: false,
             message: `Minimum CGPA required: ${job.eligibility.minCgpa}`
         });
+    }
+
+    // Check Backlogs
+    if (job.eligibility.maxBacklogs !== undefined) {
+        const studentBacklogs = student.backlogs?.active || 0;
+        if (studentBacklogs > job.eligibility.maxBacklogs) {
+            return res.status(403).json({
+                success: false,
+                message: `Too many active backlogs. Maximum allowed: ${job.eligibility.maxBacklogs}`
+            });
+        }
+    }
+
+    // Check Placement Drive Restriction
+    if (job.isPlacementDrive && job.college) {
+        if (student.college.toString() !== job.college.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'This placement drive is restricted to students of specific college'
+            });
+        }
     }
 
     // Check if already applied

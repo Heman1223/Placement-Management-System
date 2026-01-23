@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
 import toast from 'react-hot-toast';
+import { ArrowLeft, Bell } from 'lucide-react';
 import './AdminPages.css';
 
 const AddCompany = () => {
@@ -44,9 +45,17 @@ const AddCompany = () => {
 
     return (
         <div className="admin-page">
-            <div className="page-header">
-                <h1>Add New Company</h1>
-                <p className="subtitle">Create a new company and user account</p>
+            <div className="colleges-header">
+                <div className="header-title-area">
+                    <button onClick={() => navigate('/admin/companies')} className="back-btn mb-2" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--slate-400)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}>
+                        <ArrowLeft size={16} />
+                        Back to Companies
+                    </button>
+                    <h1>Entity Registration</h1>
+                    <p>Super Admin Portal</p>
+                </div>
+                <div className="header-controls">
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="form-container">

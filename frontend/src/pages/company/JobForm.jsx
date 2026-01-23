@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { jobAPI } from '../../services/api';
+import { jobAPI, companyAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Card from '../../components/common/Card';
@@ -36,12 +36,28 @@ const JobForm = () => {
         status: 'draft'
     });
 
+    const [approvedColleges, setApprovedColleges] = useState([]);
+    const [isPlacementDrive, setIsPlacementDrive] = useState(false);
     const [newDept, setNewDept] = useState('');
     const [newSkill, setNewSkill] = useState('');
 
     useEffect(() => {
         if (isEdit) fetchJob();
+        fetchApprovedColleges();
     }, [id]);
+
+    const fetchApprovedColleges = async () => {
+        try {
+            const response = await companyAPI.getRequestedColleges();
+            if (response.data.success) {
+                // Filter only approved colleges
+                const approved = response.data.data.filter(c => c.status === 'approved');
+                setApprovedColleges(approved);
+            }
+        } catch (error) {
+            console.error('Failed to fetch colleges', error);
+        }
+    };
 
     const fetchJob = async () => {
         setLoading(true);
@@ -52,6 +68,9 @@ const JobForm = () => {
                 ...job,
                 applicationDeadline: job.applicationDeadline?.split('T')[0] || ''
             });
+            if (job.college) {
+                setIsPlacementDrive(true);
+            }
         } catch (error) {
             toast.error('Failed to load job');
             navigate('/company/jobs');
@@ -59,6 +78,7 @@ const JobForm = () => {
             setLoading(false);
         }
     };
+
 
     const handleChange = (path, value) => {
         setFormData(prev => {
@@ -97,18 +117,7 @@ const JobForm = () => {
         }));
     };
 
-    const addDepartment = () => {
-        if (newDept.trim() && !formData.eligibility.allowedDepartments.includes(newDept.trim())) {
-            setFormData(prev => ({
-                ...prev,
-                eligibility: {
-                    ...prev.eligibility,
-                    allowedDepartments: [...prev.eligibility.allowedDepartments, newDept.trim()]
-                }
-            }));
-            setNewDept('');
-        }
-    };
+
 
     const removeDepartment = (index) => {
         setFormData(prev => ({
@@ -143,17 +152,7 @@ const JobForm = () => {
         }));
     };
 
-    const toggleBatch = (year) => {
-        setFormData(prev => ({
-            ...prev,
-            eligibility: {
-                ...prev.eligibility,
-                allowedBatches: prev.eligibility.allowedBatches.includes(year)
-                    ? prev.eligibility.allowedBatches.filter(y => y !== year)
-                    : [...prev.eligibility.allowedBatches, year]
-            }
-        }));
-    };
+
 
     const handleSubmit = async (e, publish = false) => {
         e.preventDefault();
@@ -229,6 +228,55 @@ const JobForm = () => {
                             onChange={(e) => handleChange('category', e.target.value)}
                             placeholder="e.g., Software Development"
                         />
+                        
+                        {/* Placement Drive Selection */}
+                        <div className="input-wrapper" style={{ gridColumn: '1 / -1' }}>
+                            <div className="checkbox-wrapper">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={isPlacementDrive}
+                                        onChange={(e) => {
+                                            const checked = e.target.checked;
+                                            setIsPlacementDrive(checked);
+                                            if (!checked) {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    college: null
+                                                }));
+                                            }
+                                        }}
+                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <span className="font-medium">Is this a On-Campus / Placement Drive?</span>
+                                </label>
+                            </div>
+                            
+                            {isPlacementDrive && (
+                                <div className="mt-2">
+                                    <label className="input-label">Select College <span className="input-required">*</span></label>
+                                    <select
+                                        className="input"
+                                        value={formData.college || ''}
+                                        onChange={(e) => handleChange('college', e.target.value)}
+                                        required={isPlacementDrive}
+                                    >
+                                        <option value="">Select a college...</option>
+                                        {approvedColleges.map(c => (
+                                            <option key={c.college?._id} value={c.college?._id}>
+                                                {c.college?.name} ({c.college?.city})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {approvedColleges.length === 0 && (
+                                        <div className="text-sm text-red-500 mt-1">
+                                            You don't have any approved college partners. Go to Partnerships to connect.
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                         <div className="input-wrapper">
                             <label className="input-label">Work Mode</label>
                             <select
@@ -352,13 +400,30 @@ const JobForm = () => {
                     <div className="eligibility-section">
                         <label className="input-label">Allowed Departments</label>
                         <div className="tag-input">
-                            <Input
+                            <select
+                                className="input"
                                 value={newDept}
-                                onChange={(e) => setNewDept(e.target.value)}
-                                placeholder="e.g., Computer Science"
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addDepartment())}
-                            />
-                            <Button type="button" onClick={addDepartment}>Add</Button>
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val && !formData.eligibility.allowedDepartments.includes(val)) {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            eligibility: {
+                                                ...prev.eligibility,
+                                                allowedDepartments: [...prev.eligibility.allowedDepartments, val]
+                                            }
+                                        }));
+                                        setNewDept('');
+                                    }
+                                }}
+                            >
+                                <option value="">Select Department</option>
+                                {['Computer Science', 'Information Technology', 'Electronics', 'Mechanical', 'Civil', 'Electrical', 'Chemical', 'Biotechnology'].map(dept => (
+                                    <option key={dept} value={dept} disabled={formData.eligibility.allowedDepartments.includes(dept)}>
+                                        {dept}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <div className="tags-list">
                             {formData.eligibility.allowedDepartments.map((dept, i) => (
@@ -376,17 +441,49 @@ const JobForm = () => {
                     {/* Batches */}
                     <div className="eligibility-section">
                         <label className="input-label">Allowed Batches</label>
-                        <div className="batch-selector">
-                            {batches.map(year => (
-                                <button
-                                    key={year}
-                                    type="button"
-                                    className={`batch-btn ${formData.eligibility.allowedBatches.includes(year) ? 'selected' : ''}`}
-                                    onClick={() => toggleBatch(year)}
-                                >
-                                    {year}
-                                </button>
+                        <div className="tag-input">
+                             <select
+                                className="input"
+                                value=""
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    if (val && !formData.eligibility.allowedBatches.includes(val)) {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            eligibility: {
+                                                ...prev.eligibility,
+                                                allowedBatches: [...prev.eligibility.allowedBatches, val]
+                                            }
+                                        }));
+                                    }
+                                }}
+                            >
+                                <option value="">Select Batch Year</option>
+                                {batches.map(year => (
+                                    <option key={year} value={year} disabled={formData.eligibility.allowedBatches.includes(year)}>
+                                        {year}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="tags-list">
+                            {formData.eligibility.allowedBatches.map((batch, i) => (
+                                <span key={i} className="tag">
+                                    {batch}
+                                     <button type="button" onClick={() => {
+                                         setFormData(prev => ({
+                                            ...prev,
+                                            eligibility: {
+                                                ...prev.eligibility,
+                                                allowedBatches: prev.eligibility.allowedBatches.filter(b => b !== batch)
+                                            }
+                                        }));
+                                     }}><Trash2 size={12} /></button>
+                                </span>
                             ))}
+                             {formData.eligibility.allowedBatches.length === 0 && (
+                                <span className="tag-hint">All batches allowed</span>
+                            )}
                         </div>
                     </div>
 
