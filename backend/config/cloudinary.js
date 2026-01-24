@@ -21,22 +21,23 @@ const resumeStorage = new CloudinaryStorage({
                 : req.user.studentProfile.toString();
         } else if (req.params?.id) {
             studentId = req.params.id;
+        } else if (req.body?.studentId) {
+            studentId = req.body.studentId;
+        } else if (req.query?.studentId) {
+            studentId = req.query.studentId;
         }
         
         // Create a short, clean filename
         const timestamp = Date.now();
         
         // For PDFs, use 'auto' resource type to allow browser viewing
-        // For DOC/DOCX, use 'raw' as they need to be downloaded
         const isPdf = file.mimetype === 'application/pdf';
         
         return {
             folder: 'placement-system/resumes',
             allowed_formats: ['pdf', 'doc', 'docx'],
-            resource_type: isPdf ? 'auto' : 'raw',
-            public_id: `resume_${studentId}_${timestamp}`,
-            // For PDFs, add flags to display inline in browser
-            ...(isPdf && { flags: 'attachment' })
+            resource_type: 'auto',
+            public_id: `resume_${studentId}_${timestamp}`
         };
     }
 });

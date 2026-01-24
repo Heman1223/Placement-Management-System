@@ -148,6 +148,7 @@ const StudentForm = () => {
             if (resumeFile) {
                 setUploadingResume(true);
                 const resumeFormData = new FormData();
+                if (id) resumeFormData.append('studentId', id);
                 resumeFormData.append('resume', resumeFile);
 
                 try {

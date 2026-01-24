@@ -7,7 +7,7 @@ import {
     Search, Filter, GraduationCap, 
     CheckCircle, XCircle, MoreVertical,
     ChevronLeft, ChevronRight, UserCheck,
-    Star, Eye, Building2, Briefcase, Mail, Phone, Sparkles
+    Star, Eye, Building2, Briefcase, Mail, Phone, Sparkles, Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -81,6 +81,18 @@ const Students = () => {
             fetchStudents();
         } catch (error) {
             toast.error('Failed to update status');
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this student? This action cannot be undone.')) return;
+
+        try {
+            await superAdminAPI.deleteStudent(id);
+            toast.success('Student deleted successfully');
+            fetchStudents();
+        } catch (error) {
+            toast.error('Failed to delete student');
         }
     };
 
@@ -284,7 +296,12 @@ const Students = () => {
                             </tr>
                         ) : students.length > 0 ? (
                             students.map((student, idx) => (
-                                <tr key={student._id}>
+                                <tr 
+                                    key={student._id}
+                                    onClick={() => navigate(`/admin/students/${student._id}`)}
+                                    style={{ cursor: 'pointer' }}
+                                    className="hover:bg-slate-800/50 transition-colors"
+                                >
                                     <td>
                                         <div className="user-cell">
                                             <div className="relative">
@@ -357,7 +374,8 @@ const Students = () => {
                                                         style={{ right: '100%', top: 0, marginRight: '8px' }}
                                                     >
 
-                                                        <button onClick={() => {
+                                                        <button onClick={(e) => {
+                                                            e.stopPropagation();
                                                             navigate(`/admin/students/${student._id}`);
                                                             setOpenDropdown(null);
                                                         }}>
@@ -372,6 +390,16 @@ const Students = () => {
                                                         >
                                                             <Star size={16} className={student.isStarStudent ? 'fill-current' : ''} />
                                                             {student.isStarStudent ? 'Remove Star' : 'Mark as Star'}
+                                                        </button>
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDelete(student._id);
+                                                                setOpenDropdown(null);
+                                                            }}
+                                                            className="danger"
+                                                        >
+                                                            <Trash2 size={16} /> Delete
                                                         </button>
                                                     </motion.div>
                                                 )}

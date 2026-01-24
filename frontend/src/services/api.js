@@ -91,6 +91,7 @@ export const superAdminAPI = {
 
     getAllStudents: (params) => api.get('/super-admin/students', { params }),
     getStudent: (id) => api.get(`/super-admin/students/${id}`),
+    deleteStudent: (id) => api.delete(`/super-admin/students/${id}`),
     toggleStarStudent: (id) => api.patch(`/super-admin/students/${id}/toggle-star`), // Adding this too since I used it
     getUsers: (params) => api.get('/super-admin/users', { params }),
     toggleUserStatus: (id) => api.patch(`/super-admin/users/${id}/toggle-status`),

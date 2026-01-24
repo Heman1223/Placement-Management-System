@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
 
 const Layout = ({ title }) => {
-    const { isSuperAdmin } = useAuth();
+    const { isSuperAdmin, isCollegeAdmin } = useAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -19,7 +19,7 @@ const Layout = ({ title }) => {
     };
 
     return (
-        <div className={`layout ${isSuperAdmin ? 'layout-admin-dark' : ''}`}>
+        <div className={`layout ${isSuperAdmin || isCollegeAdmin ? 'layout-admin-dark' : ''}`}>
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggle={toggleSidebar}

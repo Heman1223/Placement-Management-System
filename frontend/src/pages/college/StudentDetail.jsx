@@ -2,7 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { collegeAPI } from '../../services/api';
 import Button from '../../components/common/Button';
-import { ArrowLeft, Edit, Mail, Phone, Calendar, Award, Briefcase, FileText, Github, Linkedin, Globe, CheckCircle, XCircle } from 'lucide-react';
+import { 
+    ArrowLeft, Edit, Mail, Phone, Calendar, 
+    Award, Briefcase, FileText, Github, 
+    Linkedin, Globe, CheckCircle, XCircle,
+    User, BookOpen, Link as LinkIcon, Plus,
+    ShieldAlert, ChevronRight
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import './StudentDetail.css';
 
@@ -43,345 +49,205 @@ const StudentDetail = () => {
         return <div className="error-state">Student not found</div>;
     }
 
+    const percentage = completeness?.percentage || 0;
+
     return (
         <div className="student-detail-page">
-            {/* Header */}
-            <div className="detail-header">
-                <Button variant="ghost" icon={ArrowLeft} onClick={() => navigate('/college/students')}>
-                    Back to Students
-                </Button>
+            {/* Design Header */}
+            <div className="profile-header">
+                <button className="back-circle-btn" onClick={() => navigate('/college/students')}>
+                    <ArrowLeft size={20} />
+                </button>
+                <h2 className="header-title">STUDENT PROFILE</h2>
                 <Link to={`/college/students/${id}/edit`}>
-                    <Button icon={Edit}>Edit Profile</Button>
+                    <button className="edit-profile-btn">
+                        <Edit size={16} />
+                        <span>Edit Profile</span>
+                    </button>
                 </Link>
             </div>
 
-            {/* Profile Overview */}
-            <div className="profile-overview">
-                <div className="profile-main">
-                    <div className="profile-avatar">
-                        {student.name.firstName.charAt(0)}{student.name.lastName.charAt(0)}
+            {/* Profile Summary Card */}
+            <div className="profile-summary-card">
+                <div className="summary-left">
+                    <h1 className="student-fullname">{student.name.firstName} {student.name.lastName}</h1>
+                    <p className="student-meta">{student.department} • Batch {student.batch}</p>
+                    
+                    <div className="summary-badges">
+                        {student.isVerified ? (
+                            <div className="p-badge badge-verified">
+                                <div className="dot" />
+                                <span>VERIFIED</span>
+                            </div>
+                        ) : (
+                            <div className="p-badge badge-pending">
+                                <div className="dot" />
+                                <span>PENDING VERIFICATION</span>
+                            </div>
+                        )}
+                        <div className="p-badge badge-status">
+                            <span>{student.placementStatus?.replace('_', ' ') || 'NOT PLACED'}</span>
+                        </div>
                     </div>
-                    <div className="profile-info">
-                        <h1>{student.name.firstName} {student.name.lastName}</h1>
-                        <p className="profile-subtitle">{student.department} • Batch {student.batch}</p>
-                        <div className="profile-badges">
-                            {student.isVerified ? (
-                                <span className="badge badge-success">
-                                    <CheckCircle size={14} /> Verified
-                                </span>
-                            ) : (
-                                <span className="badge badge-warning">
-                                    <XCircle size={14} /> Pending Verification
-                                </span>
-                            )}
-                            <span className={`badge badge-${student.placementStatus}`}>
-                                {student.placementStatus.replace('_', ' ')}
+                </div>
+
+                <div className="summary-right">
+                    <div className="completeness-circle-lg">
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+                            <circle
+                                cx="50" cy="50" r="42"
+                                fill="none"
+                                stroke="#10b981"
+                                strokeWidth="8"
+                                strokeDasharray={`${percentage * 2.64} 264`}
+                                strokeLinecap="round"
+                                transform="rotate(-90 50 50)"
+                            />
+                        </svg>
+                        <div className="circle-text">
+                            <span className="p-val">{percentage}%</span>
+                            <span className="p-lab">COMPLETE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Info Grid */}
+            <div className="info-grid-v2">
+                {/* Contact Card */}
+                <div className="grid-card-v2">
+                    <div className="card-header-v2">
+                        <div className="card-icon-box blue">
+                            <User size={20} />
+                        </div>
+                        <h3>CONTACT</h3>
+                    </div>
+                    <div className="card-body-v2">
+                        <div className="data-item-v2">
+                            <span className="data-label">EMAIL</span>
+                            <span className="data-value">{student.email}</span>
+                        </div>
+                        <div className="data-item-v2">
+                            <span className="data-label">PHONE</span>
+                            <span className="data-value">{student.phone || 'Not provided'}</span>
+                        </div>
+                        <div className="data-item-v2">
+                            <span className="data-label">DOB</span>
+                            <span className="data-value">
+                                {student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'Not provided'}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                {/* Profile Completeness */}
-                <div className="profile-completeness-card">
-                    <div className="completeness-circle-small">
-                        <svg viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="10" />
-                            <circle
-                                cx="50"
-                                cy="50"
-                                r="45"
-                                fill="none"
-                                stroke="#10b981"
-                                strokeWidth="10"
-                                strokeDasharray={`${(completeness?.percentage || 0) * 2.827} 282.7`}
-                                strokeLinecap="round"
-                                transform="rotate(-90 50 50)"
-                            />
-                        </svg>
-                        <div className="completeness-text-small">
-                            <span className="percentage">{completeness?.percentage || 0}%</span>
+                {/* Academic Card */}
+                <div className="grid-card-v2">
+                    <div className="card-header-v2">
+                        <div className="card-icon-box emerald">
+                            <BookOpen size={20} />
+                        </div>
+                        <h3>ACADEMIC</h3>
+                    </div>
+                    <div className="card-body-v2">
+                        <div className="data-item-v2">
+                            <span className="data-label">ROLL NO.</span>
+                            <span className="data-value">{student.rollNumber}</span>
+                        </div>
+                        <div className="data-item-v2">
+                            <span className="data-label">CGPA</span>
+                            <span className="data-value">{student.cgpa?.toFixed(2) || 'Not provided'}</span>
+                        </div>
+                        <div className="data-item-v2">
+                            <span className="data-label">BACKLOGS</span>
+                            <span className="data-value">Active: {student.backlogs?.active || 0} • History: {student.backlogs?.history || 0}</span>
                         </div>
                     </div>
-                    <div>
-                        <h3>Profile Complete</h3>
-                        <p>Keep profile updated for better opportunities</p>
+                </div>
+
+                {/* Links & Resources */}
+                <div className="grid-card-v2 full-width">
+                    <div className="card-header-v2">
+                        <div className="card-icon-box purple">
+                            <LinkIcon size={20} />
+                        </div>
+                        <h3 className="flex-1">LINKS & RESOURCES</h3>
+                        <Link to={`/college/students/${id}/edit`} className="add-resource-btn">
+                            <Plus size={14} />
+                            <span>Add</span>
+                        </Link>
+                    </div>
+                    <div className="card-body-v2">
+                        {(student.resumeUrl || student.linkedinUrl || student.githubUrl || student.portfolioUrl) ? (
+                            <div className="resources-list-v2">
+                                {student.resumeUrl && (
+                                    <div className="resource-item-v2">
+                                        <FileText size={18} className="text-blue-400" />
+                                        <div className="flex-1">
+                                            <div className="res-label">RESUME</div>
+                                            <a href={student.resumeUrl} target="_blank" rel="noopener noreferrer" className="res-link">View Student Resume</a>
+                                        </div>
+                                        <ChevronRight size={16} className="text-slate-600" />
+                                    </div>
+                                )}
+                                {student.linkedinUrl && (
+                                    <div className="resource-item-v2">
+                                        <Linkedin size={18} className="text-blue-500" />
+                                        <div className="flex-1">
+                                            <div className="res-label">LINKEDIN</div>
+                                            <a href={student.linkedinUrl} target="_blank" rel="noopener noreferrer" className="res-link">LinkedIn Profile</a>
+                                        </div>
+                                        <ChevronRight size={16} className="text-slate-600" />
+                                    </div>
+                                )}
+                                {student.githubUrl && (
+                                    <div className="resource-item-v2">
+                                        <Github size={18} className="text-slate-300" />
+                                        <div className="flex-1">
+                                            <div className="res-label">GITHUB</div>
+                                            <a href={student.githubUrl} target="_blank" rel="noopener noreferrer" className="res-link">GitHub Repository</a>
+                                        </div>
+                                        <ChevronRight size={16} className="text-slate-600" />
+                                    </div>
+                                )}
+                                {student.portfolioUrl && (
+                                    <div className="resource-item-v2">
+                                        <Globe size={18} className="text-emerald-400" />
+                                        <div className="flex-1">
+                                            <div className="res-label">PORTFOLIO</div>
+                                            <a href={student.portfolioUrl} target="_blank" rel="noopener noreferrer" className="res-link">Personal Website</a>
+                                        </div>
+                                        <ChevronRight size={16} className="text-slate-600" />
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="centered py-8">
+                                <div className="empty-resource">
+                                    <LinkIcon size={48} className="empty-icon" />
+                                    <p>No links provided yet</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Content Grid */}
-            <div className="detail-grid">
-                {/* Contact Information */}
-                <div className="detail-card">
-                    <h2>Contact Information</h2>
-                    <div className="info-list">
-                        <div className="info-item">
-                            <Mail size={18} />
-                            <div>
-                                <span className="info-label">Email</span>
-                                <span className="info-value">{student.email}</span>
-                            </div>
+            {/* Next Steps Section */}
+            <div className="next-steps-section">
+                <h2 className="section-title">Next Steps</h2>
+                <div className="steps-list">
+                    <div className="step-item completed">
+                        <div className="step-check">
+                            <CheckCircle size={20} />
                         </div>
-                        <div className="info-item">
-                            <Phone size={18} />
-                            <div>
-                                <span className="info-label">Phone</span>
-                                <span className="info-value">{student.phone || 'Not provided'}</span>
-                            </div>
-                        </div>
-                        <div className="info-item">
-                            <Calendar size={18} />
-                            <div>
-                                <span className="info-label">Date of Birth</span>
-                                <span className="info-value">
-                                    {student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString() : 'Not provided'}
-                                </span>
-                            </div>
-                        </div>
+                        <span className="step-text">Verify Email Address</span>
+                    </div>
+                    <div className="step-item">
+                        <div className="step-check empty" />
+                        <span className="step-text">Upload Academic Resume</span>
                     </div>
                 </div>
-
-                {/* Academic Information */}
-                <div className="detail-card">
-                    <h2>Academic Information</h2>
-                    <div className="info-list">
-                        <div className="info-item">
-                            <Award size={18} />
-                            <div>
-                                <span className="info-label">Roll Number</span>
-                                <span className="info-value">{student.rollNumber}</span>
-                            </div>
-                        </div>
-                        <div className="info-item">
-                            <Award size={18} />
-                            <div>
-                                <span className="info-label">CGPA</span>
-                                <span className="info-value">{student.cgpa?.toFixed(2) || 'Not provided'}</span>
-                            </div>
-                        </div>
-                        <div className="info-item">
-                            <Award size={18} />
-                            <div>
-                                <span className="info-label">Percentage</span>
-                                <span className="info-value">{student.percentage ? `${student.percentage}%` : 'Not provided'}</span>
-                            </div>
-                        </div>
-                        <div className="info-item">
-                            <Award size={18} />
-                            <div>
-                                <span className="info-label">Backlogs</span>
-                                <span className="info-value">
-                                    Active: {student.backlogs?.active || 0}, History: {student.backlogs?.history || 0}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Skills */}
-                {student.skills && student.skills.length > 0 && (
-                    <div className="detail-card">
-                        <h2>Skills</h2>
-                        <div className="skills-list">
-                            {student.skills.map((skill, index) => (
-                                <span key={index} className="skill-tag">{skill}</span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Links */}
-                <div className="detail-card">
-                    <h2>Links & Resources</h2>
-                    <div className="info-list">
-                        {student.resumeUrl && (
-                            <div className="info-item">
-                                <FileText size={18} />
-                                <div>
-                                    <span className="info-label">Resume</span>
-                                    <a href={student.resumeUrl} target="_blank" rel="noopener noreferrer" className="info-link">
-                                        View Resume
-                                    </a>
-                                </div>
-                            </div>
-                        )}
-                        {student.linkedinUrl && (
-                            <div className="info-item">
-                                <Linkedin size={18} />
-                                <div>
-                                    <span className="info-label">LinkedIn</span>
-                                    <a href={student.linkedinUrl} target="_blank" rel="noopener noreferrer" className="info-link">
-                                        View Profile
-                                    </a>
-                                </div>
-                            </div>
-                        )}
-                        {student.githubUrl && (
-                            <div className="info-item">
-                                <Github size={18} />
-                                <div>
-                                    <span className="info-label">GitHub</span>
-                                    <a href={student.githubUrl} target="_blank" rel="noopener noreferrer" className="info-link">
-                                        View Profile
-                                    </a>
-                                </div>
-                            </div>
-                        )}
-                        {student.portfolioUrl && (
-                            <div className="info-item">
-                                <Globe size={18} />
-                                <div>
-                                    <span className="info-label">Portfolio</span>
-                                    <a href={student.portfolioUrl} target="_blank" rel="noopener noreferrer" className="info-link">
-                                        View Portfolio
-                                    </a>
-                                </div>
-                            </div>
-                        )}
-                        {!student.resumeUrl && !student.linkedinUrl && !student.githubUrl && !student.portfolioUrl && (
-                            <p className="empty-text">No links provided</p>
-                        )}
-                    </div>
-                </div>
-
-                {/* Education History */}
-                {student.education && (
-                    <div className="detail-card full-width">
-                        <h2>Education History</h2>
-                        <div className="education-grid">
-                            {student.education.tenth && (
-                                <div className="education-item">
-                                    <h4>10th Grade</h4>
-                                    <p>Board: {student.education.tenth.board || 'Not provided'}</p>
-                                    <p>Percentage: {student.education.tenth.percentage ? `${student.education.tenth.percentage}%` : 'Not provided'}</p>
-                                    <p>Year: {student.education.tenth.yearOfPassing || 'Not provided'}</p>
-                                </div>
-                            )}
-                            {student.education.twelfth && (
-                                <div className="education-item">
-                                    <h4>12th Grade</h4>
-                                    <p>Board: {student.education.twelfth.board || 'Not provided'}</p>
-                                    <p>Stream: {student.education.twelfth.stream || 'Not provided'}</p>
-                                    <p>Percentage: {student.education.twelfth.percentage ? `${student.education.twelfth.percentage}%` : 'Not provided'}</p>
-                                    <p>Year: {student.education.twelfth.yearOfPassing || 'Not provided'}</p>
-                                </div>
-                            )}
-                            {student.education.diploma && (
-                                <div className="education-item">
-                                    <h4>Diploma</h4>
-                                    <p>Branch: {student.education.diploma.branch || 'Not provided'}</p>
-                                    <p>Percentage: {student.education.diploma.percentage ? `${student.education.diploma.percentage}%` : 'Not provided'}</p>
-                                    <p>Year: {student.education.diploma.yearOfPassing || 'Not provided'}</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Projects */}
-                {student.projects && student.projects.length > 0 && (
-                    <div className="detail-card full-width">
-                        <h2>Projects</h2>
-                        <div className="projects-list">
-                            {student.projects.map((project, index) => (
-                                <div key={index} className="project-item">
-                                    <h4>{project.title}</h4>
-                                    <p>{project.description}</p>
-                                    {project.technologies && project.technologies.length > 0 && (
-                                        <div className="project-tech">
-                                            {project.technologies.map((tech, i) => (
-                                                <span key={i} className="tech-tag">{tech}</span>
-                                            ))}
-                                        </div>
-                                    )}
-                                    <div className="project-links">
-                                        {project.projectUrl && (
-                                            <a href={project.projectUrl} target="_blank" rel="noopener noreferrer">View Project</a>
-                                        )}
-                                        {project.githubUrl && (
-                                            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">GitHub</a>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Placement Details */}
-                {student.placementStatus === 'placed' && student.placementDetails && (
-                    <div className="detail-card full-width placement-card">
-                        <h2><Briefcase size={20} /> Placement Details</h2>
-                        <div className="placement-info">
-                            <div className="placement-item">
-                                <span className="placement-label">Company</span>
-                                <span className="placement-value">{student.placementDetails.company}</span>
-                            </div>
-                            <div className="placement-item">
-                                <span className="placement-label">Role</span>
-                                <span className="placement-value">{student.placementDetails.role}</span>
-                            </div>
-                            <div className="placement-item">
-                                <span className="placement-label">Package</span>
-                                <span className="placement-value">{student.placementDetails.package} LPA</span>
-                            </div>
-                            {student.placementDetails.joiningDate && (
-                                <div className="placement-item">
-                                    <span className="placement-label">Joining Date</span>
-                                    <span className="placement-value">
-                                        {new Date(student.placementDetails.joiningDate).toLocaleDateString()}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Placement Activity Timeline */}
-                {placementActivity.length > 0 && (
-                    <div className="detail-card full-width">
-                        <h2><Briefcase size={20} /> Placement Activity</h2>
-                        <div className="timeline-section">
-                            <div className="timeline">
-                                {placementActivity.map((activity, index) => (
-                                    <div key={index} className="timeline-item">
-                                        <div className={`timeline-badge ${activity.action.toLowerCase().replace(' ', '_')}`} />
-                                        <div className="timeline-content">
-                                            <div className="timeline-header">
-                                                <div>
-                                                    <h4>{activity.action}</h4>
-                                                    <div className="timeline-company">{activity.company.name}</div>
-                                                </div>
-                                                <span className="timeline-date">
-                                                    {new Date(activity.date).toLocaleDateString()}
-                                                </span>
-                                            </div>
-                                            
-                                            {activity.job && (
-                                                <div className="timeline-details">
-                                                    <strong>Role:</strong> {activity.job.title}
-                                                </div>
-                                            )}
-                                            
-                                            {activity.details?.notes && (
-                                                <div className="timeline-details">
-                                                    <strong>Notes:</strong> {activity.details.notes}
-                                                </div>
-                                            )}
-
-                                            {activity.action === 'PLACED' && (
-                                                <div className="timeline-details">
-                                                    <div><strong>Package:</strong> ₹{activity.details.package} LPA</div>
-                                                    <div><strong>Joining:</strong> {new Date(activity.details.joiningDate).toLocaleDateString()}</div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

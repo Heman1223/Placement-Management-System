@@ -210,11 +210,11 @@ const BulkUpload = () => {
                 </button>
                 <div className="header-content">
                     <div className="header-icon">
-                        <Upload size={28} />
+                        <Upload size={32} />
                     </div>
                     <div>
-                        <h1>Bulk Upload Students</h1>
-                        <p>Import multiple students at once using Excel or CSV</p>
+                        <h1 style={{ fontSize: '3rem', color: 'white', fontWeight: '900', textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>Bulk Upload</h1>
+                        <p style={{ color: '#cbd5e1', fontSize: '1.1rem' }}>Import multiple students at once using Excel or CSV</p>
                     </div>
                 </div>
             </div>

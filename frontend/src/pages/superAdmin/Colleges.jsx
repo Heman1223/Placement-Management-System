@@ -295,6 +295,8 @@ const Colleges = () => {
                                 animate="visible"
                                 exit="hidden"
                                 layout
+                                onClick={() => navigate(`/admin/colleges/${college._id}`)}
+                                style={{ cursor: 'pointer' }}
                             >
                                 <div className="card-top">
                                     <div className="college-avatar">
@@ -357,6 +359,15 @@ const Colleges = () => {
                                                     <button 
                                                         onClick={(e) => {
                                                             e.stopPropagation();
+                                                            navigate(`/admin/colleges/${college._id}`);
+                                                            setOpenDropdown(null);
+                                                        }}
+                                                    >
+                                                        <Eye size={16} /> View Profile
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
                                                             openEditModal(college);
                                                             setOpenDropdown(null);
                                                         }}
@@ -407,7 +418,10 @@ const Colleges = () => {
                                     </div>
                                     <button 
                                         className="details-link-btn"
-                                        onClick={() => navigate(`/admin/colleges/${college._id}`)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/admin/colleges/${college._id}`);
+                                        }}
                                     >
                                         Details
                                     </button>

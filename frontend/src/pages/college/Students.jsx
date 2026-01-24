@@ -217,6 +217,12 @@ const Students = () => {
 
     const columns = [
         {
+            header: 'S.No',
+            accessor: '_id',
+            width: '60px',
+            render: (_, __, index) => ((pagination.current - 1) * 10) + index + 1
+        },
+        {
             header: 'Name',
             accessor: 'name',
             render: (val) => `${val?.firstName || ''} ${val?.lastName || ''}`
@@ -246,7 +252,7 @@ const Students = () => {
                     {val ? (
                         <>
                             <CheckCircle size={18} className="verified-icon" />
-                            <span style={{ fontSize: '0.875rem', color: 'var(--success-600)' }}>Verified</span>
+                            <span style={{ fontSize: '0.875rem', color: '#34d399', fontWeight: '700' }}>Verified</span>
                         </>
                     ) : (
                         <span className="not-verified">Pending</span>
@@ -557,7 +563,7 @@ const Students = () => {
                     <div className="overall-completeness">
                         <div className="completeness-circle">
                             <svg viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="10" />
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" />
                                 <circle
                                     cx="50"
                                     cy="50"

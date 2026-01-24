@@ -41,7 +41,7 @@ const Table = ({ columns, data, loading, emptyMessage = 'No data available', onR
                             >
                                 {columns.map((col, colIdx) => (
                                     <td key={colIdx}>
-                                        {col.render ? col.render(row[col.accessor], row) : row[col.accessor]}
+                                        {col.render ? col.render(row[col.accessor], row, rowIdx) : row[col.accessor]}
                                     </td>
                                 ))}
                             </tr>
@@ -57,8 +57,8 @@ const Table = ({ columns, data, loading, emptyMessage = 'No data available', onR
                         key={row._id || rowIdx}
                         onClick={() => onRowClick?.(row)}
                         className={`
-                            bg-white rounded-lg border border-gray-200 p-4 shadow-sm
-                            ${onRowClick ? 'cursor-pointer active:bg-gray-50 transition-colors' : ''}
+                            bg-[#1e293b] rounded-xl border border-white/5 p-4 shadow-lg
+                            ${onRowClick ? 'cursor-pointer active:bg-white/5 transition-colors' : ''}
                         `}
                     >
                         {columns.map((col, colIdx) => {
@@ -77,13 +77,13 @@ const Table = ({ columns, data, loading, emptyMessage = 'No data available', onR
                                     key={colIdx}
                                     className={`
                                         flex justify-between items-start gap-3
-                                        ${colIdx !== 0 ? 'mt-2 pt-2 border-t border-gray-100' : ''}
+                                        ${colIdx !== 0 ? 'mt-3 pt-3 border-t border-white/5' : ''}
                                     `}
                                 >
-                                    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex-shrink-0">
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">
                                         {col.header}
                                     </span>
-                                    <span className="text-sm text-gray-900 text-right flex-1 min-w-0">
+                                    <span className="text-sm text-white text-right flex-1 min-w-0 font-medium">
                                         {value}
                                     </span>
                                 </div>
@@ -103,10 +103,10 @@ export const Pagination = ({ current, total, onPageChange }) => {
     if (pages <= 1) return null;
 
     return (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-white/5">
             {/* Page Info */}
-            <p className="text-xs md:text-sm text-gray-600 order-2 sm:order-1">
-                Page {current} of {pages} ({total} total items)
+            <p className="text-xs md:text-sm text-slate-400 order-2 sm:order-1 font-medium">
+                Page {current} of {pages} <span className="text-slate-600 mx-1">•</span> {total} items
             </p>
 
             {/* Navigation Buttons */}
@@ -117,9 +117,9 @@ export const Pagination = ({ current, total, onPageChange }) => {
                     className="
                         px-3 py-1.5 md:px-4 md:py-2
                         text-xs md:text-sm font-medium
-                        text-gray-700 bg-white border border-gray-300 rounded-lg
-                        hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed
-                        transition-colors
+                        text-white bg-white/5 border border-white/10 rounded-xl
+                        hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed
+                        transition-all duration-200
                         min-w-[80px] md:min-w-[90px]
                     "
                 >
@@ -131,9 +131,9 @@ export const Pagination = ({ current, total, onPageChange }) => {
                     className="
                         px-3 py-1.5 md:px-4 md:py-2
                         text-xs md:text-sm font-medium
-                        text-gray-700 bg-white border border-gray-300 rounded-lg
-                        hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed
-                        transition-colors
+                        text-white bg-white/5 border border-white/10 rounded-xl
+                        hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed
+                        transition-all duration-200
                         min-w-[80px] md:min-w-[90px]
                     "
                 >
