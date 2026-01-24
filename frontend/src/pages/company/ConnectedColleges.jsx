@@ -9,7 +9,7 @@ const ConnectedColleges = () => {
     const [myColleges, setMyColleges] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+
     // Modal State
     const [availableColleges, setAvailableColleges] = useState([]);
     const [paramLoading, setParamLoading] = useState(false);
@@ -38,7 +38,7 @@ const ConnectedColleges = () => {
         try {
             setParamLoading(true);
             // Re-using getColleges which likely returns list of all colleges
-            const response = await companyAPI.getColleges(); 
+            const response = await companyAPI.getColleges();
             if (response.data.success) {
                 // Filter out colleges we already have a connection/request with
                 const connectedIds = myColleges.map(c => c.college?._id).filter(Boolean);
@@ -82,8 +82,8 @@ const ConnectedColleges = () => {
         }
     };
 
-    const filteredAvailable = availableColleges.filter(c => 
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const filteredAvailable = availableColleges.filter(c =>
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.city?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -113,7 +113,7 @@ const ConnectedColleges = () => {
                     {myColleges.map((item) => (
                         <div key={item.college?._id} className="college-card">
                             <div className="college-header">
-                                <img src={item.college?.logo || '/default-college.png'} alt={item.college?.name} className="college-logo" />
+                                <div className="college-logo">🏛️</div>
                                 <div className="college-info">
                                     <h3>{item.college?.name}</h3>
                                     <span className="location">{item.college?.city}, {item.college?.state}</span>
@@ -136,7 +136,7 @@ const ConnectedColleges = () => {
                             </div>
                             {item.status === 'approved' && (
                                 <div className="card-actions">
-                                    <button 
+                                    <button
                                         className="btn-outline"
                                         onClick={() => handleViewStudents(item.college?._id)}
                                     >
@@ -158,14 +158,14 @@ const ConnectedColleges = () => {
                             <button className="close-btn" onClick={() => setIsModalOpen(false)}>×</button>
                         </div>
                         <div className="modal-body">
-                            <input 
-                                type="text" 
-                                placeholder="Search colleges by name or city..." 
+                            <input
+                                type="text"
+                                placeholder="Search colleges by name or city..."
                                 className="search-input"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
-                            
+
                             <div className="available-list">
                                 {paramLoading ? (
                                     <div className="loading-small">Loading...</div>
@@ -176,7 +176,7 @@ const ConnectedColleges = () => {
                                                 <strong>{college.name}</strong>
                                                 <span>{college.city}, {college.state}</span>
                                             </div>
-                                            <button 
+                                            <button
                                                 className="btn-sm btn-primary"
                                                 onClick={() => handleRequestAccess(college._id)}
                                             >

@@ -19,6 +19,7 @@ router.delete('/students/:id', validateObjectId('id'), collegeController.deleteS
 router.patch('/students/:id/verify', validateObjectId('id'), collegeController.verifyStudent);
 router.post('/students/:id/reset-password', validateObjectId('id'), collegeController.resetStudentPassword);
 router.get('/students/:id/placement-activity', validateObjectId('id'), collegeController.getStudentPlacementActivity);
+router.patch('/students/:id/toggle-star', validateObjectId('id'), collegeController.toggleStarStudent);
 
 // Bulk upload
 router.post('/students/bulk', collegeController.bulkUploadStudents);

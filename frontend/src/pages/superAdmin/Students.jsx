@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
-import { 
-    Search, Filter, GraduationCap, 
+import {
+    Search, Filter, GraduationCap,
     CheckCircle, XCircle, MoreVertical,
     ChevronLeft, ChevronRight, UserCheck,
     Star, Eye, Building2, Briefcase, Mail, Phone, Sparkles, Trash2
@@ -25,6 +25,7 @@ const Students = () => {
         department: '',
         batch: '',
         placementStatus: '',
+        isStarStudent: '',
         minCGPA: '',
         maxCGPA: ''
     });
@@ -34,7 +35,7 @@ const Students = () => {
     useEffect(() => {
         fetchStudents();
         fetchColleges();
-        
+
         const handleClickOutside = (event) => {
             if (!event.target.closest('.table-action-btn') && !event.target.closest('.inline-dropdown')) {
                 setOpenDropdown(null);
@@ -63,7 +64,7 @@ const Students = () => {
                     Object.entries(filters).filter(([_, v]) => v !== '')
                 )
             };
-            
+
             const response = await superAdminAPI.getAllStudents(params);
             setStudents(response.data.data.students);
             setPagination(response.data.data.pagination);
@@ -113,6 +114,7 @@ const Students = () => {
             department: '',
             batch: '',
             placementStatus: '',
+            isStarStudent: '',
             minCGPA: '',
             maxCGPA: ''
         });
@@ -140,7 +142,7 @@ const Students = () => {
     };
 
     return (
-        <motion.div 
+        <motion.div
             className="admin-page-v2"
             initial="hidden"
             animate="visible"
@@ -152,9 +154,10 @@ const Students = () => {
                     <h1>All Students</h1>
                     <p>Comprehensive overview of students across all registered universities.</p>
                 </div>
-                <button 
+                <button
                     className={`premium-search-btn rounded-xl bg-white/10 hover:bg-white/20 transition-all ${showFilters ? 'bg-white/20' : ''}`}
                     onClick={() => setShowFilters(!showFilters)}
+                    title="Toggle advanced filters"
                 >
                     <Filter size={16} />
                     {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -201,9 +204,9 @@ const Students = () => {
                 <form onSubmit={handleSearch} className="flex-1 flex">
                     <div className="search-input-wrapper flex-1">
                         <Search size={18} className="text-slate-500" />
-                        <input 
-                            type="text" 
-                            placeholder="Search by name, email, or roll number..." 
+                        <input
+                            type="text"
+                            placeholder="Search by name, email, or roll number..."
                             value={filters.search}
                             onChange={(e) => handleFilterChange('search', e.target.value)}
                         />
@@ -218,16 +221,16 @@ const Students = () => {
             {/* Advanced Filters Panel */}
             <AnimatePresence>
                 {showFilters && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         className="filters-panel-premium mx-8 mb-6 overflow-hidden"
                     >
-                        <div className="p-6 bg-[#1e293b] rounded-2xl border border-white/5 grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="p-6 bg-[#1e293b] rounded-2xl border border-white/5 grid grid-cols-1 md:grid-cols-5 gap-6">
                             <div className="flex flex-col gap-2">
                                 <label className="text-xs font-bold text-slate-500 uppercase">College</label>
-                                <select 
+                                <select
                                     className="bg-slate-900/50 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500"
                                     value={filters.college}
                                     onChange={(e) => handleFilterChange('college', e.target.value)}
@@ -240,7 +243,7 @@ const Students = () => {
                             </div>
                             <div className="flex flex-col gap-2">
                                 <label className="text-xs font-bold text-slate-500 uppercase">Department</label>
-                                <input 
+                                <input
                                     className="bg-slate-900/50 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500"
                                     placeholder="e.g. CSE, IT"
                                     value={filters.department}
@@ -248,8 +251,8 @@ const Students = () => {
                                 />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase">Status</label>
-                                <select 
+                                <label className="text-xs font-bold text-slate-500 uppercase">Placement Status</label>
+                                <select
                                     className="bg-slate-900/50 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500"
                                     value={filters.placementStatus}
                                     onChange={(e) => handleFilterChange('placementStatus', e.target.value)}
@@ -260,9 +263,21 @@ const Students = () => {
                                     <option value="in_process">In Process</option>
                                 </select>
                             </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs font-bold text-slate-500 uppercase">Star Students</label>
+                                <select
+                                    className="bg-slate-900/50 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500"
+                                    value={filters.isStarStudent}
+                                    onChange={(e) => handleFilterChange('isStarStudent', e.target.value)}
+                                >
+                                    <option value="">All Students</option>
+                                    <option value="true">Star Students Only</option>
+                                    <option value="false">Non-Star Students</option>
+                                </select>
+                            </div>
                             <div className="flex items-end gap-3">
                                 <Button className="flex-1" onClick={fetchStudents}>Apply Filters</Button>
-                                <Button variant="outline" onClick={clearFilters}>Clear</Button>
+                                <Button variant="outline" onClick={clearFilters} title="Clear all filters">Clear</Button>
                             </div>
                         </div>
                     </motion.div>
@@ -296,7 +311,7 @@ const Students = () => {
                             </tr>
                         ) : students.length > 0 ? (
                             students.map((student, idx) => (
-                                <tr 
+                                <tr
                                     key={student._id}
                                     onClick={() => navigate(`/admin/students/${student._id}`)}
                                     style={{ cursor: 'pointer' }}
@@ -305,7 +320,7 @@ const Students = () => {
                                     <td>
                                         <div className="user-cell">
                                             <div className="relative">
-                                                <div 
+                                                <div
                                                     className="user-avatar-small shrink-0"
                                                     style={{ backgroundColor: getAvatarColor(idx) }}
                                                 >
@@ -354,19 +369,20 @@ const Students = () => {
                                     </td>
                                     <td>
                                         <div className="relative">
-                                            <button 
+                                            <button
                                                 className="table-action-btn"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setOpenDropdown(openDropdown === student._id ? null : student._id);
                                                 }}
+                                                title="More actions"
                                             >
                                                 <MoreVertical size={16} />
                                             </button>
 
                                             <AnimatePresence>
                                                 {openDropdown === student._id && (
-                                                    <motion.div 
+                                                    <motion.div
                                                         className="inline-dropdown right-0"
                                                         initial={{ opacity: 0, scale: 0.95 }}
                                                         animate={{ opacity: 1, scale: 1 }}
@@ -374,30 +390,35 @@ const Students = () => {
                                                         style={{ right: '100%', top: 0, marginRight: '8px' }}
                                                     >
 
-                                                        <button onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigate(`/admin/students/${student._id}`);
-                                                            setOpenDropdown(null);
-                                                        }}>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                navigate(`/admin/students/${student._id}`);
+                                                                setOpenDropdown(null);
+                                                            }}
+                                                            title="View student profile"
+                                                        >
                                                             <Eye size={16} /> View Profile
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => {
                                                                 handleToggleStar(student);
                                                                 setOpenDropdown(null);
                                                             }}
                                                             className={student.isStarStudent ? 'danger' : 'warning'}
+                                                            title={student.isStarStudent ? 'Remove star status' : 'Mark as star student'}
                                                         >
                                                             <Star size={16} className={student.isStarStudent ? 'fill-current' : ''} />
                                                             {student.isStarStudent ? 'Remove Star' : 'Mark as Star'}
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 handleDelete(student._id);
                                                                 setOpenDropdown(null);
                                                             }}
                                                             className="danger"
+                                                            title="Delete student permanently"
                                                         >
                                                             <Trash2 size={16} /> Delete
                                                         </button>
@@ -424,14 +445,14 @@ const Students = () => {
                         Showing {students.length} of {pagination.total} students
                     </span>
                     <div className="pagination-controls">
-                        <button 
+                        <button
                             className="page-nav-btn"
                             disabled={pagination.current === 1}
                             onClick={() => setPagination({ ...pagination, current: pagination.current - 1 })}
                         >
                             <ChevronLeft size={16} />
                         </button>
-                        
+
                         {[...Array(Math.min(5, pagination.pages))].map((_, i) => {
                             const pageNum = i + 1;
                             return (
@@ -444,7 +465,7 @@ const Students = () => {
                                 </button>
                             );
                         })}
-                        
+
                         {pagination.pages > 5 && <span className="text-slate-700 px-2">...</span>}
                         {pagination.pages > 5 && (
                             <button
@@ -455,7 +476,7 @@ const Students = () => {
                             </button>
                         )}
 
-                        <button 
+                        <button
                             className="page-nav-btn"
                             disabled={pagination.current === pagination.pages}
                             onClick={() => setPagination({ ...pagination, current: pagination.current + 1 })}

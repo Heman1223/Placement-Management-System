@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
 import api from '../../services/api';
 import { motion } from 'framer-motion';
-import { 
-    Users, Building2, Briefcase, GraduationCap, 
-    TrendingUp, RefreshCw, ArrowUpRight, 
-    Search, Bell, MapPin, ShieldCheck, Clock, Star
+import {
+    Users, Building2, Briefcase, GraduationCap,
+    TrendingUp, RefreshCw, ArrowUpRight,
+    Search, Bell, MapPin, ShieldCheck, Clock
 } from 'lucide-react';
-import { 
-    BarChart, Bar, PieChart, Pie, XAxis, YAxis, 
-    CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell 
+import {
+    BarChart, Bar, PieChart, Pie, XAxis, YAxis,
+    CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
 } from 'recharts';
 import toast from 'react-hot-toast';
 import './SuperAdminDashboard.css';
@@ -21,7 +21,7 @@ const SuperAdminDashboard = () => {
     const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [analytics, setAnalytics] = useState(null);
-    const [starStudents, setStarStudents] = useState([]);
+
     const [recentData, setRecentData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -35,22 +35,20 @@ const SuperAdminDashboard = () => {
     const fetchDashboardData = async (silent = false) => {
         if (!silent) setLoading(true);
         try {
-            const [statsRes, analyticsRes, starStudentsRes] = await Promise.all([
+            const [statsRes, analyticsRes] = await Promise.all([
                 superAdminAPI.getStats(),
-                superAdminAPI.getAnalytics(),
-                superAdminAPI.getAllStudents({ isStarStudent: true, limit: 5 })
+                superAdminAPI.getAnalytics()
             ]);
-            
+
             const { stats, recent } = statsRes.data.data;
             setStats(stats);
             setAnalytics(analyticsRes.data.data);
-            setStarStudents(starStudentsRes.data.data.students || []);
-            
+
             const merged = [
                 ...(recent.colleges || []).map(c => ({ ...c, type: 'College', date: c.createdAt })),
                 ...(recent.companies || []).map(c => ({ ...c, type: 'Company', date: c.createdAt }))
             ].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
+
             setRecentData(merged);
         } catch (error) {
             if (!silent) toast.error('Failed to load dashboard data');
@@ -80,15 +78,16 @@ const SuperAdminDashboard = () => {
     return (
         <div className="dashboard p-8">
             {/* Premium Header Banner */}
-            <div className="premium-header-banner mb-12">
+            <div className="premium-header-banner" style={{ marginBottom: '2rem' }}>
                 <div className="premium-header-text">
                     <h1>Network Overview</h1>
                     <p>Comprehensive monitoring of university registrations and placement metrics.</p>
                 </div>
-                <button 
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all border border-white/10 text-white font-bold text-sm" 
-                    onClick={handleRefresh} 
+                <button
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all border border-white/10 text-white font-bold text-sm"
+                    onClick={handleRefresh}
                     disabled={refreshing}
+                    title="Refresh dashboard data"
                 >
                     <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
                     {refreshing ? 'Syncing...' : 'Refresh Data'}
@@ -96,7 +95,7 @@ const SuperAdminDashboard = () => {
             </div>
 
             {/* Premium Statistics Grid */}
-            <div className="premium-stat-grid mb-16">
+            <div className="premium-stat-grid" style={{ marginBottom: '3rem' }}>
                 <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                     <div className="premium-stat-icon bg-blue-500/10 text-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
                         <Building2 size={20} />
@@ -135,50 +134,7 @@ const SuperAdminDashboard = () => {
                 </motion.div>
             </div>
 
-            {/* Star Students Showcase - Premium Section */}
-            {starStudents.length > 0 && (
-                <div className="mb-16">
-                    <div className="flex items-center gap-4 mb-8">
-                        <Star size={20} className="text-amber-400 fill-amber-400" />
-                        <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Star Students / Top Talent</h2>
-                        <div className="h-px bg-white/5 flex-1" />
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {starStudents.map(student => (
-                            <div key={student._id} className="bg-[#1e293b] border border-amber-500/20 rounded-2xl p-6 relative overflow-hidden group hover:border-amber-500/40 transition-all">
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                    <Star size={48} className="fill-current text-amber-500" />
-                                </div>
-                                <div className="relative z-10 flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-amber-500/20">
-                                        {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-white text-lg group-hover:text-amber-400 transition-colors">
-                                            {student.name?.firstName} {student.name?.lastName}
-                                        </h3>
-                                        <div className="flex items-center gap-2 text-slate-400 text-xs font-medium uppercase tracking-wide mt-1">
-                                            <Building2 size={12} />
-                                            <span className="truncate max-w-[150px]">{student.college?.name}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3 mt-3">
-                                            <span className="px-2 py-1 rounded bg-white/5 border border-white/10 text-xs font-mono text-slate-300">
-                                                {student.department}
-                                            </span>
-                                            {student.cgpa && (
-                                                <span className="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-xs font-bold text-amber-400">
-                                                    CGPA: {student.cgpa}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
 
             {/* Analytics Section - Charts First */}
             <div className="analytics-section mb-16">
@@ -187,10 +143,10 @@ const SuperAdminDashboard = () => {
                     <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Institutional Intelligence Matrix</h2>
                     <div className="h-px bg-white/5 flex-1" />
                 </div>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     {/* Placement Performance Chart Card */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
@@ -211,19 +167,19 @@ const SuperAdminDashboard = () => {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={analytics?.placementByCollege?.slice(0, 5)}>
                                     <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(255,255,255,0.03)" />
-                                    <XAxis 
-                                        dataKey="collegeName" 
-                                        axisLine={false} 
-                                        tickLine={false} 
+                                    <XAxis
+                                        dataKey="collegeName"
+                                        axisLine={false}
+                                        tickLine={false}
                                         tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }}
                                         dy={10}
                                     />
-                                    <YAxis 
-                                        axisLine={false} 
-                                        tickLine={false} 
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
                                         tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
                                     />
-                                    <Tooltip 
+                                    <Tooltip
                                         cursor={{ fill: 'rgba(255,255,255,0.02)' }}
                                         contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px' }}
                                         itemStyle={{ color: '#fff', fontSize: '13px', fontWeight: '900' }}
@@ -242,7 +198,7 @@ const SuperAdminDashboard = () => {
                     </motion.div>
 
                     {/* Student Demographics Chart Card */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
@@ -276,12 +232,12 @@ const SuperAdminDashboard = () => {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip 
+                                    <Tooltip
                                         contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px' }}
                                     />
-                                    <Legend 
-                                        verticalAlign="bottom" 
-                                        height={40} 
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        height={40}
                                         iconType="circle"
                                         wrapperStyle={{ fontSize: '9px' }}
                                         formatter={(value) => <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">{value}</span>}
@@ -292,7 +248,7 @@ const SuperAdminDashboard = () => {
                     </motion.div>
 
                     {/* Top Skills in Demand Chart */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
@@ -314,19 +270,19 @@ const SuperAdminDashboard = () => {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={analytics?.topSkills?.slice(0, 6) || []}>
                                     <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(255,255,255,0.03)" />
-                                    <XAxis 
-                                        dataKey="_id" 
-                                        axisLine={false} 
-                                        tickLine={false} 
+                                    <XAxis
+                                        dataKey="_id"
+                                        axisLine={false}
+                                        tickLine={false}
                                         tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }}
                                         dy={10}
                                     />
-                                    <YAxis 
-                                        axisLine={false} 
-                                        tickLine={false} 
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
                                         tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
                                     />
-                                    <Tooltip 
+                                    <Tooltip
                                         cursor={{ fill: 'rgba(255,255,255,0.02)' }}
                                         contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px' }}
                                         itemStyle={{ color: '#fff', fontSize: '13px', fontWeight: '900' }}
@@ -345,7 +301,7 @@ const SuperAdminDashboard = () => {
                     </motion.div>
 
                     {/* Company Distribution Chart */}
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
@@ -379,12 +335,12 @@ const SuperAdminDashboard = () => {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip 
+                                    <Tooltip
                                         contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px' }}
                                     />
-                                    <Legend 
-                                        verticalAlign="bottom" 
-                                        height={40} 
+                                    <Legend
+                                        verticalAlign="bottom"
+                                        height={40}
                                         iconType="circle"
                                         wrapperStyle={{ fontSize: '9px' }}
                                         formatter={(value) => <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">{value}</span>}
@@ -397,7 +353,7 @@ const SuperAdminDashboard = () => {
             </div>
 
             {/* Recent Colleges and Companies Section */}
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
@@ -417,8 +373,8 @@ const SuperAdminDashboard = () => {
 
                     <div className="recent-list space-y-5">
                         {recentData.filter(item => item.type === 'College').slice(0, 5).map((item, idx) => (
-                            <motion.div 
-                                key={idx} 
+                            <motion.div
+                                key={idx}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.5 + idx * 0.05 }}
@@ -463,8 +419,8 @@ const SuperAdminDashboard = () => {
 
                     <div className="recent-list space-y-5">
                         {recentData.filter(item => item.type === 'Company').slice(0, 5).map((item, idx) => (
-                            <motion.div 
-                                key={idx} 
+                            <motion.div
+                                key={idx}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.5 + idx * 0.05 }}

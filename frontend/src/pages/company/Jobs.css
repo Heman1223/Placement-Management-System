@@ -1,37 +1,45 @@
+/* Jobs Page - Dark Theme */
+
 .jobs-page {
     animation: fadeIn 0.3s ease;
+    color: white;
 }
 
-/* Filter Tabs */
+/* Filter Tabs - Dark Theme */
 .filter-tabs {
     display: flex;
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-5);
     padding: var(--spacing-1);
-    background: var(--bg-primary);
+    background: rgba(15, 23, 42, 0.6);
     border-radius: var(--radius-lg);
     width: fit-content;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .filter-tab {
     padding: var(--spacing-2) var(--spacing-4);
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.6);
     border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
+    transition: all 0.2s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
 .filter-tab:hover {
-    color: var(--text-primary);
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .filter-tab.active {
-    background: var(--primary-500);
+    background: #10b981;
     color: white;
 }
 
-/* Job Type Badge */
+/* Job Type Badge - Dark Theme */
 .job-type-badge {
     display: inline-flex;
     padding: var(--spacing-1) var(--spacing-2);
@@ -42,54 +50,53 @@
 }
 
 .type-internship {
-    background: var(--primary-100);
-    color: var(--primary-700);
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
 }
 
 .type-full_time {
-    background: var(--success-50);
-    color: var(--success-700);
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
 }
 
 .type-part_time {
-    background: var(--warning-50);
-    color: var(--warning-600);
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
 }
 
 .type-contract {
-    background: var(--gray-100);
-    color: var(--gray-700);
+    background: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
 }
 
-/* Status Badge */
+/* Status Badge - Dark Theme */
 .status-open {
-    background: var(--success-300);
-    color: var(--success-900);
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
 }
 
 .status-closed {
-    background: var(--gray-300);
-    color: var(--gray-900);
+    background: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
 }
 
 .status-draft {
-    background: var(--warning-300);
-    color: var(--warning-900);
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
 }
 
 .status-filled {
-    background: var(--primary-300);
-    color: var(--primary-900);
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
 }
 
 /* Action Button Variants */
 .action-btn-warning:hover {
-    background: var(--warning-50);
-    color: var(--warning-600);
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
 }
 
-
-/* Action Dropdown */
+/* Action Dropdown - Dark Theme */
 .action-dropdown-wrapper {
     position: relative;
 }
@@ -100,17 +107,18 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    border: 1px solid #d1d5db;
-    background: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(30, 41, 59, 0.8);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
-    color: #1f2937;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .action-dropdown-trigger:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
 }
 
 .action-dropdown-menu {
@@ -118,10 +126,10 @@
     right: 0;
     top: 100%;
     margin-top: 4px;
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     min-width: 200px;
     z-index: 1000;
     overflow: hidden;
@@ -134,8 +142,8 @@
     width: 100%;
     padding: 10px 16px;
     border: none;
-    background: white;
-    color: #1f2937;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.9);
     font-size: 0.875rem;
     text-align: left;
     cursor: pointer;
@@ -144,38 +152,50 @@
 }
 
 .action-dropdown-item:hover {
-    background: #f9fafb;
+    background: rgba(59, 130, 246, 0.2);
 }
 
 .action-dropdown-item svg {
     flex-shrink: 0;
-    color: #6b7280;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .action-dropdown-item.success {
-    color: #059669;
+    color: #34d399;
 }
 
 .action-dropdown-item.success svg {
-    color: #059669;
+    color: #34d399;
 }
 
 .action-dropdown-item.danger {
-    color: #dc2626;
+    color: #f87171;
 }
 
 .action-dropdown-item.danger svg {
-    color: #dc2626;
+    color: #f87171;
 }
 
 .action-dropdown-item.warning {
-    color: #d97706;
+    color: #fbbf24;
 }
 
 .action-dropdown-item.warning svg {
-    color: #d97706;
+    color: #fbbf24;
 }
 
-.action-dropdown-item + .action-dropdown-item {
-    border-top: 1px solid #f3f4f6;
+.action-dropdown-item+.action-dropdown-item {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

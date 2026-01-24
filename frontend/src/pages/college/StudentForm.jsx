@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { collegeAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Card from '../../components/common/Card';
-import { Save, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { Save, ArrowLeft, Plus, Trash2, Search, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './StudentForm.css';
 
@@ -38,7 +38,9 @@ const StudentForm = () => {
         placementEligible: true,
         education: {
             tenth: { percentage: '', board: '' },
-            twelfth: { percentage: '', board: '', stream: '' }
+            twelfth: { percentage: '', board: '', stream: '' },
+            ug: { institution: '', degree: '', percentage: '', year: '' },
+            pg: { institution: '', degree: '', percentage: '', year: '' }
         },
         skills: [],
         linkedinUrl: '',
@@ -46,7 +48,30 @@ const StudentForm = () => {
         resumeUrl: ''
     });
 
+    // Common technical skills list
+    const COMMON_SKILLS = [
+        // Programming Languages
+        'JavaScript', 'Python', 'Java', 'C++', 'C', 'TypeScript', 'Go', 'Rust', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'C#', 'Scala', 'R',
+        // Frontend
+        'React', 'Angular', 'Vue.js', 'Next.js', 'HTML', 'CSS', 'Tailwind CSS', 'Bootstrap', 'SASS', 'jQuery',
+        // Backend
+        'Node.js', 'Express.js', 'Django', 'Flask', 'Spring Boot', 'ASP.NET', 'Laravel', 'FastAPI', 'Ruby on Rails',
+        // Databases
+        'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'SQLite', 'Oracle', 'Firebase', 'Cassandra', 'Elasticsearch',
+        // Cloud & DevOps
+        'AWS', 'Azure', 'Google Cloud', 'Docker', 'Kubernetes', 'Jenkins', 'Git', 'GitHub', 'GitLab', 'CI/CD', 'Terraform', 'Ansible',
+        // Mobile
+        'React Native', 'Flutter', 'Android Development', 'iOS Development', 'SwiftUI',
+        // Data Science & ML
+        'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch', 'Pandas', 'NumPy', 'Data Analysis', 'NLP', 'Computer Vision',
+        // Tools & Other
+        'Linux', 'REST APIs', 'GraphQL', 'Microservices', 'Agile', 'Scrum', 'JIRA', 'Figma', 'UI/UX Design'
+    ];
+
     const [newSkill, setNewSkill] = useState('');
+    const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+    const [filteredSkills, setFilteredSkills] = useState([]);
+    const skillInputRef = useRef(null);
     const [resumeFile, setResumeFile] = useState(null);
     const [uploadingResume, setUploadingResume] = useState(false);
 
@@ -69,7 +94,7 @@ const StudentForm = () => {
         try {
             const response = await collegeAPI.getStudent(id);
             const studentData = response.data.data;
-            
+
             // Ensure all nested objects are properly initialized
             setFormData({
                 name: studentData.name || { firstName: '', lastName: '' },
@@ -139,6 +164,44 @@ const StudentForm = () => {
         }));
     };
 
+    // Skills dropdown handlers
+    const handleSkillInputChange = (value) => {
+        setNewSkill(value);
+        if (value.trim()) {
+            const filtered = COMMON_SKILLS.filter(
+                skill => skill.toLowerCase().includes(value.toLowerCase()) &&
+                    !formData.skills.includes(skill)
+            ).slice(0, 10);
+            setFilteredSkills(filtered);
+            setShowSkillDropdown(true);
+        } else {
+            setFilteredSkills([]);
+            setShowSkillDropdown(false);
+        }
+    };
+
+    const selectSkill = (skill) => {
+        if (!formData.skills.includes(skill)) {
+            setFormData(prev => ({
+                ...prev,
+                skills: [...prev.skills, skill]
+            }));
+        }
+        setNewSkill('');
+        setShowSkillDropdown(false);
+    };
+
+    const addCustomSkill = () => {
+        if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                skills: [...prev.skills, newSkill.trim()]
+            }));
+            setNewSkill('');
+            setShowSkillDropdown(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
@@ -169,7 +232,7 @@ const StudentForm = () => {
                 toast.success('Student updated successfully');
             } else {
                 const response = await collegeAPI.addStudent(formData);
-                
+
                 // Show credentials if provided
                 if (response.data.data.credentials) {
                     const { email, password } = response.data.data.credentials;
@@ -431,11 +494,11 @@ const StudentForm = () => {
                     </div>
                 </Card>
 
-                {/* Education History - Optional */}
-                <Card title="📚 Education History (Optional)" className="form-card">
-                    <p className="text-sm text-gray-600 mb-4">Students can fill this later in their profile</p>
+                {/* Education History - 10th & 12th Mandatory */}
+                <Card title="📚 Education History (10th & 12th Required)" className="form-card">
+                    <p className="text-sm text-gray-600 mb-4">10th and 12th details are mandatory. UG/PG are optional.</p>
                     <div className="education-section">
-                        <h4>10th Standard</h4>
+                        <h4>10th Standard *</h4>
                         <div className="form-grid">
                             <Input
                                 label="Percentage"
@@ -445,17 +508,19 @@ const StudentForm = () => {
                                 max="100"
                                 value={formData.education.tenth.percentage}
                                 onChange={(e) => handleChange('education.tenth.percentage', parseFloat(e.target.value))}
+                                required
                             />
                             <Input
                                 label="Board"
                                 value={formData.education.tenth.board}
                                 onChange={(e) => handleChange('education.tenth.board', e.target.value)}
                                 placeholder="e.g., CBSE, ICSE, State Board"
+                                required
                             />
                         </div>
                     </div>
                     <div className="education-section">
-                        <h4>12th Standard</h4>
+                        <h4>12th Standard *</h4>
                         <div className="form-grid">
                             <Input
                                 label="Percentage"
@@ -465,40 +530,151 @@ const StudentForm = () => {
                                 max="100"
                                 value={formData.education.twelfth.percentage}
                                 onChange={(e) => handleChange('education.twelfth.percentage', parseFloat(e.target.value))}
+                                required
                             />
                             <Input
                                 label="Board"
                                 value={formData.education.twelfth.board}
                                 onChange={(e) => handleChange('education.twelfth.board', e.target.value)}
+                                required
                             />
                             <Input
                                 label="Stream"
                                 value={formData.education.twelfth.stream}
                                 onChange={(e) => handleChange('education.twelfth.stream', e.target.value)}
                                 placeholder="e.g., Science, Commerce"
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="education-section">
+                        <h4>UG (Undergraduate) - Optional</h4>
+                        <div className="form-grid">
+                            <Input
+                                label="Institution"
+                                value={formData.education.ug?.institution || ''}
+                                onChange={(e) => handleChange('education.ug.institution', e.target.value)}
+                                placeholder="College/University name"
+                            />
+                            <Input
+                                label="Degree"
+                                value={formData.education.ug?.degree || ''}
+                                onChange={(e) => handleChange('education.ug.degree', e.target.value)}
+                                placeholder="e.g., B.Tech, BCA, B.Sc"
+                            />
+                            <Input
+                                label="Percentage/CGPA"
+                                value={formData.education.ug?.percentage || ''}
+                                onChange={(e) => handleChange('education.ug.percentage', e.target.value)}
+                                placeholder="e.g., 8.5 CGPA or 85%"
+                            />
+                            <Input
+                                label="Year of Completion"
+                                type="number"
+                                min="1990"
+                                max={new Date().getFullYear() + 5}
+                                value={formData.education.ug?.year || ''}
+                                onChange={(e) => handleChange('education.ug.year', e.target.value)}
+                                placeholder="e.g., 2024"
+                            />
+                        </div>
+                    </div>
+                    <div className="education-section">
+                        <h4>PG (Postgraduate) - Optional</h4>
+                        <div className="form-grid">
+                            <Input
+                                label="Institution"
+                                value={formData.education.pg?.institution || ''}
+                                onChange={(e) => handleChange('education.pg.institution', e.target.value)}
+                                placeholder="College/University name"
+                            />
+                            <Input
+                                label="Degree"
+                                value={formData.education.pg?.degree || ''}
+                                onChange={(e) => handleChange('education.pg.degree', e.target.value)}
+                                placeholder="e.g., M.Tech, MBA, M.Sc"
+                            />
+                            <Input
+                                label="Percentage/CGPA"
+                                value={formData.education.pg?.percentage || ''}
+                                onChange={(e) => handleChange('education.pg.percentage', e.target.value)}
+                                placeholder="e.g., 8.5 CGPA or 85%"
+                            />
+                            <Input
+                                label="Year of Completion"
+                                type="number"
+                                min="1990"
+                                max={new Date().getFullYear() + 5}
+                                value={formData.education.pg?.year || ''}
+                                onChange={(e) => handleChange('education.pg.year', e.target.value)}
+                                placeholder="e.g., 2026"
                             />
                         </div>
                     </div>
                 </Card>
 
-                {/* Skills - Optional */}
-                <Card title="💡 Skills (Optional)" className="form-card">
-                    <p className="text-sm text-gray-600 mb-4">Students can add skills later in their profile</p>
+                {/* Skills - With Dropdown */}
+                <Card title="💡 Skills" className="form-card">
+                    <p className="text-sm text-gray-600 mb-4">Search and select from common technical skills, or add your own</p>
                     <div className="skills-input">
-                        <Input
-                            placeholder="Add a skill..."
-                            value={newSkill}
-                            onChange={(e) => setNewSkill(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
-                        />
-                        <Button type="button" onClick={addSkill} icon={Plus}>Add</Button>
+                        <div className="skills-dropdown-container" ref={skillInputRef}>
+                            <Input
+                                placeholder="Search skills (e.g., React, Python, AWS)..."
+                                value={newSkill}
+                                onChange={(e) => handleSkillInputChange(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        if (filteredSkills.length > 0) {
+                                            selectSkill(filteredSkills[0]);
+                                        } else if (newSkill.trim()) {
+                                            addCustomSkill();
+                                        }
+                                    }
+                                }}
+                                onFocus={() => {
+                                    if (newSkill.trim()) {
+                                        setShowSkillDropdown(true);
+                                    }
+                                }}
+                            />
+                            {showSkillDropdown && (
+                                <div className="skills-dropdown">
+                                    {filteredSkills.length > 0 ? (
+                                        filteredSkills.map((skill, idx) => (
+                                            <div
+                                                key={skill}
+                                                className={`skill-option ${idx === 0 ? 'highlighted' : ''}`}
+                                                onClick={() => selectSkill(skill)}
+                                            >
+                                                {skill}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="no-skills-found">
+                                            No matching skills found
+                                        </div>
+                                    )}
+                                    {newSkill.trim() && !COMMON_SKILLS.includes(newSkill.trim()) && (
+                                        <button
+                                            type="button"
+                                            className="custom-skill-btn"
+                                            onClick={addCustomSkill}
+                                        >
+                                            + Add "{newSkill.trim()}" as custom skill
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <Button type="button" onClick={addCustomSkill} icon={Plus}>Add</Button>
                     </div>
                     <div className="skills-list">
                         {formData.skills.map((skill, index) => (
                             <span key={index} className="skill-tag">
                                 {skill}
                                 <button type="button" onClick={() => removeSkill(index)}>
-                                    <Trash2 size={14} />
+                                    <X size={14} />
                                 </button>
                             </span>
                         ))}
@@ -524,7 +700,7 @@ const StudentForm = () => {
                             placeholder="https://github.com/..."
                         />
                     </div>
-                    
+
                     {/* Resume Upload */}
                     <div className="resume-upload-section" style={{ marginTop: 'var(--spacing-4)' }}>
                         <label className="input-label text-xs md:text-sm">Resume Upload</label>
@@ -542,9 +718,9 @@ const StudentForm = () => {
                                 </span>
                             )}
                             {formData.resumeUrl && !resumeFile && (
-                                <a 
-                                    href={formData.resumeUrl} 
-                                    target="_blank" 
+                                <a
+                                    href={formData.resumeUrl}
+                                    target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-xs md:text-sm text-blue-600 hover:underline"
                                 >

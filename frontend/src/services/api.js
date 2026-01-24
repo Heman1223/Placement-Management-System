@@ -142,7 +142,8 @@ export const collegeAPI = {
     updateCollegeProfile: (data) => api.patch('/college/profile', data),
     getCollegeSettings: () => api.get('/college/settings'),
     updateCollegeSettings: (data) => api.patch('/college/settings', data),
-    getStudentPlacementActivity: (id) => api.get(`/college/students/${id}/placement-activity`)
+    getStudentPlacementActivity: (id) => api.get(`/college/students/${id}/placement-activity`),
+    toggleStarStudent: (id) => api.patch(`/college/students/${id}/toggle-star`)
 };
 // Company endpoints
 export const companyAPI = {

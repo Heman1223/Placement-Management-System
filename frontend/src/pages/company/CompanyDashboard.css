@@ -1,3 +1,11 @@
+/* Company Dashboard - Dark Theme */
+
+/* Company Dashboard - Dark Theme */
+
+.dashboard {
+    color: white;
+}
+
 .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -15,7 +23,7 @@
     }
 }
 
-/* Charts Section */
+/* Charts Section - Dark Theme */
 .charts-section {
     display: grid;
     grid-template-columns: 1fr;
@@ -32,10 +40,11 @@
 }
 
 .chart-card {
-    background: white;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
     border-radius: var(--radius-lg);
     padding: var(--spacing-4);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 @media (min-width: 768px) {
@@ -59,7 +68,7 @@
 .chart-header h3 {
     margin: 0;
     font-size: 1.125rem;
-    color: var(--gray-800);
+    color: white;
 }
 
 .empty-chart {
@@ -67,11 +76,13 @@
     align-items: center;
     justify-content: center;
     height: 300px;
-    color: var(--gray-400);
+    color: rgba(255, 255, 255, 0.4);
     font-size: 0.875rem;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: var(--radius-lg);
 }
 
-/* Activity Timeline */
+/* Activity Timeline - Dark Theme */
 .activity-timeline {
     display: flex;
     flex-direction: column;
@@ -82,14 +93,16 @@
     display: flex;
     gap: var(--spacing-3);
     padding: var(--spacing-4);
-    background: var(--gray-50);
+    background: rgba(15, 23, 42, 0.6) !important;
     border-radius: var(--radius-lg);
     transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .activity-item:hover {
-    background: var(--gray-100);
+    background: rgba(59, 130, 246, 0.1) !important;
     transform: translateX(4px);
+    border-color: rgba(59, 130, 246, 0.2);
 }
 
 .activity-icon {
@@ -101,6 +114,8 @@
     justify-content: center;
     font-size: 1.25rem;
     flex-shrink: 0;
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
 }
 
 .activity-content {
@@ -110,24 +125,26 @@
 
 .activity-text {
     font-size: 0.875rem;
-    color: var(--gray-700);
+    color: rgba(255, 255, 255, 0.8);
     margin-bottom: var(--spacing-1);
 }
 
 .activity-text strong {
-    color: var(--gray-900);
+    color: white;
     font-weight: 600;
 }
 
 .activity-status {
-    color: var(--primary-600);
+    color: #60a5fa;
     font-weight: 500;
     text-transform: capitalize;
 }
 
 .activity-meta {
     font-size: 0.75rem;
-    color: var(--gray-500);
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: var(--spacing-1);
+    /* Replaced with just margin-bottom to clear potential syntax issues if any, but previous was fine. Kept structure. */
 }
 
 .section-header {
@@ -143,14 +160,15 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
+    color: white;
 }
 
 .section-header a {
     font-size: 0.875rem;
-    color: var(--primary-600);
+    color: #60a5fa;
 }
 
-/* Jobs List */
+/* Jobs List - Dark Theme */
 .jobs-list {
     display: flex;
     flex-direction: column;
@@ -160,22 +178,30 @@
 .empty-message {
     text-align: center;
     padding: var(--spacing-8);
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .job-card {
     padding: var(--spacing-4);
-    background: var(--bg-secondary);
+    background: rgba(15, 23, 42, 0.6) !important;
     border-radius: var(--radius-lg);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+
+.job-card:hover {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 .job-info h3 {
     font-size: 0.9375rem;
     font-weight: 500;
     margin-bottom: var(--spacing-1);
+    color: white;
 }
 
 .job-type {
@@ -186,13 +212,13 @@
 }
 
 .job-type-internship {
-    background: var(--primary-100);
-    color: var(--primary-700);
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
 }
 
 .job-type-full_time {
-    background: var(--success-50);
-    color: var(--success-700);
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
 }
 
 .job-stats {
@@ -200,7 +226,7 @@
     align-items: center;
     gap: var(--spacing-3);
     font-size: 0.8125rem;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .job-status {
@@ -211,16 +237,16 @@
 }
 
 .job-status-open {
-    background: var(--success-50);
-    color: var(--success-700);
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
 }
 
 .job-status-closed {
-    background: var(--gray-100);
-    color: var(--gray-600);
+    background: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
 }
 
-/* Quick Actions */
+/* Quick Actions - Dark Theme */
 .quick-actions {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -233,16 +259,18 @@
     align-items: center;
     gap: var(--spacing-2);
     padding: var(--spacing-5);
-    background: var(--bg-secondary);
+    background: rgba(15, 23, 42, 0.6);
     border-radius: var(--radius-lg);
-    color: var(--text-secondary);
-    transition: all var(--transition-fast);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
 }
 
 .quick-action:hover {
-    background: var(--primary-50);
-    color: var(--primary-600);
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
     transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.3);
 }
 
 .quick-action span {
@@ -250,7 +278,7 @@
     font-weight: 500;
 }
 
-/* Loading */
+/* Loading - Dark Theme */
 .loading-screen {
     display: flex;
     justify-content: center;
@@ -261,23 +289,13 @@
 .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 4px solid var(--gray-200);
-    border-top-color: var(--primary-500);
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #60a5fa;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Spinning Animation */
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
     to {
         transform: rotate(360deg);
     }

@@ -1,4 +1,4 @@
-/* Settings Page */
+/* Settings Page - Dark Theme */
 
 .settings-page {
     max-width: 1200px;
@@ -11,7 +11,10 @@
     display: flex;
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-6);
-    border-bottom: 2px solid var(--gray-200);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(30, 41, 59, 0.5);
+    padding: var(--spacing-2);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .tab {
@@ -22,7 +25,7 @@
     background: none;
     border: none;
     border-bottom: 2px solid transparent;
-    color: var(--gray-600);
+    color: rgba(255, 255, 255, 0.6);
     font-size: 0.9375rem;
     font-weight: 500;
     cursor: pointer;
@@ -31,12 +34,14 @@
 }
 
 .tab:hover {
-    color: var(--primary-600);
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .tab.active {
-    color: var(--primary-600);
-    border-bottom-color: var(--primary-600);
+    color: #10b981;
+    border-bottom-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
 }
 
 /* Settings Content */
@@ -46,24 +51,25 @@
     gap: var(--spacing-6);
 }
 
-/* Settings Section */
+/* Settings Section - Dark Theme */
 .settings-section {
-    background: white;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
     border-radius: var(--radius-xl);
     padding: var(--spacing-6);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .settings-section h3 {
     margin: 0 0 var(--spacing-2);
     font-size: 1.25rem;
-    color: var(--gray-800);
+    color: white;
 }
 
 .section-description {
     margin: 0 0 var(--spacing-5);
     font-size: 0.875rem;
-    color: var(--gray-500);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 /* Form Grid */
@@ -86,32 +92,37 @@
 .form-group label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--gray-700);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .help-text {
     font-size: 0.75rem;
-    color: var(--gray-500);
+    color: rgba(255, 255, 255, 0.5);
     margin-top: -4px;
 }
 
-/* Textarea */
+/* Textarea - Dark Theme */
 .textarea-input {
     width: 100%;
     padding: var(--spacing-3);
-    border: 1px solid var(--gray-300);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
     font-family: inherit;
     font-size: 0.9375rem;
-    color: var(--gray-800);
+    color: white;
+    background: rgba(15, 23, 42, 0.6);
     resize: vertical;
     transition: all 0.2s ease;
 }
 
 .textarea-input:focus {
     outline: none;
-    border-color: var(--primary-500);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.textarea-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
 }
 
 /* Departments Manager */
@@ -133,24 +144,24 @@
 
 .department-select {
     padding: var(--spacing-3);
-    border: 1px solid var(--gray-300);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
     font-family: inherit;
     font-size: 0.9375rem;
-    color: var(--gray-800);
-    background-color: white;
+    color: white;
+    background: rgba(15, 23, 42, 0.6);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .department-select:hover {
-    border-color: var(--gray-400);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .department-select:focus {
     outline: none;
-    border-color: var(--primary-500);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
 .departments-list {
@@ -164,17 +175,18 @@
     align-items: center;
     gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-3);
-    background: var(--primary-100);
-    color: var(--primary-700);
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
     border-radius: var(--radius-full);
     font-size: 0.875rem;
     font-weight: 500;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .department-tag button {
     background: none;
     border: none;
-    color: var(--primary-600);
+    color: #34d399;
     font-size: 1.25rem;
     line-height: 1;
     cursor: pointer;
@@ -189,10 +201,11 @@
 }
 
 .department-tag button:hover {
-    background: var(--primary-200);
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
 }
 
-/* Logo Upload */
+/* Logo Upload - Dark Theme */
 .logo-upload-container {
     display: flex;
     flex-direction: column;
@@ -205,8 +218,8 @@
     height: 200px;
     border-radius: var(--radius-lg);
     overflow: hidden;
-    border: 2px solid var(--gray-200);
-    background: var(--gray-50);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -223,7 +236,7 @@
     gap: var(--spacing-3);
 }
 
-/* Toggle Group */
+/* Toggle Group - Dark Theme */
 .toggle-group {
     display: flex;
     flex-direction: column;
@@ -235,9 +248,9 @@
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-4);
-    background: var(--gray-50);
+    background: rgba(15, 23, 42, 0.6);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--gray-200);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .toggle-info {
@@ -248,14 +261,14 @@
     display: block;
     font-size: 0.9375rem;
     font-weight: 500;
-    color: var(--gray-800);
+    color: white;
     margin-bottom: var(--spacing-1);
 }
 
 .toggle-description {
     display: block;
     font-size: 0.8125rem;
-    color: var(--gray-500);
+    color: rgba(255, 255, 255, 0.5);
 }
 
 /* Toggle Switch */
@@ -280,7 +293,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--gray-300);
+    background-color: rgba(255, 255, 255, 0.2);
     transition: 0.3s;
     border-radius: 24px;
 }
@@ -297,27 +310,27 @@
     border-radius: 50%;
 }
 
-.toggle-switch input:checked + .toggle-slider {
-    background-color: var(--primary-500);
+.toggle-switch input:checked+.toggle-slider {
+    background-color: #10b981;
 }
 
-.toggle-switch input:checked + .toggle-slider:before {
+.toggle-switch input:checked+.toggle-slider:before {
     transform: translateX(24px);
 }
 
-.toggle-switch input:focus + .toggle-slider {
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+.toggle-switch input:focus+.toggle-slider {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
-/* Info Box */
+/* Info Box - Dark Theme */
 .info-box {
     display: flex;
     gap: var(--spacing-3);
     padding: var(--spacing-4);
-    background: var(--info-50);
-    border: 1px solid var(--info-200);
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
     border-radius: var(--radius-lg);
-    color: var(--info-700);
+    color: #60a5fa;
     font-size: 0.875rem;
     margin-top: var(--spacing-4);
 }
@@ -350,8 +363,8 @@
 .loading-spinner {
     width: 40px;
     height: 40px;
-    border: 4px solid var(--gray-200);
-    border-top-color: var(--primary-500);
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #10b981;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
@@ -396,6 +409,7 @@
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

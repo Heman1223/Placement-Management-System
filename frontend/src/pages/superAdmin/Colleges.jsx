@@ -5,8 +5,8 @@ import { superAdminAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
-import { 
-    CheckCircle, XCircle, Eye, Building2, Plus, 
+import {
+    CheckCircle, XCircle, Eye, Building2, Plus,
     Edit2, Power, Trash2, RotateCcw, MoreVertical,
     Search, Filter, MapPin, Mail, Globe, Users,
     ArrowUpRight, Clock, ShieldCheck, Bell
@@ -43,8 +43,8 @@ const Colleges = () => {
     const fetchColleges = async (page = 1) => {
         setLoading(true);
         try {
-            const params = { 
-                page, 
+            const params = {
+                page,
                 status: filter || undefined,
                 search: searchQuery || undefined
             };
@@ -173,7 +173,7 @@ const Colleges = () => {
     };
 
     return (
-        <motion.div 
+        <motion.div
             className="admin-page"
             initial="hidden"
             animate="visible"
@@ -225,9 +225,9 @@ const Colleges = () => {
             <div className="search-filter-section">
                 <div className="search-bar-modern">
                     <Search size={18} className="search-icon" />
-                    <input 
-                        type="text" 
-                        placeholder="Search colleges by name or code..." 
+                    <input
+                        type="text"
+                        placeholder="Search colleges by name or code..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -287,7 +287,7 @@ const Colleges = () => {
                         </div>
                     ) : (
                         colleges.map((college) => (
-                            <motion.div 
+                            <motion.div
                                 key={college._id}
                                 className="college-modern-card"
                                 variants={itemVariants}
@@ -313,12 +313,13 @@ const Colleges = () => {
                                         </div>
                                     </div>
                                     <div className="action-dropdown-wrapper" style={{ position: 'relative' }}>
-                                        <button 
+                                        <button
                                             className="more-options-btn"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setOpenDropdown(openDropdown === college._id ? null : college._id);
                                             }}
+                                            title="More options"
                                         >
                                             <MoreVertical size={20} />
                                         </button>
@@ -326,61 +327,40 @@ const Colleges = () => {
                                         {/* Inline Dropdown for Actions */}
                                         <AnimatePresence>
                                             {openDropdown === college._id && (
-                                                <motion.div 
+                                                <motion.div
                                                     className="inline-dropdown"
                                                     initial={{ opacity: 0, scale: 0.95 }}
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     exit={{ opacity: 0, scale: 0.95 }}
                                                 >
-                                                    {!college.isVerified && (
-                                                        <>
-                                                            <button 
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleApprove(college._id, true, college.name);
-                                                                    setOpenDropdown(null);
-                                                                }}
-                                                                className="success"
-                                                            >
-                                                                <CheckCircle size={16} /> Approve
-                                                            </button>
-                                                            <button 
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleApprove(college._id, false, college.name);
-                                                                    setOpenDropdown(null);
-                                                                }}
-                                                                className="danger"
-                                                            >
-                                                                <XCircle size={16} /> Reject
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                    <button 
+                                                    <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             navigate(`/admin/colleges/${college._id}`);
                                                             setOpenDropdown(null);
                                                         }}
+                                                        title="View college profile"
                                                     >
                                                         <Eye size={16} /> View Profile
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             openEditModal(college);
                                                             setOpenDropdown(null);
                                                         }}
+                                                        title="Edit college information"
                                                     >
                                                         <Edit2 size={16} /> Edit
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleDelete(college._id);
                                                             setOpenDropdown(null);
-                                                        }} 
+                                                        }}
                                                         className="danger"
+                                                        title="Delete college"
                                                     >
                                                         <Trash2 size={16} /> Delete
                                                     </button>
@@ -411,17 +391,76 @@ const Colleges = () => {
 
                                 <div className="card-divider" />
 
+                                {/* Approve/Reject Buttons for Pending Colleges */}
+                                {!college.isVerified && !college.isRejected && (
+                                    <div className="card-action-buttons" style={{ padding: '1rem', display: 'flex', gap: '0.75rem' }}>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleApprove(college._id, true, college.name);
+                                            }}
+                                            className="approve-btn"
+                                            style={{
+                                                flex: 1,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '0.5rem',
+                                                padding: '0.75rem 1rem',
+                                                background: 'rgba(16, 185, 129, 0.15)',
+                                                border: '1px solid rgba(16, 185, 129, 0.3)',
+                                                borderRadius: '0.75rem',
+                                                color: '#34d399',
+                                                fontWeight: 700,
+                                                fontSize: '0.8125rem',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            title="Approve this college"
+                                        >
+                                            <CheckCircle size={16} /> Approve
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleApprove(college._id, false, college.name);
+                                            }}
+                                            className="reject-btn"
+                                            style={{
+                                                flex: 1,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '0.5rem',
+                                                padding: '0.75rem 1rem',
+                                                background: 'rgba(239, 68, 68, 0.15)',
+                                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                borderRadius: '0.75rem',
+                                                color: '#f87171',
+                                                fontWeight: 700,
+                                                fontSize: '0.8125rem',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            title="Reject this college"
+                                        >
+                                            <XCircle size={16} /> Reject
+                                        </button>
+                                    </div>
+                                )}
+
                                 <div className="card-footer">
                                     <div className="footer-email">
                                         <Mail size={14} />
                                         <span>{college.contactEmail}</span>
                                     </div>
-                                    <button 
+                                    <button
                                         className="details-link-btn"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             navigate(`/admin/colleges/${college._id}`);
                                         }}
+                                        title="View full details"
                                     >
                                         Details
                                     </button>
@@ -434,14 +473,14 @@ const Colleges = () => {
 
             {pagination.pages > 1 && (
                 <div className="modern-pagination">
-                    <button 
+                    <button
                         disabled={pagination.current === 1}
                         onClick={() => fetchColleges(pagination.current - 1)}
                     >
                         <ArrowUpRight size={18} style={{ transform: 'rotate(-135deg)' }} />
                     </button>
                     <span>{pagination.current} / {pagination.pages}</span>
-                    <button 
+                    <button
                         disabled={pagination.current === pagination.pages}
                         onClick={() => fetchColleges(pagination.current + 1)}
                     >

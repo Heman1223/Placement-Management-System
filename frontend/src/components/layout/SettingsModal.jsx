@@ -131,23 +131,24 @@ const SettingsModal = ({ isOpen, onClose }) => {
                     {activeTab === 'registration' && (
                         <div className="settings-tab-content">
                             <h3>Registration Controls</h3>
-                            
+
                             {/* Student Self-Signup */}
                             <div className="settings-group">
                                 <h4>Student Self-Signup</h4>
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Enable Student Self-Signup</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.studentSelfSignup?.enabled || false}
                                             onChange={(e) => updateSetting('studentSelfSignup', 'enabled', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Enable Student Self-Signup</span>
                                     </label>
                                 </div>
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Require Approval</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.studentSelfSignup?.requireApproval || false}
@@ -155,7 +156,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
                                             disabled={!settings?.studentSelfSignup?.enabled}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Require Approval</span>
                                     </label>
                                 </div>
                             </div>
@@ -165,17 +165,18 @@ const SettingsModal = ({ isOpen, onClose }) => {
                                 <h4>Agency Registration</h4>
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Enable Agency Registration</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.agencyRegistration?.enabled || false}
                                             onChange={(e) => updateSetting('agencyRegistration', 'enabled', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Enable Agency Registration</span>
                                     </label>
                                 </div>
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Require Approval</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.agencyRegistration?.requireApproval || false}
@@ -183,7 +184,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
                                             disabled={!settings?.agencyRegistration?.enabled}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Require Approval</span>
                                     </label>
                                 </div>
                             </div>
@@ -197,46 +197,46 @@ const SettingsModal = ({ isOpen, onClose }) => {
                             <div className="settings-group">
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Auto-Approve Colleges</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.approvalRules?.autoApproveColleges || false}
                                             onChange={(e) => updateSetting('approvalRules', 'autoApproveColleges', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Auto-Approve Colleges</span>
                                     </label>
                                 </div>
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Auto-Approve Companies</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.approvalRules?.autoApproveCompanies || false}
                                             onChange={(e) => updateSetting('approvalRules', 'autoApproveCompanies', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Auto-Approve Companies</span>
                                     </label>
                                 </div>
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Auto-Approve Students</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.approvalRules?.autoApproveStudents || false}
                                             onChange={(e) => updateSetting('approvalRules', 'autoApproveStudents', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Auto-Approve Students</span>
                                     </label>
                                 </div>
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Auto-Approve Agencies</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.approvalRules?.autoApproveAgencies || false}
                                             onChange={(e) => updateSetting('approvalRules', 'autoApproveAgencies', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Auto-Approve Agencies</span>
                                     </label>
                                 </div>
                             </div>
@@ -250,13 +250,13 @@ const SettingsModal = ({ isOpen, onClose }) => {
                             <div className="settings-group">
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Enable Maintenance Mode</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.maintenanceMode?.enabled || false}
                                             onChange={(e) => updateSetting('maintenanceMode', 'enabled', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Enable Maintenance Mode</span>
                                     </label>
                                     {settings?.maintenanceMode?.enabled && (
                                         <p className="setting-warning">⚠️ System is in maintenance mode</p>
@@ -280,35 +280,35 @@ const SettingsModal = ({ isOpen, onClose }) => {
                             <div className="settings-group">
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Visible to Companies</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.dataVisibility?.studentDataVisibleToCompanies || false}
                                             onChange={(e) => updateSetting('dataVisibility', 'studentDataVisibleToCompanies', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Visible to Companies</span>
                                     </label>
                                 </div>
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Visible to Agencies</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.dataVisibility?.studentDataVisibleToAgencies || false}
                                             onChange={(e) => updateSetting('dataVisibility', 'studentDataVisibleToAgencies', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Visible to Agencies</span>
                                     </label>
                                 </div>
                                 <div className="setting-item">
                                     <label className="toggle-label">
+                                        <span className="toggle-text">Allow Bulk Download</span>
                                         <input
                                             type="checkbox"
                                             checked={settings?.dataVisibility?.allowBulkDownload || false}
                                             onChange={(e) => updateSetting('dataVisibility', 'allowBulkDownload', e.target.checked)}
                                         />
                                         <span className="toggle-slider"></span>
-                                        <span className="toggle-text">Allow Bulk Download</span>
                                     </label>
                                 </div>
                                 <Input

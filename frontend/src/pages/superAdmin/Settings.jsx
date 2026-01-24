@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { superAdminAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
-import { 
-    Save, RotateCcw, Settings as SettingsIcon, 
-    Shield, Eye, Bell, Wrench, ShieldCheck, 
-    Lock, Mail, Download, Database, 
+import {
+    Save, RotateCcw, Settings as SettingsIcon,
+    Shield, Eye, Bell, Wrench, ShieldCheck,
+    Lock, Mail, Download, Database,
     Users, AlertTriangle, CheckCircle2, ArrowUpRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -107,25 +107,62 @@ const Settings = () => {
     }
 
     return (
-        <motion.div 
+        <motion.div
             className="admin-page"
             initial="hidden"
             animate="visible"
             variants={containerVariants}
         >
-            <div className="colleges-header">
-                <div className="header-title-area">
-                    <motion.h1 variants={sectionVariants}>Platform Configuration</motion.h1>
-                    <motion.p className="subtitle" variants={sectionVariants}>
-                        Super Admin Portal
-                    </motion.p>
+            {/* Premium Header Banner - Matching Dashboard Theme */}
+            <div className="premium-header-banner" style={{ marginBottom: '2rem' }}>
+                <div className="premium-header-text">
+                    <h1>Platform Configuration</h1>
+                    <p>Manage system settings, access controls, and automation rules</p>
                 </div>
-                <div className="header-controls">
-                    <button className="icon-btn" onClick={handleReset} title="Factory Reset">
-                        <RotateCcw size={20} />
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                        onClick={handleReset}
+                        title="Reset all settings to default"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.75rem 1.25rem',
+                            borderRadius: '0.75rem',
+                            background: 'rgba(239, 68, 68, 0.15)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            color: '#f87171',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <RotateCcw size={18} />
+                        Reset
                     </button>
-                    <button className="icon-btn" onClick={handleSave} disabled={saving} title="Apply Config">
-                        <Save size={20} />
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        title="Save all changes"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.75rem 1.25rem',
+                            borderRadius: '0.75rem',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            color: 'white',
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            cursor: saving ? 'not-allowed' : 'pointer',
+                            opacity: saving ? 0.6 : 1,
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <Save size={18} />
+                        {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                 </div>
             </div>
@@ -173,7 +210,7 @@ const Settings = () => {
                                 <span className="toggle-track"></span>
                             </label>
                         </div>
-                        
+
                         <div className="divider" />
 
                         <div className="control-item">
@@ -207,7 +244,9 @@ const Settings = () => {
                     <div className="settings-card-body">
                         <div className="control-grid">
                             <div className="control-item">
-                                <span className="control-title">Auto-Approve Colleges</span>
+                                <div className="control-info">
+                                    <span className="control-title">Auto-Approve Colleges</span>
+                                </div>
                                 <label className="modern-toggle">
                                     <input
                                         type="checkbox"
@@ -218,7 +257,9 @@ const Settings = () => {
                                 </label>
                             </div>
                             <div className="control-item">
-                                <span className="control-title">Auto-Approve Companies</span>
+                                <div className="control-info">
+                                    <span className="control-title">Auto-Approve Companies</span>
+                                </div>
                                 <label className="modern-toggle">
                                     <input
                                         type="checkbox"
@@ -229,7 +270,9 @@ const Settings = () => {
                                 </label>
                             </div>
                             <div className="control-item">
-                                <span className="control-title">Auto-Approve Agencies</span>
+                                <div className="control-info">
+                                    <span className="control-title">Auto-Approve Agencies</span>
+                                </div>
                                 <label className="modern-toggle">
                                     <input
                                         type="checkbox"
@@ -240,7 +283,9 @@ const Settings = () => {
                                 </label>
                             </div>
                             <div className="control-item">
-                                <span className="control-title">Email Verification</span>
+                                <div className="control-info">
+                                    <span className="control-title">Email Verification</span>
+                                </div>
                                 <label className="modern-toggle">
                                     <input
                                         type="checkbox"
@@ -280,7 +325,7 @@ const Settings = () => {
                                 <span className="toggle-track"></span>
                             </label>
                         </div>
-                        
+
                         <div className="maintenance-config">
                             <Input
                                 label="Broadcast Message"
@@ -373,7 +418,7 @@ const Settings = () => {
             </div>
 
             {/* Persistent Save Footer */}
-            <motion.div 
+            <motion.div
                 className="settings-action-footer"
                 initial={{ y: 100 }}
                 animate={{ y: 0 }}

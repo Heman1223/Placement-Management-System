@@ -1,3 +1,5 @@
+/* StudentForm Page - Dark Theme */
+
 .student-form-page {
     max-width: 900px;
     animation: fadeIn 0.3s ease;
@@ -7,28 +9,47 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 0.875rem;
     margin-bottom: var(--spacing-2);
     transition: color var(--transition-fast);
 }
 
 .back-btn:hover {
-    color: var(--primary-600);
+    color: #10b981;
 }
 
-.form-card {
+/* Form Card - Dark Theme Override */
+.student-form-page .form-card {
     margin-bottom: var(--spacing-5);
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
 }
 
+.student-form-page .form-card h2,
+.student-form-page .form-card h3 {
+    color: white !important;
+}
+
+.student-form-page .form-card p {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Form Grid */
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: var(--spacing-4);
 }
 
+/* Education Section - Dark Theme */
 .education-section {
     margin-bottom: var(--spacing-5);
+    padding: var(--spacing-4);
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .education-section:last-child {
@@ -38,13 +59,13 @@
 .education-section h4 {
     font-size: 0.9375rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #10b981;
     margin-bottom: var(--spacing-3);
     padding-bottom: var(--spacing-2);
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Skills */
+/* Skills Section - Dark Theme */
 .skills-input {
     display: flex;
     gap: var(--spacing-3);
@@ -66,32 +87,131 @@
     align-items: center;
     gap: var(--spacing-2);
     padding: var(--spacing-1) var(--spacing-3);
-    background: var(--primary-100);
-    color: var(--primary-700);
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
     border-radius: var(--radius-full);
     font-size: 0.875rem;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .skill-tag button {
     display: flex;
-    color: var(--primary-500);
+    color: #34d399;
     transition: color var(--transition-fast);
 }
 
 .skill-tag button:hover {
-    color: var(--error-500);
+    color: #ef4444;
 }
 
-/* Form Actions */
+/* Skills Dropdown */
+.skills-dropdown-container {
+    position: relative;
+    flex: 1;
+}
+
+.skills-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+    margin-top: 4px;
+}
+
+.skill-option {
+    padding: var(--spacing-2) var(--spacing-3);
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.9);
+    transition: background 0.15s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.skill-option:last-child {
+    border-bottom: none;
+}
+
+.skill-option:hover {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.skill-option.highlighted {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.skill-category {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.no-skills-found {
+    padding: var(--spacing-3);
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+}
+
+.custom-skill-btn {
+    width: 100%;
+    padding: var(--spacing-2) var(--spacing-3);
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.875rem;
+    transition: background 0.15s ease;
+}
+
+.custom-skill-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+/* Form Actions - Dark Theme */
 .form-actions {
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-3);
     padding-top: var(--spacing-4);
-    border-top: 1px solid var(--border-light);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     margin-top: var(--spacing-6);
 }
 
+/* Input Overrides for Dark Theme */
+.student-form-page .input-wrapper .input,
+.student-form-page .input-wrapper select {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+}
+
+.student-form-page .input-wrapper .input:focus,
+.student-form-page .input-wrapper select:focus {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+}
+
+.student-form-page .input-wrapper .input::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.student-form-page .input-label {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
     .form-grid {
         grid-template-columns: 1fr;
@@ -107,5 +227,17 @@
 
     .form-actions button {
         width: 100%;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

@@ -5,7 +5,7 @@ import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
-import { Plus, Search, Filter, CheckCircle, Eye, Edit, Trash2, Upload, Key, User, Download, MoreVertical } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle, Eye, Edit, Trash2, Upload, Key, User, Download, MoreVertical, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Students.css';
 
@@ -31,7 +31,8 @@ const Students = () => {
         skills: searchParams.get('skills') || '',
         cgpaMin: searchParams.get('cgpaMin') || '',
         cgpaMax: searchParams.get('cgpaMax') || '',
-        profileCompleteness: searchParams.get('profileCompleteness') || ''
+        profileCompleteness: searchParams.get('profileCompleteness') || '',
+        isStarStudent: searchParams.get('isStarStudent') || ''
     });
 
     useEffect(() => {
@@ -57,7 +58,7 @@ const Students = () => {
                 sortBy: 'createdAt',
                 order: 'desc' // Newest first
             };
-            
+
             // Only add filter params if they have values
             const search = searchParams.get('search');
             const department = searchParams.get('department');
@@ -68,7 +69,7 @@ const Students = () => {
             const cgpaMin = searchParams.get('cgpaMin');
             const cgpaMax = searchParams.get('cgpaMax');
             const profileCompleteness = searchParams.get('profileCompleteness');
-            
+
             if (search) params.search = search;
             if (department) params.department = department;
             if (batch) params.batch = batch;
@@ -78,6 +79,9 @@ const Students = () => {
             if (cgpaMin) params.cgpaMin = cgpaMin;
             if (cgpaMax) params.cgpaMax = cgpaMax;
             if (profileCompleteness) params.profileCompleteness = profileCompleteness;
+
+            const isStarStudent = searchParams.get('isStarStudent');
+            if (isStarStudent) params.isStarStudent = isStarStudent;
 
             const response = await collegeAPI.getStudents(params);
             setStudents(response.data.data.students);
@@ -122,7 +126,8 @@ const Students = () => {
             skills: '',
             cgpaMin: '',
             cgpaMax: '',
-            profileCompleteness: ''
+            profileCompleteness: '',
+            isStarStudent: ''
         });
         setSearchParams({}); // Clear URL params
         setShowFilters(false);
@@ -138,11 +143,11 @@ const Students = () => {
         try {
             const response = await collegeAPI.verifyStudent(id);
             toast.success('Student verified successfully');
-            
+
             // Update the student in the local state immediately
-            setStudents(prevStudents => 
-                prevStudents.map(student => 
-                    student._id === id 
+            setStudents(prevStudents =>
+                prevStudents.map(student =>
+                    student._id === id
                         ? { ...student, isVerified: true, verifiedAt: new Date() }
                         : student
                 )
@@ -192,6 +197,22 @@ const Students = () => {
         }
     };
 
+    const handleToggleStar = async (id, currentStatus) => {
+        try {
+            await collegeAPI.toggleStarStudent(id);
+            toast.success(currentStatus ? 'Removed from star students' : 'Added to star students');
+            setStudents(prevStudents =>
+                prevStudents.map(student =>
+                    student._id === id
+                        ? { ...student, isStarStudent: !currentStatus }
+                        : student
+                )
+            );
+        } catch (error) {
+            toast.error('Failed to toggle star status');
+        }
+    };
+
     const handleExport = async () => {
         try {
             const params = {};
@@ -200,7 +221,7 @@ const Students = () => {
             });
 
             const response = await collegeAPI.exportStudents(params);
-            
+
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -208,7 +229,7 @@ const Students = () => {
             document.body.appendChild(link);
             link.click();
             link.remove();
-            
+
             toast.success('Students exported successfully');
         } catch (error) {
             toast.error('Failed to export students');
@@ -261,6 +282,16 @@ const Students = () => {
             )
         },
         {
+            header: '⭐',
+            accessor: 'isStarStudent',
+            width: '60px',
+            render: (val) => (
+                <span style={{ color: val ? '#fbbf24' : '#64748b' }}>
+                    {val ? '⭐' : '☆'}
+                </span>
+            )
+        },
+        {
             header: 'Actions',
             accessor: '_id',
             render: (id, row) => (
@@ -283,7 +314,7 @@ const Students = () => {
                                 <User size={16} />
                                 <span>Profile Completeness</span>
                             </button>
-                            <Link 
+                            <Link
                                 to={`/college/students/${id}`}
                                 className="action-dropdown-item"
                                 onClick={() => setOpenDropdown(null)}
@@ -291,7 +322,7 @@ const Students = () => {
                                 <Eye size={16} />
                                 <span>View Details</span>
                             </Link>
-                            <Link 
+                            <Link
                                 to={`/college/students/${id}/edit`}
                                 className="action-dropdown-item"
                                 onClick={() => setOpenDropdown(null)}
@@ -330,6 +361,16 @@ const Students = () => {
                             >
                                 <Trash2 size={16} />
                                 <span>Delete Student</span>
+                            </button>
+                            <button
+                                className={`action-dropdown-item ${row.isStarStudent ? 'warning' : 'success'}`}
+                                onClick={() => {
+                                    handleToggleStar(id, row.isStarStudent);
+                                    setOpenDropdown(null);
+                                }}
+                            >
+                                <Star size={16} />
+                                <span>{row.isStarStudent ? 'Remove Star' : 'Mark as Star'}</span>
                             </button>
                         </div>
                     )}
@@ -471,6 +512,17 @@ const Students = () => {
                             onChange={(e) => handleFilterChange('profileCompleteness', e.target.value)}
                             placeholder="e.g. 80"
                         />
+                    </div>
+                    <div className="filter-group">
+                        <label>Star Students</label>
+                        <select
+                            value={filters.isStarStudent}
+                            onChange={(e) => handleFilterChange('isStarStudent', e.target.value)}
+                        >
+                            <option value="">All Students</option>
+                            <option value="true">Star Students Only</option>
+                            <option value="false">Non-Star Students</option>
+                        </select>
                     </div>
                     <Button variant="ghost" onClick={clearFilters}>Clear All</Button>
                 </div>

@@ -222,3 +222,57 @@
         font-size: 1.25rem;
     }
 }
+
+/* Dark Theme Overrides */
+.layout-admin-dark .card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.layout-admin-dark .card-title {
+    color: white;
+}
+
+.layout-admin-dark .card-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.layout-admin-dark .stats-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.layout-admin-dark .stats-card-value {
+    color: white;
+}
+
+.layout-admin-dark .stats-card-title {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.layout-admin-dark .stats-card-primary .stats-card-icon {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}
+
+.layout-admin-dark .stats-card-success .stats-card-icon {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.layout-admin-dark .stats-card-warning .stats-card-icon {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.layout-admin-dark .stats-card-error .stats-card-icon {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.layout-admin-dark .stats-card-info .stats-card-icon {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+}

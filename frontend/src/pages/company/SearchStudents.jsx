@@ -15,15 +15,15 @@ const SearchStudents = () => {
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
     const [hasSearched, setHasSearched] = useState(false);
-    
+
     // Data for dropdowns
     const [jobs, setJobs] = useState([]);
     const [colleges, setColleges] = useState([]);
-    
+
     // UI States
     const [showFilters, setShowFilters] = useState(true);
     const [selectedCollege, setSelectedCollege] = useState(null); // New state for selected college
-    
+
     // Action States
     const [shortlistingId, setShortlistingId] = useState(null);
     const [shortlistModal, setShortlistModal] = useState({ open: false, student: null });
@@ -41,7 +41,8 @@ const SearchStudents = () => {
         skills: '',
         // college: '', // Removing college from generic filters as it's now a primary selection
         placementStatus: 'not_placed',
-        experience: ''
+        experience: '',
+        isStarStudent: ''
     });
 
     // Saved Filters
@@ -54,6 +55,8 @@ const SearchStudents = () => {
         fetchJobs();
         fetchColleges();
         fetchSavedFilters();
+        // Load all students initially
+        searchStudents(1);
     }, []);
 
     // Effect to handle navigation from Partnerships page
@@ -67,14 +70,12 @@ const SearchStudents = () => {
         }
     }, [location.state, colleges]);
 
-    // Effect for Real-time Search
+    // Effect for Real-time Search - now works with or without college selection
     useEffect(() => {
-        if (selectedCollege) {
-            const timeoutId = setTimeout(() => {
-                searchStudents(1);
-            }, 500); // Debounce search by 500ms
-            return () => clearTimeout(timeoutId);
-        }
+        const timeoutId = setTimeout(() => {
+            searchStudents(1);
+        }, 500); // Debounce search by 500ms
+        return () => clearTimeout(timeoutId);
     }, [filters, selectedCollege]);
 
 
@@ -124,7 +125,8 @@ const SearchStudents = () => {
             maxBacklogs: '',
             skills: '',
             placementStatus: 'not_placed',
-            experience: ''
+            experience: '',
+            isStarStudent: ''
         });
     };
 
@@ -149,7 +151,7 @@ const SearchStudents = () => {
         const { college, ...restFilters } = savedFilter.filters;
         setFilters(restFilters);
         setShowSavedFilters(false);
-        setHasSearched(true); 
+        setHasSearched(true);
         toast.success(`Loaded filter: ${savedFilter.name}`);
     };
 
@@ -166,17 +168,19 @@ const SearchStudents = () => {
     };
 
     const searchStudents = async (page = 1, searchFilters = filters) => {
-        if (!selectedCollege) return;
-        
         setLoading(true);
         setHasSearched(true);
         try {
             const params = {
                 ...searchFilters,
-                college: selectedCollege?._id, // Enforce selected college
                 page,
                 limit: 12
             };
+
+            // Add college filter only if a college is selected
+            if (selectedCollege?._id) {
+                params.college = selectedCollege._id;
+            }
 
             // Clean empty params
             Object.keys(params).forEach(key => {
@@ -206,7 +210,8 @@ const SearchStudents = () => {
             maxBacklogs: '',
             skills: '',
             placementStatus: '',
-            experience: ''
+            experience: '',
+            isStarStudent: ''
         });
         // Search triggered by useEffect
     };
@@ -229,7 +234,7 @@ const SearchStudents = () => {
 
         const student = shortlistModal.student;
         setShortlistingId(student._id);
-        const modalStudentName = student.name?.firstName; 
+        const modalStudentName = student.name?.firstName;
         setShortlistModal({ open: false, student: null });
 
         try {
@@ -276,261 +281,258 @@ const SearchStudents = () => {
                 </div>
             </div>
 
-            {/* College Selection View (Initial State) */}
-            {!selectedCollege ? (
-                <div className="college-selection-container">
-                    <Card className="college-select-card">
-                        <div className="select-icon-wrapper">
-                            <Building2 size={48} />
-                        </div>
-                        <h2>Select a College to Begin</h2>
-                        <p>Choose a college from the list below to view and filter their students.</p>
-                        
-                        <div className="college-select-wrapper">
-                            <select 
-                                className="college-main-select"
-                                onChange={(e) => handleCollegeSelect(e.target.value)}
-                                defaultValue=""
-                            >
-                                <option value="" disabled>Select College / Institute</option>
-                                {colleges.map(c => (
-                                    <option key={c._id} value={c._id}>{c.name}</option>
-                                ))}
-                            </select>
-                            <ChevronDown className="select-arrow" size={20} />
-                        </div>
-                    </Card>
-                </div>
-            ) : (
-                /* Main Search Section (After Selection) */
-                <div className="search-container">
+            {/* Main Search Section - Always Visible */}
+            <div className="search-container">
+                {/* Selected College Banner (if any) */}
+                {selectedCollege && (
                     <div className="active-college-banner">
                         <div className="college-info">
                             <Building2 size={20} />
-                            <span>Viewing students from: <strong>{selectedCollege.name}</strong></span>
+                            <span>Filtering by college: <strong>{selectedCollege.name}</strong></span>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={handleBackToCollegeSelect}>Change College</Button>
+                        <Button variant="ghost" size="sm" onClick={handleBackToCollegeSelect}>Clear Filter</Button>
+                    </div>
+                )}
+
+                {/* Search Bar & Filters */}
+                <Card className="search-card">
+                    <div className="keyword-search-bar">
+                        <Input
+                            placeholder="Search by name, skills, or keywords..."
+                            value={filters.keyword}
+                            onChange={(e) => handleFilterChange('keyword', e.target.value)}
+                            icon={Search}
+                            className="main-search-input"
+                        />
+                        <Button variant="secondary" onClick={() => setShowFilters(!showFilters)} icon={Filter}>
+                            Filters
+                        </Button>
+                        {savedFilters.length > 0 && (
+                            <Button variant="ghost" onClick={() => setShowSavedFilters(!showSavedFilters)}>
+                                Saved
+                            </Button>
+                        )}
                     </div>
 
-                    {/* Search Bar & Filters */}
-                    <Card className="search-card">
-                        <div className="keyword-search-bar">
-                            <Input
-                                placeholder="Search by name, skills, or keywords..."
-                                value={filters.keyword}
-                                onChange={(e) => handleFilterChange('keyword', e.target.value)}
-                                icon={Search}
-                                className="main-search-input"
-                            />
-                            {/* Removed explicit Search button, search is now real-time */}
-                            <Button variant="secondary" onClick={() => setShowFilters(!showFilters)} icon={Filter}>
-                                Filters
-                            </Button>
-                            {savedFilters.length > 0 && (
-                                <Button variant="ghost" onClick={() => setShowSavedFilters(!showSavedFilters)}>
-                                    Saved
-                                </Button>
-                            )}
-                        </div>
-
-                        {/* Expanded Filters */}
-                        {showFilters && (
-                            <div className="expanded-filters">
-                                <div className="filters-grid">
-                                    <div className="filter-column">
-                                        <label>Academic</label>
-                                        <select
-                                            className="filter-select"
-                                            value={filters.department}
-                                            onChange={(e) => handleFilterChange('department', e.target.value)}
-                                        >
-                                            <option value="">All Departments</option>
-                                            {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                                        </select>
-                                        <select
-                                            className="filter-select mt-2"
-                                            value={filters.batch}
-                                            onChange={(e) => handleFilterChange('batch', e.target.value)}
-                                        >
-                                            <option value="">All Batches</option>
-                                            {batches.map(y => <option key={y} value={y}>{y}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="filter-column">
-                                        <label>Criteria</label>
-                                        <div className="row-inputs">
-                                            <Input
-                                                type="number"
-                                                placeholder="Min CGPA"
-                                                value={filters.minCgpa}
-                                                onChange={(e) => handleFilterChange('minCgpa', e.target.value)}
-                                                step="0.1"
-                                                max="10"
-                                            />
-                                            <Input
-                                                type="number"
-                                                placeholder="Max Backlogs"
-                                                value={filters.maxBacklogs}
-                                                onChange={(e) => handleFilterChange('maxBacklogs', e.target.value)}
-                                                min="0"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="filter-column">
-                                        <label>Details</label>
-                                        {/* College select removed from here as it's global now */}
-                                        <select
-                                            className="filter-select"
-                                            value={filters.placementStatus}
-                                            onChange={(e) => handleFilterChange('placementStatus', e.target.value)}
-                                        >
-                                            <option value="">All Statuses</option>
-                                            <option value="not_placed">Not Placed</option>
-                                            <option value="in_process">In Process</option>
-                                        </select>
-                                        <select
-                                            className="filter-select mt-2"
-                                            value={filters.experience}
-                                            onChange={(e) => handleFilterChange('experience', e.target.value)}
-                                        >
-                                            <option value="">Any Experience</option>
-                                            <option value="internship">Has Internship</option>
-                                            <option value="projects">Has Projects</option>
-                                        </select>
-                                    </div>
-                                    <div className="filter-column">
-                                        <label>Skills & Experience</label>
+                    {/* Expanded Filters */}
+                    {showFilters && (
+                        <div className="expanded-filters">
+                            <div className="filters-grid">
+                                <div className="filter-column">
+                                    <label>College</label>
+                                    <select
+                                        className="filter-select"
+                                        value={selectedCollege?._id || ''}
+                                        onChange={(e) => handleCollegeSelect(e.target.value)}
+                                    >
+                                        <option value="">All Colleges</option>
+                                        {colleges.map(c => (
+                                            <option key={c._id} value={c._id}>{c.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="filter-column">
+                                    <label>Academic</label>
+                                    <select
+                                        className="filter-select"
+                                        value={filters.department}
+                                        onChange={(e) => handleFilterChange('department', e.target.value)}
+                                    >
+                                        <option value="">All Departments</option>
+                                        {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                                    </select>
+                                    <select
+                                        className="filter-select mt-2"
+                                        value={filters.batch}
+                                        onChange={(e) => handleFilterChange('batch', e.target.value)}
+                                    >
+                                        <option value="">All Batches</option>
+                                        {batches.map(y => <option key={y} value={y}>{y}</option>)}
+                                    </select>
+                                </div>
+                                <div className="filter-column">
+                                    <label>Criteria</label>
+                                    <div className="row-inputs">
                                         <Input
-                                            placeholder="Specific Skills (comma separated)"
-                                            value={filters.skills}
-                                            onChange={(e) => handleFilterChange('skills', e.target.value)}
+                                            type="number"
+                                            placeholder="Min CGPA"
+                                            value={filters.minCgpa}
+                                            onChange={(e) => handleFilterChange('minCgpa', e.target.value)}
+                                            step="0.1"
+                                            max="10"
+                                        />
+                                        <Input
+                                            type="number"
+                                            placeholder="Max Backlogs"
+                                            value={filters.maxBacklogs}
+                                            onChange={(e) => handleFilterChange('maxBacklogs', e.target.value)}
+                                            min="0"
                                         />
                                     </div>
                                 </div>
-                                <div className="filter-footer">
-                                    <Button variant="ghost" onClick={handleClearFilters} size="sm">
-                                        Clear All
-                                    </Button>
-                                    <Button variant="ghost" onClick={() => setShowSaveFilterModal(true)} size="sm">
-                                        Save as Preset
-                                    </Button>
+                                <div className="filter-column">
+                                    <label>Details</label>
+                                    {/* College select removed from here as it's global now */}
+                                    <select
+                                        className="filter-select"
+                                        value={filters.placementStatus}
+                                        onChange={(e) => handleFilterChange('placementStatus', e.target.value)}
+                                    >
+                                        <option value="">All Statuses</option>
+                                        <option value="not_placed">Not Placed</option>
+                                        <option value="in_process">In Process</option>
+                                    </select>
+                                    <select
+                                        className="filter-select mt-2"
+                                        value={filters.experience}
+                                        onChange={(e) => handleFilterChange('experience', e.target.value)}
+                                    >
+                                        <option value="">Any Experience</option>
+                                        <option value="internship">Has Internship</option>
+                                        <option value="projects">Has Projects</option>
+                                    </select>
+                                </div>
+                                <div className="filter-column">
+                                    <label>Skills & Experience</label>
+                                    <Input
+                                        placeholder="Specific Skills (comma separated)"
+                                        value={filters.skills}
+                                        onChange={(e) => handleFilterChange('skills', e.target.value)}
+                                    />
+                                    <select
+                                        className="filter-select mt-2"
+                                        value={filters.isStarStudent}
+                                        onChange={(e) => handleFilterChange('isStarStudent', e.target.value)}
+                                    >
+                                        <option value="">All Students</option>
+                                        <option value="true">⭐ Star Students Only</option>
+                                        <option value="false">Non-Star Students</option>
+                                    </select>
                                 </div>
                             </div>
-                        )}
-                    </Card>
-
-                    {/* Saved Filters Panel */}
-                    {showSavedFilters && (
-                        <div className="saved-filters-panel">
-                            <div className="panel-header">
-                                <h3>Saved Filters</h3>
-                                <button onClick={() => setShowSavedFilters(false)}><X size={16} /></button>
-                            </div>
-                            <div className="saved-list">
-                                {savedFilters.length === 0 ? (
-                                    <p className="empty-msg">No saved filters</p>
-                                ) : (
-                                    savedFilters.map((sf, index) => (
-                                        <div key={index} className="saved-filter-item">
-                                            <span onClick={() => handleLoadFilter(sf)}>{sf.name}</span>
-                                            <button onClick={() => handleDeleteFilter(sf.name)} className="delete-btn">
-                                                <X size={14} />
-                                            </button>
-                                        </div>
-                                    ))
-                                )}
+                            <div className="filter-footer">
+                                <Button variant="ghost" onClick={handleClearFilters} size="sm">
+                                    Clear All
+                                </Button>
+                                <Button variant="ghost" onClick={() => setShowSaveFilterModal(true)} size="sm">
+                                    Save as Preset
+                                </Button>
                             </div>
                         </div>
                     )}
+                </Card>
 
-                    {/* Results Area */}
-                    <div className="results-container">
-                        {loading ? (
-                            <div className="loading-screen"><div className="loading-spinner" /></div>
-                        ) : students.length === 0 ? (
-                            <div className="no-results-state">
-                                <h3>No candidates found</h3>
-                                <p>Try adjusting your search filters to see more results.</p>
-                                <Button variant="secondary" onClick={handleClearFilters}>Clear Filters</Button>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="results-header">
-                                    <span>Found {pagination.total} candidates</span>
-                                </div>
-                                <div className="students-grid">
-                                    {students.map(student => (
-                                        <Card key={student._id} className="student-card" hoverable>
-                                            <div className="student-header">
-                                                <div className="student-avatar-placeholder">
-                                                    {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
-                                                </div>
-                                                <div className="student-basic-info">
-                                                    <div className="flex items-center gap-2">
-                                                        <h3>{student.name?.firstName} {student.name?.lastName}</h3>
-                                                        {student.isStarStudent && (
-                                                            <div className="group relative">
-                                                                <Star size={16} className="text-amber-400 fill-amber-400" />
-                                                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-slate-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                                                    Star Student
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <p>{student.department}</p>
-                                                </div>
-                                                <Button 
-                                                    size="sm"
-                                                    className="shortlist-icon-btn"
-                                                    onClick={() => handleShortlist(student)}
-                                                    title="Shortlist"
-                                                    disabled={shortlistingId === student._id}
-                                                >
-                                                    <Star size={18} />
-                                                </Button>
-                                            </div>
-                                            <div className="student-tags">
-                                                <span className="tag batch-tag">Batch {student.batch}</span>
-                                                <span className="tag cgpa-tag">CGPA: {student.cgpa?.toFixed(2)}</span>
-                                            </div>
-                                            <div className="student-skills-preview">
-                                                {student.skills?.slice(0, 3).map((skill, i) => (
-                                                    <span key={i} className="skill-pill">{skill}</span>
-                                                ))}
-                                                {student.skills?.length > 3 && <span>+{student.skills.length - 3}</span>}
-                                            </div>
-                                            <div className="student-card-actions">
-                                                <Button variant="secondary" fullWidth onClick={() => viewStudentDetails(student._id)}>
-                                                    View Profile
-                                                </Button>
-                                            </div>
-                                        </Card>
-                                    ))}
-                                </div>
-                                {pagination.pages > 1 && (
-                                    <div className="pagination">
-                                        <Button
-                                            variant="secondary"
-                                            disabled={pagination.current === 1}
-                                            onClick={() => searchStudents(pagination.current - 1)}
-                                        >
-                                            Previous
-                                        </Button>
-                                        <span>Page {pagination.current} of {pagination.pages}</span>
-                                        <Button
-                                            variant="secondary"
-                                            disabled={pagination.current === pagination.pages}
-                                            onClick={() => searchStudents(pagination.current + 1)}
-                                        >
-                                            Next
-                                        </Button>
+                {/* Saved Filters Panel */}
+                {showSavedFilters && (
+                    <div className="saved-filters-panel">
+                        <div className="panel-header">
+                            <h3>Saved Filters</h3>
+                            <button onClick={() => setShowSavedFilters(false)}><X size={16} /></button>
+                        </div>
+                        <div className="saved-list">
+                            {savedFilters.length === 0 ? (
+                                <p className="empty-msg">No saved filters</p>
+                            ) : (
+                                savedFilters.map((sf, index) => (
+                                    <div key={index} className="saved-filter-item">
+                                        <span onClick={() => handleLoadFilter(sf)}>{sf.name}</span>
+                                        <button onClick={() => handleDeleteFilter(sf.name)} className="delete-btn">
+                                            <X size={14} />
+                                        </button>
                                     </div>
-                                )}
-                            </>
-                        )}
+                                ))
+                            )}
+                        </div>
                     </div>
+                )}
+
+                {/* Results Area */}
+                <div className="results-container">
+                    {loading ? (
+                        <div className="loading-screen"><div className="loading-spinner" /></div>
+                    ) : students.length === 0 ? (
+                        <div className="no-results-state">
+                            <h3>No candidates found</h3>
+                            <p>Try adjusting your search filters to see more results.</p>
+                            <Button variant="secondary" onClick={handleClearFilters}>Clear Filters</Button>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="results-header">
+                                <span>Found {pagination.total} candidates</span>
+                            </div>
+                            <div className="students-grid">
+                                {students.map(student => (
+                                    <Card key={student._id} className="student-card" hoverable>
+                                        <div className="student-header">
+                                            <div className="student-avatar-placeholder">
+                                                {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
+                                            </div>
+                                            <div className="student-basic-info">
+                                                <div className="flex items-center gap-2">
+                                                    <h3>{student.name?.firstName} {student.name?.lastName}</h3>
+                                                    {student.isStarStudent && (
+                                                        <div className="group relative">
+                                                            <Star size={16} className="text-amber-400 fill-amber-400" />
+                                                            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-slate-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                                Star Student
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <p>{student.department}</p>
+                                            </div>
+                                            <Button
+                                                size="sm"
+                                                className="shortlist-icon-btn"
+                                                onClick={() => handleShortlist(student)}
+                                                title="Shortlist"
+                                                disabled={shortlistingId === student._id}
+                                            >
+                                                <Star size={18} />
+                                            </Button>
+                                        </div>
+                                        <div className="student-tags">
+                                            <span className="tag batch-tag">Batch {student.batch}</span>
+                                            <span className="tag cgpa-tag">CGPA: {student.cgpa?.toFixed(2)}</span>
+                                        </div>
+                                        <div className="student-skills-preview">
+                                            {student.skills?.slice(0, 3).map((skill, i) => (
+                                                <span key={i} className="skill-pill">{skill}</span>
+                                            ))}
+                                            {student.skills?.length > 3 && <span>+{student.skills.length - 3}</span>}
+                                        </div>
+                                        <div className="student-card-actions">
+                                            <Button variant="secondary" fullWidth onClick={() => viewStudentDetails(student._id)}>
+                                                View Profile
+                                            </Button>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                            {pagination.pages > 1 && (
+                                <div className="pagination">
+                                    <Button
+                                        variant="secondary"
+                                        disabled={pagination.current === 1}
+                                        onClick={() => searchStudents(pagination.current - 1)}
+                                    >
+                                        Previous
+                                    </Button>
+                                    <span>Page {pagination.current} of {pagination.pages}</span>
+                                    <Button
+                                        variant="secondary"
+                                        disabled={pagination.current === pagination.pages}
+                                        onClick={() => searchStudents(pagination.current + 1)}
+                                    >
+                                        Next
+                                    </Button>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
-            )}
+            </div>
 
             {/* Shortlist Modal */}
             <Modal
@@ -581,7 +583,7 @@ const SearchStudents = () => {
                     </div>
                 </div>
             </Modal>
-            
+
             <Modal
                 isOpen={showSaveFilterModal}
                 onClose={() => setShowSaveFilterModal(false)}
@@ -615,7 +617,7 @@ const SearchStudents = () => {
                     </div>
                 ) : studentDetailModal.student && (
                     <div className="student-detail-modal">
-                         <div className="detail-header">
+                        <div className="detail-header">
                             <div className="detail-avatar">
                                 {studentDetailModal.student.name?.firstName?.[0]}
                                 {studentDetailModal.student.name?.lastName?.[0]}
@@ -679,8 +681,8 @@ const SearchStudents = () => {
                                             <h5>{project.title}</h5>
                                             <p>{project.description}</p>
                                             <div className="project-links">
-                                                {project.projectUrl && <a href={project.projectUrl} target="_blank" rel="noreferrer"><ExternalLink size={14}/> Demo</a>}
-                                                {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noreferrer"><Github size={14}/> Code</a>}
+                                                {project.projectUrl && <a href={project.projectUrl} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Demo</a>}
+                                                {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noreferrer"><Github size={14} /> Code</a>}
                                             </div>
                                         </div>
                                     ))}
@@ -692,13 +694,13 @@ const SearchStudents = () => {
                         <div className="detail-section">
                             <h4><FileText size={16} /> Documents</h4>
                             {studentDetailModal.student.resumeUrl ? (
-                                <a 
-                                    href={studentDetailModal.student.resumeUrl} 
-                                    target="_blank" 
-                                    rel="noreferrer" 
+                                <a
+                                    href={studentDetailModal.student.resumeUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
                                     className="profile-link resume"
                                 >
-                                    <FileText size={18}/> View Resume
+                                    <FileText size={18} /> View Resume
                                 </a>
                             ) : (
                                 <p className="text-muted">No resume uploaded</p>
