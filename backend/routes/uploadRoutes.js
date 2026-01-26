@@ -1,9 +1,57 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { uploadResume, uploadLogo } = require('../config/cloudinary');
+const { uploadResume, uploadLogo, uploadStudentImage, uploadCertificate } = require('../config/cloudinary');
 const { auth, isStudent, isCollegeAdmin, isCompany } = require('../middleware');
 const { Student, College, Company } = require('../models');
+
+/**
+ * @route   POST /api/upload/image
+ * @desc    Upload student profile picture
+ * @access  Private (Student or College Admin)
+ */
+router.post('/image', auth, uploadStudentImage.single('image'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded'
+            });
+        }
+
+        const imageUrl = req.file.path;
+
+        // If student is uploading their own image
+        if (req.user.role === 'student') {
+            await Student.findOneAndUpdate(
+                { user: req.user._id },
+                { profilePicture: imageUrl }
+            );
+        } else if (req.body.studentId) {
+            // If college admin is uploading/editing for a student
+            await Student.findByIdAndUpdate(
+                req.body.studentId,
+                { profilePicture: imageUrl }
+            );
+        }
+
+        res.json({
+            success: true,
+            message: 'Profile picture uploaded successfully',
+            data: {
+                url: imageUrl,
+                filename: req.file.filename
+            }
+        });
+    } catch (error) {
+        console.error('Image upload error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error uploading image',
+            error: error.message
+        });
+    }
+});
 
 /**
  * @route   POST /api/upload/resume
@@ -126,6 +174,38 @@ router.post('/logo', auth, uploadLogo.single('logo'), async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error uploading logo',
+            error: error.message
+        });
+    }
+});
+
+/**
+ * @route   POST /api/upload/certificate
+ * @desc    Upload student certificate (PDF/Image)
+ * @access  Private (Student)
+ */
+router.post('/certificate', auth, uploadCertificate.single('certificate'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Certificate uploaded successfully',
+            data: {
+                url: req.file.path,
+                filename: req.file.filename
+            }
+        });
+    } catch (error) {
+        console.error('Certificate upload error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error uploading certificate',
             error: error.message
         });
     }

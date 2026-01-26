@@ -69,7 +69,7 @@ export const superAdminAPI = {
     createCollege: (data) => api.post('/super-admin/colleges', data),
     getCollegeDetails: (id) => api.get(`/super-admin/colleges/${id}`),
     updateCollege: (id, data) => api.patch(`/super-admin/colleges/${id}`, data),
-    approveCollege: (id, approved) => api.patch(`/super-admin/colleges/${id}/approve`, { approved }),
+    approveCollege: (id, approved, rejectionReason) => api.patch(`/super-admin/colleges/${id}/approve`, { approved, rejectionReason }),
     toggleCollegeStatus: (id) => api.patch(`/super-admin/colleges/${id}/toggle-active`),
     deleteCollege: (id) => api.delete(`/super-admin/colleges/${id}`),
     restoreCollege: (id) => api.patch(`/super-admin/colleges/${id}/restore`),
@@ -79,7 +79,7 @@ export const superAdminAPI = {
     createCompany: (data) => api.post('/super-admin/companies', data),
     getAgencyDetails: (id) => api.get(`/super-admin/companies/${id}/agency-details`),
     updateCompany: (id, data) => api.patch(`/super-admin/companies/${id}`, data),
-    approveCompany: (id, approved) => api.patch(`/super-admin/companies/${id}/approve`, { approved }),
+    approveCompany: (id, approved, rejectionReason) => api.patch(`/super-admin/companies/${id}/approve`, { approved, rejectionReason }),
     toggleCompanyStatus: (id) => api.patch(`/super-admin/companies/${id}/toggle-active`),
     toggleCompanySuspension: (id, reason, endDate) => api.patch(`/super-admin/companies/${id}/suspend`, { reason, endDate }),
     deleteCompany: (id) => api.delete(`/super-admin/companies/${id}`),
@@ -121,6 +121,7 @@ export const collegeAPI = {
     updateStudent: (id, data) => api.put(`/college/students/${id}`, data),
     deleteStudent: (id) => api.delete(`/college/students/${id}`),
     verifyStudent: (id) => api.patch(`/college/students/${id}/verify`),
+    rejectStudent: (id, rejectionReason) => api.patch(`/college/students/${id}/reject`, { rejectionReason }),
     resetStudentPassword: (id, newPassword) => api.post(`/college/students/${id}/reset-password`, { newPassword }),
     bulkUpload: (students) => api.post('/college/students/bulk', { students }),
     getDepartments: () => api.get('/college/departments'),
@@ -148,6 +149,7 @@ export const collegeAPI = {
 // Company endpoints
 export const companyAPI = {
     getStats: () => api.get('/company/stats'),
+    getProfile: () => api.get('/company/profile'),
     updateProfile: (data) => api.put('/company/profile', data),
     searchStudents: (params) => api.get('/company/students/search', { params }),
     getStudent: (id) => api.get(`/company/students/${id}`),
@@ -155,6 +157,7 @@ export const companyAPI = {
     requestCollegeAccess: (data) => api.post('/company/request-access', data), // Added
     getRequestedColleges: () => api.get('/company/my-colleges'), // Added
     shortlist: (studentId, jobId, notes) => api.post('/company/shortlist', { studentId, jobId, notes }),
+    inviteToRegister: (studentId, jobId, message) => api.post(`/company/students/${studentId}/invite`, { jobId, message }),
     getShortlist: (params) => api.get('/company/shortlist', { params }),
     getShortlistDetails: (id) => api.get(`/company/shortlist/${id}`),
     updateShortlistStatus: (id, data) => api.patch(`/company/shortlist/${id}/status`, data),
@@ -162,13 +165,15 @@ export const companyAPI = {
     removeFromShortlist: (id) => api.delete(`/company/shortlist/${id}`),
     updateApplicationStatus: (id, status) => api.patch(`/company/applications/${id}/status`, { status }),
     getJobApplicants: (jobId, params) => api.get(`/jobs/${jobId}/applicants`, { params }),
+    getAllApplications: (params) => api.get('/company/applications', { params }),
     exportShortlist: (params) => api.get('/company/shortlist/export', { params, responseType: 'blob' }),
     saveSearchFilter: (name, filters) => api.post('/company/search-filters', { name, filters }),
     getSavedFilters: () => api.get('/company/search-filters'),
     deleteSearchFilter: (name) => api.delete(`/company/search-filters/${name}`),
     logResumeView: (id) => api.post(`/company/students/${id}/log-resume-view`),
     getDownloadStats: () => api.get('/company/download-stats'),
-    bulkDownload: (studentIds) => api.post('/company/bulk-download', { studentIds })
+    bulkDownload: (studentIds) => api.post('/company/bulk-download', { studentIds }),
+    getStarStudents: () => api.get('/company/star-students')
 };
 
 // Job endpoints
@@ -194,10 +199,27 @@ export const studentAPI = {
     getJob: (id) => api.get(`/student/jobs/${id}`),
     applyJob: (jobId) => api.post(`/student/jobs/${jobId}/apply`),
     getApplications: (params) => api.get('/student/applications', { params }),
+    getInvitations: () => api.get('/student/invitations'),
     withdrawApplication: (id) => api.delete(`/student/applications/${id}`),
     getNotifications: (params) => api.get('/student/notifications', { params }),
     markNotificationRead: (id) => api.patch(`/student/notifications/${id}/read`),
     markAllNotificationsRead: () => api.patch('/student/notifications/read-all')
+};
+
+// Upload endpoints
+export const uploadAPI = {
+    resume: (formData) => api.post('/upload/resume', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    logo: (formData) => api.post('/upload/logo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    image: (formData) => api.post('/upload/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    certificate: (formData) => api.post('/upload/certificate', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    })
 };
 
 export default api;

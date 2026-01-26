@@ -33,12 +33,30 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     const recentColleges = await College.find()
         .sort({ createdAt: -1 })
         .limit(5)
-        .select('name code isVerified createdAt');
+        .select('name code isVerified createdAt logo');
 
     const recentCompanies = await Company.find()
         .sort({ createdAt: -1 })
         .limit(5)
-        .select('name type isApproved createdAt');
+        .select('name type isApproved createdAt logo');
+
+    // Recent placements for the 3D slider
+    let recentPlacements = await Student.find({ placementStatus: 'placed' })
+        .sort({ 'placementDetails.joiningDate': -1, updatedAt: -1 })
+        .limit(10)
+        .populate('college', 'name logo')
+        .select('name college placementDetails')
+        .lean();
+
+    // Fix company names if they are ObjectIds (from previous bug)
+    const { Company: CompanyModel } = require('../models');
+    recentPlacements = await Promise.all(recentPlacements.map(async (p) => {
+        if (p.placementDetails?.company && p.placementDetails.company.match(/^[0-9a-fA-F]{24}$/)) {
+            const comp = await CompanyModel.findById(p.placementDetails.company).select('name');
+            if (comp) p.placementDetails.company = comp.name;
+        }
+        return p;
+    }));
 
     res.json({
         success: true,
@@ -52,7 +70,8 @@ const getDashboardStats = asyncHandler(async (req, res) => {
             },
             recent: {
                 colleges: recentColleges,
-                companies: recentCompanies
+                companies: recentCompanies,
+                placements: recentPlacements
             }
         }
     });
@@ -91,8 +110,8 @@ const getColleges = asyncHandler(async (req, res) => {
 
     const [colleges, total] = await Promise.all([
         College.find(query)
-            .populate('admin', 'email')
-            .sort({ createdAt: -1 })
+            .populate('admin', 'email isActive createdAt')
+            .select('name code contactEmail phone isActive isVerified isDeleted isRejected createdAt logo')
             .skip(skip)
             .limit(parseInt(limit)),
         College.countDocuments(query)
@@ -118,7 +137,7 @@ const getColleges = asyncHandler(async (req, res) => {
  */
 const approveCollege = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { approved } = req.body;
+    const { approved, rejectionReason } = req.body;
 
     const college = await College.findById(id);
     if (!college) {
@@ -136,12 +155,14 @@ const approveCollege = asyncHandler(async (req, res) => {
         college.isRejected = false; // Clear rejection if previously rejected
         college.rejectedAt = null;
         college.rejectedBy = null;
+        college.rejectionReason = null;
     } else {
         // Reject the college
         college.isVerified = false;
         college.isRejected = true;
         college.rejectedAt = new Date();
         college.rejectedBy = req.userId;
+        college.rejectionReason = rejectionReason || 'No reason provided';
     }
     await college.save();
 
@@ -190,7 +211,8 @@ const getCompanies = asyncHandler(async (req, res) => {
 
     const [companies, total] = await Promise.all([
         Company.find(query)
-            .populate('user', 'email')
+            .populate('user', 'email isActive createdAt')
+            .select('name type industry contactPerson isActive isApproved isDeleted isRejected createdAt logo')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit)),
@@ -217,7 +239,7 @@ const getCompanies = asyncHandler(async (req, res) => {
  */
 const approveCompany = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { approved } = req.body;
+    const { approved, rejectionReason } = req.body;
 
     const company = await Company.findById(id);
     if (!company) {
@@ -234,11 +256,13 @@ const approveCompany = asyncHandler(async (req, res) => {
         company.isRejected = false;
         company.rejectedAt = null;
         company.rejectedBy = null;
+        company.rejectionReason = null;
     } else {
         company.isApproved = false;
         company.isRejected = true;
         company.rejectedAt = new Date();
         company.rejectedBy = req.userId;
+        company.rejectionReason = rejectionReason || 'No reason provided';
     }
     await company.save();
 
@@ -258,12 +282,16 @@ const approveCompany = asyncHandler(async (req, res) => {
  * @access  Super Admin
  */
 const getAllUsers = asyncHandler(async (req, res) => {
-    const { role, status, page = 1, limit = 10 } = req.query;
+    const { role, status, search, page = 1, limit = 10 } = req.query;
 
     const query = {};
     if (role) query.role = role;
     if (status === 'active') query.isActive = true;
     if (status === 'inactive') query.isActive = false;
+
+    if (search) {
+        query.email = { $regex: search, $options: 'i' };
+    }
 
     const skip = (page - 1) * limit;
 
@@ -1444,7 +1472,84 @@ const getAgencyDetails = asyncHandler(async (req, res) => {
 });
 
 
+/**
+ * @desc    Verify student
+ * @route   PATCH /api/super-admin/students/:id/verify
+ * @access  Super Admin
+ */
+const verifyStudent = asyncHandler(async (req, res) => {
+    const { id } = req.params;
 
+    const student = await Student.findById(id);
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
+    if (student.isVerified) {
+        return res.status(400).json({
+            success: false,
+            message: 'Student is already verified'
+        });
+    }
+
+    student.isVerified = true;
+    student.verifiedAt = new Date();
+    student.verifiedBy = req.userId;
+    await student.save();
+
+    // Update user status
+    await User.findByIdAndUpdate(student.user, { isApproved: true });
+
+    res.json({
+        success: true,
+        message: 'Student verified successfully',
+        data: { isVerified: student.isVerified }
+    });
+});
+
+/**
+ * @desc    Reject student
+ * @route   PATCH /api/super-admin/students/:id/reject
+ * @access  Super Admin
+ */
+const rejectStudent = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { reason } = req.body; // Optional reason for rejection
+
+    const student = await Student.findById(id);
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
+    if (student.isRejected) {
+        return res.status(400).json({
+            success: false,
+            message: 'Student is already rejected'
+        });
+    }
+
+    student.isRejected = true;
+    student.rejectedAt = new Date();
+    student.rejectedBy = req.userId;
+    student.rejectionReason = reason || 'Rejected by Super Admin';
+    student.isVerified = false; // Ensure student is not verified if rejected
+    await student.save();
+
+    // Update user status to not approved and inactive
+    await User.findByIdAndUpdate(student.user, { isApproved: false, isActive: false });
+
+    res.json({
+        success: true,
+        message: 'Student rejected successfully',
+        data: { isRejected: student.isRejected }
+    });
+});
 
 
 /**

@@ -15,10 +15,12 @@ router.put('/profile', studentController.updateProfile);
 
 // Jobs
 router.get('/jobs', studentController.getEligibleJobs);
+router.get('/jobs/:id', validateObjectId('id'), studentController.getJobDetail);
 router.post('/jobs/:id/apply', validateObjectId('id'), studentController.applyForJob);
 
 // Applications
 router.get('/applications', studentController.getApplications);
+router.get('/invitations', studentController.getInvitations);
 
 // Notifications
 router.get('/notifications', studentController.getNotifications);

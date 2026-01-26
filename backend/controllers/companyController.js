@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { Company, Student, Application, Job, College } = require('../models');
 const { asyncHandler } = require('../middleware');
 
@@ -28,7 +29,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
         Application.countDocuments({ job: { $in: companyJobIds }, status: 'hired' }),
         Company.findById(companyId).populate({
             path: 'collegeAccess.college',
-            select: 'name'
+            select: 'name logo university code city state'
         })
     ]);
 
@@ -129,11 +130,100 @@ const getDashboardStats = asyncHandler(async (req, res) => {
         .limit(10)
         .select('status updatedAt student job');
 
+    // Hiring Funnel (Applied -> Shortlisted -> Interviewed -> Selected)
+    const hiringFunnel = await Application.aggregate([
+        { $match: { job: { $in: companyJobIds } } },
+        {
+            $group: {
+                _id: '$status',
+                count: { $sum: 1 }
+            }
+        }
+    ]);
+
+    // College-wise Activity Snapshot
+    const collegeActivity = await Application.aggregate([
+        { $match: { job: { $in: companyJobIds } } },
+        {
+            $lookup: {
+                from: 'students',
+                localField: 'student',
+                foreignField: '_id',
+                as: 'studentData'
+            }
+        },
+        { $unwind: '$studentData' },
+        {
+            $lookup: {
+                from: 'colleges',
+                localField: 'studentData.college',
+                foreignField: '_id',
+                as: 'collegeData'
+            }
+        },
+        { $unwind: '$collegeData' },
+        {
+            $group: {
+                _id: '$collegeData._id',
+                collegeName: { $first: '$collegeData.name' },
+                applications: { $sum: 1 },
+                shortlisted: {
+                    $sum: { $cond: [{ $in: ['$status', ['shortlisted', 'interviewed', 'offered', 'hired']] }, 1, 0] }
+                },
+                selections: {
+                    $sum: { $cond: [{ $eq: ['$status', 'hired'] }, 1, 0] }
+                }
+            }
+        },
+        { $sort: { applications: -1 } },
+        { $limit: 10 }
+    ]);
+
     // Recent jobs
     const recentJobs = await Job.find({ company: companyId })
         .sort({ createdAt: -1 })
         .limit(5)
         .select('title type status stats applicationDeadline');
+
+    // Registered Jobs (applications by Job and College)
+    const registeredJobsData = await Application.aggregate([
+        { $match: { job: { $in: companyJobIds } } },
+        {
+            $lookup: {
+                from: 'jobs',
+                localField: 'job',
+                foreignField: '_id',
+                as: 'jobData'
+            }
+        },
+        { $unwind: '$jobData' },
+        {
+            $lookup: {
+                from: 'students',
+                localField: 'student',
+                foreignField: '_id',
+                as: 'studentData'
+            }
+        },
+        { $unwind: '$studentData' },
+        {
+            $lookup: {
+                from: 'colleges',
+                localField: 'studentData.college',
+                foreignField: '_id',
+                as: 'collegeData'
+            }
+        },
+        { $unwind: '$collegeData' },
+        {
+            $group: {
+                _id: { job: '$jobData.title', college: '$collegeData.name' },
+                count: { $sum: 1 }
+            }
+        },
+        { $sort: { count: -1 } },
+        { $limit: 10 }
+    ]);
 
     res.json({
         success: true,
@@ -160,6 +250,16 @@ const getDashboardStats = asyncHandler(async (req, res) => {
                     value: item.count
                 }))
             },
+            registeredJobs: registeredJobsData.map(item => ({
+                jobName: item._id.job,
+                collegeName: item._id.college,
+                count: item.count
+            })),
+            hiringFunnel: hiringFunnel.reduce((acc, curr) => {
+                acc[curr._id] = curr.count;
+                return acc;
+            }, {}),
+            collegeActivity,
             recentActivity: recentActivity.map(activity => ({
                 id: activity._id,
                 type: activity.status,
@@ -199,11 +299,12 @@ const searchStudents = asyncHandler(async (req, res) => {
     const company = await Company.findById(companyId);
 
     // Base query - only verified students
-    const query = { isVerified: true };
+    const query = { 
+        isVerified: true
+    };
 
     // Filter by approved colleges only
     if (company.type === 'placement_agency') {
-        // For agencies, only show students from colleges they have access to
         const allowedCollegeIds = company.collegeAccess
             ?.filter(ca => ca.status === 'approved')
             .map(ca => ca.college) || [];
@@ -211,7 +312,6 @@ const searchStudents = asyncHandler(async (req, res) => {
         if (allowedCollegeIds.length > 0) {
             query.college = { $in: allowedCollegeIds };
         } else {
-            // No access to any college
             return res.json({
                 success: true,
                 data: {
@@ -221,9 +321,21 @@ const searchStudents = asyncHandler(async (req, res) => {
             });
         }
     } else {
-        // For companies, show students from all verified colleges
-        const verifiedColleges = await College.find({ isVerified: true, isActive: true }).distinct('_id');
-        query.college = { $in: verifiedColleges };
+        const approvedCollegeIds = company.collegeAccess
+            ?.filter(ca => ca.status === 'approved')
+            .map(ca => ca.college.toString()) || [];
+
+        const eligibleColleges = await College.find({
+            isVerified: true,
+            isActive: true,
+            $or: [
+                { 'settings.placementRules.showDataWithoutApproval': true },
+                { _id: { $in: approvedCollegeIds } },
+                { 'settings.placementRules.showDataWithoutApproval': { $exists: false } }
+            ]
+        }).distinct('_id');
+
+        query.college = { $in: eligibleColleges };
     }
 
     // Apply filters
@@ -246,17 +358,17 @@ const searchStudents = asyncHandler(async (req, res) => {
         query.placementStatus = placementStatus;
     }
     if (college) {
-        query.college = college;
+        query.college = new mongoose.Types.ObjectId(college);
     }
 
-    // Experience filter (internships/projects)
+    // Experience filter
     if (experience === 'internship') {
         query['internships.0'] = { $exists: true };
     } else if (experience === 'projects') {
         query['projects.0'] = { $exists: true };
     }
 
-    // Keyword search across multiple fields
+    // Keyword search
     if (keyword || search) {
         const searchTerm = keyword || search;
         query.$or = [
@@ -272,15 +384,105 @@ const searchStudents = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
     const sortOrder = order === 'asc' ? 1 : -1;
 
-    const [students, total] = await Promise.all([
-        Student.find(query)
-            .populate('college', 'name code city')
-            .select('name email department batch cgpa skills placementStatus resumeUrl linkedinUrl githubUrl phone')
-            .sort({ [sortBy]: sortOrder })
-            .skip(skip)
-            .limit(parseInt(limit)),
-        Student.countDocuments(query)
-    ]);
+    // Use aggregation to find registered jobs for this company
+    const pipeline = [
+        { $match: query },
+        {
+            $lookup: {
+                from: 'applications',
+                let: { studentId: '$_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ['$student', '$$studentId'] }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'jobs',
+                            localField: 'job',
+                            foreignField: '_id',
+                            as: 'jobData'
+                        }
+                    },
+                    { $unwind: '$jobData' },
+                    {
+                        $match: {
+                            'jobData.company': companyId
+                        }
+                    },
+                    { $project: { 'jobData.title': 1, 'jobData._id': 1 } }
+],
+                as: 'registrations'
+            }
+        },
+        {
+            $lookup: {
+                from: 'invitations',
+                let: { studentId: '$_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$student', '$$studentId'] },
+                                    { $eq: ['$company', companyId] }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'jobs',
+                            localField: 'job',
+                            foreignField: '_id',
+                            as: 'jobData'
+                        }
+                    },
+                    { $unwind: '$jobData' },
+                    { $project: { 'jobData.title': 1, 'jobData._id': 1, status: 1 } }
+                ],
+                as: 'invitations'
+            }
+        },
+        {
+            $addFields: {
+                registeredJob: { $arrayElemAt: ['$registrations.jobData.title', 0] },
+                registeredJobId: { $arrayElemAt: ['$registrations.jobData._id', 0] },
+                hasInvitation: { $gt: [{ $size: '$invitations' }, 0] },
+                invitationJob: { $arrayElemAt: ['$invitations.jobData.title', 0] },
+                invitationJobId: { $arrayElemAt: ['$invitations.jobData._id', 0] }
+            }
+        },
+        {
+            $lookup: {
+                from: 'colleges',
+                localField: 'college',
+                foreignField: '_id',
+                as: 'college'
+            }
+        },
+        { $unwind: '$college' },
+        { 
+            $project: { 
+                name: 1, email: 1, department: 1, batch: 1, cgpa: 1, skills: 1, 
+                placementStatus: 1, resumeUrl: 1, linkedinUrl: 1, githubUrl: 1, 
+                phone: 1, profilePicture: 1, profileCompleteness: 1, registeredJob: 1, registeredJobId: 1,
+                college: { name: 1, code: 1, city: 1, state: 1, logo: 1, university: 1 }
+            } 
+        },
+        { $sort: { [sortBy]: sortOrder } },
+        {
+            $facet: {
+                metadata: [{ $count: 'total' }],
+                data: [{ $skip: skip }, { $limit: parseInt(limit) }]
+            }
+        }
+    ];
+
+    const results = await Student.aggregate(pipeline);
+    const students = results[0].data;
+    const total = results[0].metadata[0]?.total || 0;
 
     res.json({
         success: true,
@@ -306,7 +508,7 @@ const getStudentProfile = asyncHandler(async (req, res) => {
     const company = await Company.findById(companyId);
 
     const student = await Student.findById(req.params.id)
-        .populate('college', 'name code city');
+        .populate('college', 'name code city state logo university');
 
     if (!student) {
         return res.status(404).json({
@@ -315,12 +517,19 @@ const getStudentProfile = asyncHandler(async (req, res) => {
         });
     }
 
+    // Get applications from this student for THIS company
+    const applications = await Application.find({
+        student: student._id,
+        job: { $in: await Job.find({ company: companyId }).distinct('_id') }
+    }).populate('job', 'title type status');
+
     if (!student.isVerified) {
         return res.status(403).json({
             success: false,
             message: 'Student profile is not verified'
         });
     }
+
 
     // Check if company has access to this student's college
     if (company.type === 'placement_agency') {
@@ -354,7 +563,16 @@ const getStudentProfile = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        data: student
+        data: {
+            ...student.toObject(),
+            applications: applications.map(app => ({
+                id: app._id,
+                jobId: app.job?._id,
+                jobTitle: app.job?.title,
+                status: app.status,
+                appliedAt: app.createdAt
+            }))
+        }
     });
 });
 
@@ -364,14 +582,27 @@ const getStudentProfile = asyncHandler(async (req, res) => {
  * @access  Company (Approved)
  */
 const shortlistStudent = asyncHandler(async (req, res) => {
-    const { studentId, jobId, notes } = req.body;
+    let { studentId, jobId, notes } = req.body;
     const companyId = req.user.companyProfile._id;
 
-    // Validate required fields
+    // Validate IDs
     if (!studentId || !jobId) {
         return res.status(400).json({
             success: false,
             message: 'Student ID and Job ID are required'
+        });
+    }
+
+    // STRICT CHECK: Student MUST have applied for this specific job
+    const application = await Application.findOne({
+        student: studentId,
+        job: jobId
+    });
+
+    if (!application) {
+        return res.status(400).json({
+            success: false,
+            message: 'Candidate must be registered for this job drive before they can be shortlisted for the selection pipeline.'
         });
     }
 
@@ -380,7 +611,7 @@ const shortlistStudent = asyncHandler(async (req, res) => {
     if (!job) {
         return res.status(404).json({
             success: false,
-            message: 'Job not found or access denied'
+            message: 'Job drive not found or access denied'
         });
     }
 
@@ -393,43 +624,24 @@ const shortlistStudent = asyncHandler(async (req, res) => {
         });
     }
 
-    // Check if already applied/shortlisted
-    let application = await Application.findOne({ student: studentId, job: jobId });
-
-    if (application) {
-        // Prevent duplicate shortlisting
-        if (application.status === 'shortlisted') {
-            return res.status(400).json({
-                success: false,
-                message: 'Student is already shortlisted for this job'
-            });
-        }
-
-        // Update existing application
-        application.status = 'shortlisted';
-        application.companyNotes = notes || '';
-        application.lastUpdatedBy = req.userId;
-        await application.save();
-    } else {
-        // Create new application
-        application = await Application.create({
-            student: studentId,
-            job: jobId,
-            status: 'shortlisted',
-            companyNotes: notes || '',
-            lastUpdatedBy: req.userId,
-            resumeSnapshot: {
-                url: student.resumeUrl || '',
-                cgpa: student.cgpa || 0,
-                skills: student.skills || []
-            }
-        });
-
-        // Update job stats
-        await Job.findByIdAndUpdate(jobId, {
-            $inc: { 'stats.shortlisted': 1 }
+    // Prevent duplicate shortlisting
+    if (application.status === 'shortlisted') {
+        return res.status(400).json({
+            success: false,
+            message: 'Student is already shortlisted for this job'
         });
     }
+
+    // Update application to shortlisted
+    application.status = 'shortlisted';
+    application.companyNotes = notes || '';
+    application.lastUpdatedBy = req.userId;
+    await application.save();
+
+    // Update job stats if this is the first time they are being shortlisted
+    await Job.findByIdAndUpdate(jobId, {
+        $inc: { 'stats.shortlisted': 1 }
+    });
 
     // Update student status if not placed
     if (student.placementStatus === 'not_placed') {
@@ -440,8 +652,110 @@ const shortlistStudent = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        message: 'Student shortlisted successfully',
-        data: application
+        message: 'Student shortlisted successfully'
+    });
+});
+
+/**
+ * @desc    Invite a student to register for a job drive
+ * @route   POST /api/company/students/:id/invite
+ * @access  Company (Approved)
+ */
+const inviteToRegister = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { jobId, message } = req.body;
+    const { Notification, Student, Job, ActivityLog, User, Invitation, Application } = require('../models');
+    const companyId = req.user.companyProfile._id;
+
+    if (!jobId) {
+        return res.status(400).json({
+            success: false,
+            message: 'Job ID is required'
+        });
+    }
+
+    const [student, job] = await Promise.all([
+        Student.findById(id),
+        Job.findOne({ _id: jobId, company: companyId })
+    ]);
+
+    if (!student || !job) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student or Job not found'
+        });
+    }
+
+    // Check if student has already applied or been shortlisted for this job
+    const existingApplication = await Application.findOne({
+        student: id,
+        job: jobId
+    });
+
+    if (existingApplication) {
+        return res.status(400).json({
+            success: false,
+            message: 'This student has already registered for this job drive'
+        });
+    }
+
+    // Check if invitation already sent
+    const existingInvitation = await Invitation.findOne({
+        student: id,
+        job: jobId,
+        company: companyId
+    });
+
+    if (existingInvitation) {
+        return res.status(400).json({
+            success: false,
+            message: 'Recruitment offer already sent to this student for this job'
+        });
+    }
+
+    // Find the user account linked to this student
+    const studentUser = await User.findOne({ studentProfile: id });
+    
+    if (!studentUser) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student user account not found'
+        });
+    }
+
+    // Create invitation record
+    await Invitation.create({
+        student: id,
+        job: jobId,
+        company: companyId,
+        message: message,
+        sentBy: req.userId
+    });
+
+    // Create notification for the student
+    await Notification.create({
+        recipient: studentUser._id,
+        type: 'system_announcement',
+        title: `Recruitment Offer: ${job.title}`,
+        message: message || `${req.user.companyProfile.name} thinks you're a great fit for the ${job.title} role! Click to view details and register.`,
+        link: `/student/jobs/${jobId}`,
+        relatedModel: 'Job',
+        relatedId: jobId,
+        priority: 'high'
+    });
+
+    // Log the invitation as an activity
+    await ActivityLog.create({
+        user: req.userId,
+        action: 'invite_student',
+        targetModel: 'Student',
+        targetId: id,
+        metadata: { jobTitle: job.title, jobId: jobId }
+    });
+
+    res.json({
+        success: true,
+        message: 'Recruitment offer sent successfully'
     });
 });
 
@@ -496,10 +810,13 @@ const updateApplicationStatus = asyncHandler(async (req, res) => {
             $inc: { 'stats.hired': 1 }
         });
 
+        // Get company name
+        const hiringCompany = await Company.findById(application.job.company);
+        
         // Update student placement status
         await Student.findByIdAndUpdate(application.student, {
             placementStatus: 'placed',
-            'placementDetails.company': application.job.company,
+            'placementDetails.company': hiringCompany ? hiringCompany.name : 'Unknown Company',
             'placementDetails.role': application.offer?.role,
             'placementDetails.package': application.offer?.package
         });
@@ -593,18 +910,105 @@ const updateProfile = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc    Get company profile
+ * @route   GET /api/company/profile
+ * @access  Company
+ */
+const getProfile = asyncHandler(async (req, res) => {
+    const companyId = req.user.companyProfile._id;
+    const company = await Company.findById(companyId);
+
+    if (!company) {
+        return res.status(404).json({
+            success: false,
+            message: 'Company not found'
+        });
+    }
+
+    res.json({
+        success: true,
+        data: company
+    });
+});
+
+/**
  * @desc    Get all verified colleges for filter dropdown
  * @route   GET /api/company/colleges
  * @access  Company (Approved)
  */
 const getColleges = asyncHandler(async (req, res) => {
+    const companyId = req.user.companyProfile._id;
+    const company = await Company.findById(companyId);
+
     const colleges = await College.find({ isVerified: true })
-        .select('name code city')
-        .sort({ name: 1 });
+        .select('name code city state logo university settings.placementRules.showDataWithoutApproval')
+        .sort({ name: 1 })
+        .lean();
+
+    // Add access status to each college
+    const collegesWithStatus = colleges.map(college => {
+        const access = company.collegeAccess?.find(ca => ca.college.toString() === college._id.toString());
+        
+        // Determine visibility based on setting
+        const showDataWithoutApproval = college.settings?.placementRules?.showDataWithoutApproval !== false; // Default true
+        
+        return {
+            ...college,
+            accessStatus: access ? access.status : 'none', // none, pending, approved, rejected
+            isLocked: !showDataWithoutApproval && (!access || access.status !== 'approved')
+        };
+    });
 
     res.json({
         success: true,
-        data: colleges
+        data: collegesWithStatus
+    });
+});
+
+/**
+ * @desc    Request access to a college
+ * @route   POST /api/company/request-access
+ * @access  Company (Approved)
+ */
+const requestCollegeAccess = asyncHandler(async (req, res) => {
+    const { collegeId } = req.body;
+    const companyId = req.user.companyProfile._id;
+
+    if (!collegeId) {
+        return res.status(400).json({
+            success: false,
+            message: 'College ID is required'
+        });
+    }
+
+    const company = await Company.findById(companyId);
+
+    // Check if request already exists
+    const existingAccess = company.collegeAccess?.find(ca => ca.college.toString() === collegeId);
+    if (existingAccess) {
+        return res.status(400).json({
+            success: false,
+            message: `Request already exists with status: ${existingAccess.status}`
+        });
+    }
+
+    // Add request
+    company.collegeAccess = company.collegeAccess || [];
+    company.collegeAccess.push({
+        college: collegeId,
+        status: 'pending',
+        requestedAt: new Date()
+    });
+
+    await company.save();
+
+    res.json({
+        success: true,
+        message: 'Partnership request sent successfully',
+        data: {
+            collegeId,
+            status: 'pending'
+        }
     });
 });
 
@@ -821,43 +1225,6 @@ const getShortlistDetails = asyncHandler(async (req, res) => {
     });
 });
 
-/**
- * @desc    Request access to a college
- * @route   POST /api/company/request-access
- * @access  Company
- */
-const requestCollegeAccess = asyncHandler(async (req, res) => {
-    const companyId = req.user.companyProfile._id;
-    const { collegeId } = req.body;
-
-    if (!collegeId) {
-        return res.status(400).json({ success: false, message: 'College ID is required' });
-    }
-
-    const company = await Company.findById(companyId);
-    
-    // Check if already requested
-    const existingRequest = company.collegeAccess.find(ca => ca.college.toString() === collegeId);
-    if (existingRequest) {
-        return res.status(400).json({ 
-            success: false, 
-            message: `Request already exists with status: ${existingRequest.status}` 
-        });
-    }
-
-    company.collegeAccess.push({
-        college: collegeId,
-        status: 'pending',
-        requestedAt: new Date()
-    });
-
-    await company.save();
-
-    res.json({
-        success: true,
-        message: 'Access request sent successfully'
-    });
-});
 
 /**
  * @desc    Get list of colleges with access status
@@ -1230,26 +1597,136 @@ const bulkDownloadStudents = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * @desc    Get star students for company dashboard
+ * @route   GET /api/company/star-students
+ * @access  Company (Approved)
+ */
+const getStarStudents = asyncHandler(async (req, res) => {
+    const { Student, College } = require('../models');
+    const companyId = req.user.companyProfile._id;
+    
+    // Get all star students (not filtered by college access for showcase purposes)
+    const starStudents = await Student.find({
+        isStarStudent: true,
+        isRejected: false
+    })
+    .populate('college', 'name logo city state')
+    .select('name email department batch cgpa skills profilePicture resumeUrl linkedinUrl githubUrl')
+    .limit(20)
+    .sort({ starredAt: -1 });
+
+    res.json({
+        success: true,
+        data: starStudents
+    });
+});
+
+/**
+ * @desc    Get all applications (registrations) across all jobs for company
+ * @route   GET /api/company/applications
+ * @access  Company (Approved)
+ */
+const getApplications = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, status, search } = req.query;
+    const companyId = req.user.companyProfile._id;
+    const skip = (page - 1) * limit;
+
+    // Get all job IDs belonging to this company
+    const jobIds = await Job.find({ company: companyId }).distinct('_id');
+
+    const query = { job: { $in: jobIds } };
+    if (status) query.status = status;
+
+    // Base pipeline for search and population
+    const pipeline = [
+        { $match: query },
+        {
+            $lookup: {
+                from: 'students',
+                localField: 'student',
+                foreignField: '_id',
+                as: 'studentData'
+            }
+        },
+        { $unwind: '$studentData' },
+        {
+            $lookup: {
+                from: 'jobs',
+                localField: 'job',
+                foreignField: '_id',
+                as: 'jobData'
+            }
+        },
+        { $unwind: '$jobData' }
+    ];
+
+    // Apply search if provided
+    if (search) {
+        pipeline.push({
+            $match: {
+                $or: [
+                    { 'studentData.name.firstName': { $regex: search, $options: 'i' } },
+                    { 'studentData.name.lastName': { $regex: search, $options: 'i' } },
+                    { 'studentData.email': { $regex: search, $options: 'i' } },
+                    { 'jobData.title': { $regex: search, $options: 'i' } }
+                ]
+            }
+        });
+    }
+
+    // Sorting and Pagination
+    pipeline.push(
+        { $sort: { createdAt: -1 } },
+        {
+            $facet: {
+                metadata: [{ $count: 'total' }],
+                data: [{ $skip: skip }, { $limit: parseInt(limit) }]
+            }
+        }
+    );
+
+    const results = await Application.aggregate(pipeline);
+    const applications = results[0].data;
+    const total = results[0].metadata[0]?.total || 0;
+
+    res.json({
+        success: true,
+        data: {
+            applications,
+            pagination: {
+                current: parseInt(page),
+                pages: Math.ceil(total / limit),
+                total
+            }
+        }
+    });
+});
+
 module.exports = {
     getDashboardStats,
     searchStudents,
     getStudentProfile,
     shortlistStudent,
+    inviteToRegister,
     updateApplicationStatus,
+    getApplications,
     getShortlistedCandidates,
+    getProfile,
     updateProfile,
     getColleges,
     exportShortlist,
     saveSearchFilter,
     getSavedSearchFilters,
     deleteSearchFilter,
-    getShortlistDetails,
     requestCollegeAccess,
+    getShortlistDetails,
     getRequestedColleges,
     updateShortlistStatus,
     addShortlistNote,
     removeFromShortlist,
     logResumeView,
     getDownloadStatistics,
-    bulkDownloadStudents
+    bulkDownloadStudents,
+    getStarStudents
 };

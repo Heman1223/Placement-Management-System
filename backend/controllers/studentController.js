@@ -55,7 +55,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
  */
 const getProfile = asyncHandler(async (req, res) => {
     const student = await Student.findOne({ user: req.user._id })
-        .populate('college', 'name code city state')
+        .populate('college', 'name code university address contactEmail phone website logo description stats departments settings')
         .lean();
 
     if (!student) {
@@ -130,11 +130,38 @@ const getEligibleJobs = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, type, search } = req.query;
     const skip = (page - 1) * limit;
 
+    // Get college settings to check privacy/partnership policy
+    const { College: CollegeModel, Company: CompanyModel } = require('../models');
+    const college = await CollegeModel.findById(student.college);
+    
+    if (!college) {
+        return res.status(404).json({
+            success: false,
+            message: 'College information not found'
+        });
+    }
+
+    const showAllPublicJobs = college.settings?.placementRules?.showDataWithoutApproval;
+
+    // Get companies partnered with this college
+    const partneredCompanyIds = await CompanyModel.find({
+        'collegeAccess': {
+            $elemMatch: {
+                college: student.college,
+                status: 'approved'
+            }
+        }
+    }).distinct('_id');
+
     const query = {
         status: 'open',
         applicationDeadline: { $gte: new Date() },
         $or: [
-            { isPlacementDrive: { $ne: true } },
+            // Case 1: All public jobs (not drives) if college allows it
+            ...(showAllPublicJobs ? [{ isPlacementDrive: { $ne: true } }] : []),
+            // Case 2: Only jobs from partnered companies (if not showing all)
+            ...(!showAllPublicJobs ? [{ isPlacementDrive: { $ne: true }, company: { $in: partneredCompanyIds } }] : []),
+            // Case 3: Placement drives strictly for this student's college
             { isPlacementDrive: true, college: student.college }
         ],
         'eligibility.allowedDepartments': student.department,
@@ -298,6 +325,21 @@ const applyForJob = asyncHandler(async (req, res) => {
         $inc: { 'stats.totalApplications': 1 }
     });
 
+    // Notify company about the new application
+    const company = await CompanyModel.findById(job.company);
+    if (company && company.user) {
+        await Notification.create({
+            recipient: company.user,
+            type: 'new_application',
+            title: 'New Application Received',
+            message: `${student.name.firstName} ${student.name.lastName} has registered for the ${job.title} drive.`,
+            link: `/company/jobs/${job._id}/applicants`,
+            relatedModel: 'Application',
+            relatedId: application._id,
+            priority: 'medium'
+        });
+    }
+
     res.status(201).json({
         success: true,
         message: 'Application submitted successfully',
@@ -442,13 +484,91 @@ function calculateProfileCompleteness(student) {
     return Math.round((completed / total) * 100);
 }
 
+/**
+ * @desc    Get job detail for student
+ * @route   GET /api/student/jobs/:id
+ * @access  Private (Student)
+ */
+const getJobDetail = asyncHandler(async (req, res) => {
+    const student = await Student.findOne({ user: req.user._id });
+    if (!student) {
+        return res.status(404).json({ success: false, message: 'Student profile not found' });
+    }
+
+    const job = await Job.findById(req.params.id).populate('company', 'name logo industry description type website city');
+    if (!job) {
+        return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    // Check if the job is and should be accessible to this student
+    // (Similar logic as getEligibleJobs but for a specific ID)
+    const { College: CollegeModel } = require('../models');
+    const college = await CollegeModel.findById(student.college);
+    const showAllPublicJobs = college?.settings?.placementRules?.showDataWithoutApproval;
+
+    let isAccessible = false;
+    if (job.isPlacementDrive) {
+        isAccessible = job.college.toString() === student.college.toString();
+    } else {
+        if (showAllPublicJobs) {
+            isAccessible = true;
+        } else {
+            const { Company: CompanyModel } = require('../models');
+            const mentoredCompanyIds = await CompanyModel.find({
+                'collegeAccess': {
+                    $elemMatch: { college: student.college, status: 'approved' }
+                }
+            }).distinct('_id');
+            isAccessible = mentoredCompanyIds.some(id => id.equals(job.company._id));
+        }
+    }
+
+    if (!isAccessible) {
+        return res.status(403).json({
+            success: false,
+            message: 'You do not have access to view this job drive details'
+        });
+    }
+
+    res.json({
+        success: true,
+        data: job
+    });
+});
+
+/**
+ * @desc    Get recruitment offers (invitations) for student
+ * @route   GET /api/student/invitations
+ * @access  Private (Student)
+ */
+const getInvitations = asyncHandler(async (req, res) => {
+    const student = await Student.findOne({ user: req.user._id });
+    if (!student) {
+        return res.status(404).json({ success: false, message: 'Student profile not found' });
+    }
+
+    const { Invitation } = require('../models');
+    const invitations = await Invitation.find({ student: student._id })
+        .populate('company', 'name logo industry')
+        .populate('job', 'title type status applicationDeadline')
+        .sort({ sentAt: -1 })
+        .lean();
+
+    res.json({
+        success: true,
+        data: invitations
+    });
+});
+
 module.exports = {
     getDashboardStats,
     getProfile,
     updateProfile,
     getEligibleJobs,
+    getJobDetail,
     applyForJob,
     getApplications,
+    getInvitations,
     getNotifications,
     markNotificationRead
 };

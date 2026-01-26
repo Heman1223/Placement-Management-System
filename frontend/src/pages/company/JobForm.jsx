@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { jobAPI, companyAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
@@ -10,6 +10,7 @@ import './JobForm.css';
 
 const JobForm = () => {
     const { id } = useParams();
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const isEdit = Boolean(id);
 
@@ -25,6 +26,7 @@ const JobForm = () => {
         workMode: 'onsite',
         salary: { min: '', max: '', period: 'per_annum' },
         duration: { value: '', unit: 'months' },
+        requirements: [''],
         eligibility: {
             minCgpa: '',
             maxBacklogs: 0,
@@ -44,7 +46,17 @@ const JobForm = () => {
     useEffect(() => {
         if (isEdit) fetchJob();
         fetchApprovedColleges();
-    }, [id]);
+
+        // Handle auto-fill from URL participants (for Schedule Drive)
+        const collegeId = searchParams.get('collegeId');
+        if (collegeId && !isEdit) {
+            setIsPlacementDrive(true);
+            setFormData(prev => ({
+                ...prev,
+                college: collegeId
+            }));
+        }
+    }, [id, searchParams]);
 
     const fetchApprovedColleges = async () => {
         try {
@@ -117,6 +129,27 @@ const JobForm = () => {
         }));
     };
 
+    const addRequirement = () => {
+        setFormData(prev => ({
+            ...prev,
+            requirements: [...prev.requirements, '']
+        }));
+    };
+
+    const updateRequirement = (index, value) => {
+        setFormData(prev => ({
+            ...prev,
+            requirements: prev.requirements.map((req, i) => i === index ? value : req)
+        }));
+    };
+
+    const removeRequirement = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            requirements: prev.requirements.filter((_, i) => i !== index)
+        }));
+    };
+
 
 
     const removeDepartment = (index) => {
@@ -161,7 +194,8 @@ const JobForm = () => {
         const data = {
             ...formData,
             status: publish ? 'open' : formData.status,
-            locations: formData.locations.filter(l => l.trim())
+            locations: formData.locations.filter(l => l.trim()),
+            requirements: formData.requirements.filter(r => r.trim())
         };
 
         try {
@@ -323,6 +357,29 @@ const JobForm = () => {
                         ))}
                         <Button type="button" variant="ghost" icon={Plus} onClick={addLocation}>
                             Add Location
+                        </Button>
+                    </div>
+                </Card>
+
+                {/* Requirements */}
+                <Card title="Job Requirements" className="form-card">
+                    <div className="locations-list">
+                        {formData.requirements.map((req, index) => (
+                            <div key={index} className="location-item">
+                                <Input
+                                    value={req}
+                                    onChange={(e) => updateRequirement(index, e.target.value)}
+                                    placeholder="e.g., Good communication skills"
+                                />
+                                {formData.requirements.length > 1 && (
+                                    <button type="button" className="remove-btn" onClick={() => removeRequirement(index)}>
+                                        <Trash2 size={18} />
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                        <Button type="button" variant="ghost" icon={Plus} onClick={addRequirement}>
+                            Add Requirement
                         </Button>
                     </div>
                 </Card>

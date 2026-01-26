@@ -162,3 +162,34 @@ select.input {
         font-size: 0.8125rem;
     }
 }
+
+/* Dark Theme Overrides for Admin Portal */
+.layout-admin-dark .input-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.layout-admin-dark .input {
+    background: rgba(30, 41, 59, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+}
+
+.layout-admin-dark .input:focus {
+    border-color: var(--primary-500) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+}
+
+.layout-admin-dark .input::placeholder {
+    color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.layout-admin-dark select.input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+}
+
+.layout-admin-dark .input:disabled {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.4);
+}

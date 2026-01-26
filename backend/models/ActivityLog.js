@@ -13,6 +13,7 @@ const activityLogSchema = new mongoose.Schema({
             'view_student',
             'download_student_data',
             'shortlist_student',
+            'invite_student',
             'approve_college',
             'approve_company',
             'bulk_upload',

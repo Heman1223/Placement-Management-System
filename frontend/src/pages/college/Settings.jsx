@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collegeAPI } from '../../services/api';
+import { collegeAPI, uploadAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { Settings as SettingsIcon, Building2, Save, RefreshCw, Shield, Users } from 'lucide-react';
@@ -111,6 +111,16 @@ const Settings = () => {
         });
     };
 
+    const handleRuleChange = (key, value) => {
+        setSettings(prev => ({
+            ...prev,
+            placementRules: {
+                ...prev.placementRules,
+                [key]: value
+            }
+        }));
+    };
+
     if (loading) {
         return <div className="loading-screen"><div className="loading-spinner" /></div>;
     }
@@ -118,10 +128,8 @@ const Settings = () => {
     return (
         <div className="settings-page">
             <div className="page-header">
-                <div>
-                    <h1>Settings</h1>
-                    <p>Manage your college profile and settings</p>
-                </div>
+                <h1>Settings</h1>
+                <p>Manage your college profile and settings</p>
             </div>
 
             {/* Tabs */}
@@ -208,9 +216,9 @@ const Settings = () => {
                                         if (file) {
                                             try {
                                                 const formData = new FormData();
-                                                formData.append('file', file);
-                                                const response = await collegeAPI.uploadResume(formData);
-                                                setProfile({ ...profile, logo: response.data.url });
+                                                formData.append('logo', file);
+                                                const response = await uploadAPI.logo(formData);
+                                                setProfile({ ...profile, logo: response.data.data.url });
                                                 toast.success('Logo uploaded successfully');
                                             } catch (error) {
                                                 toast.error('Failed to upload logo');
@@ -480,36 +488,45 @@ const Settings = () => {
                             </div>
                         </div>
 
-                        <div className="toggle-group">
+                        <div className="toggle-group mt-6">
                             <div className="toggle-item">
                                 <div className="toggle-info">
                                     <label>Allow Multiple Offers</label>
-                                    <span className="toggle-description">
-                                        Students can accept multiple job offers
-                                    </span>
+                                    <span className="toggle-description">Students can accept more than one offer</span>
                                 </div>
-                                <label className="toggle-switch">
+                                <label className="relative inline-flex items-center cursor-pointer">
                                     <input
                                         type="checkbox"
-                                        checked={settings.placementRules?.allowMultipleOffers || false}
-                                        onChange={(e) => setSettings({
-                                            ...settings,
-                                            placementRules: {
-                                                ...settings.placementRules,
-                                                allowMultipleOffers: e.target.checked
-                                            }
-                                        })}
+                                        className="sr-only peer"
+                                        checked={settings.placementRules?.allowMultipleOffers}
+                                        onChange={(e) => handleRuleChange('allowMultipleOffers', e.target.checked)}
+                                        disabled={loading}
                                     />
-                                    <span className="toggle-slider"></span>
+                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+
+                            <div className="toggle-item">
+                                <div className="toggle-info">
+                                    <label>Show Student Data Without Approval</label>
+                                    <span className="toggle-description">If disabled, companies must request partnership to see student data</span>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={settings.placementRules?.showDataWithoutApproval !== false}
+                                        onChange={(e) => handleRuleChange('showDataWithoutApproval', e.target.checked)}
+                                        disabled={loading}
+                                    />
+                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
 
                             <div className="toggle-item">
                                 <div className="toggle-info">
                                     <label>Require Resume Upload</label>
-                                    <span className="toggle-description">
-                                        Students must upload resume to apply for jobs
-                                    </span>
+                                    <span className="toggle-description">Students must upload resume to apply for jobs</span>
                                 </div>
                                 <label className="toggle-switch">
                                     <input

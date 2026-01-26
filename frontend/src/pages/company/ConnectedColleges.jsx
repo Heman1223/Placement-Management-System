@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { companyAPI } from '../../services/api';
+import { Lock } from 'lucide-react';
 import './ConnectedColleges.css';
 
 const ConnectedColleges = () => {
@@ -74,6 +75,10 @@ const ConnectedColleges = () => {
         navigate('/company/search', { state: { collegeId } });
     };
 
+    const handleScheduleDrive = (collegeId) => {
+        navigate(`/company/jobs/new?collegeId=${collegeId}`);
+    };
+
     const getStatusBadge = (status) => {
         switch (status) {
             case 'approved': return <span className="status-badge approved">Approved</span>;
@@ -142,7 +147,12 @@ const ConnectedColleges = () => {
                                     >
                                         View Students
                                     </button>
-                                    <button className="btn-text">Schedule Drive</button>
+                                    <button
+                                        className="btn-text"
+                                        onClick={() => handleScheduleDrive(item.college?._id)}
+                                    >
+                                        Schedule Drive
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -173,7 +183,10 @@ const ConnectedColleges = () => {
                                     filteredAvailable.map(college => (
                                         <div key={college._id} className="available-item">
                                             <div className="item-info">
-                                                <strong>{college.name}</strong>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <strong>{college.name}</strong>
+                                                    {college.isLocked && <Lock size={14} color="#94a3b8" title="Data Locked - Request Access" />}
+                                                </div>
                                                 <span>{college.city}, {college.state}</span>
                                             </div>
                                             <button

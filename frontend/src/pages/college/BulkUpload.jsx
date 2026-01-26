@@ -202,21 +202,16 @@ const BulkUpload = () => {
 
     return (
         <div className="bulk-upload-page">
-            {/* Premium Header */}
-            <div className="upload-header">
-                <button className="back-btn" onClick={() => navigate('/college/students')}>
-                    <ArrowLeft size={20} />
-                    <span>Back to Students</span>
-                </button>
-                <div className="header-content">
-                    <div className="header-icon">
-                        <Upload size={32} />
-                    </div>
-                    <div>
-                        <h1 style={{ fontSize: '3rem', color: 'white', fontWeight: '900', textShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>Bulk Upload</h1>
-                        <p style={{ color: '#cbd5e1', fontSize: '1.1rem' }}>Import multiple students at once using Excel or CSV</p>
-                    </div>
-                </div>
+            {/* Back Button at Top */}
+            <button className="back-btn" onClick={() => navigate('/college/students')} style={{ marginBottom: '2rem' }}>
+                <ArrowLeft size={20} />
+                <span>Back to Students</span>
+            </button>
+
+            {/* Centered Header */}
+            <div className="upload-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <h1 style={{ fontSize: '3rem', color: 'white', fontWeight: '900', textShadow: '0 4px 20px rgba(0,0,0,0.5)', margin: '0 0 0.5rem 0' }}>Bulk Upload</h1>
+                <p style={{ color: '#cbd5e1', fontSize: '1.1rem', margin: 0 }}>Import multiple students at once using Excel or CSV</p>
             </div>
 
             {/* Progress Steps */}

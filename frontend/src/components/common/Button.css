@@ -169,3 +169,24 @@
         font-size: 0.75rem;
     }
 }
+
+/* Dark Theme Overrides for Admin Portal */
+.layout-admin-dark .btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.layout-admin-dark .btn-secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.layout-admin-dark .btn-ghost {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.layout-admin-dark .btn-ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}

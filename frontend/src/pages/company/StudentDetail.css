@@ -1,0 +1,296 @@
+/* Student Dossier Page - Premium Company-Side View */
+
+.student-detail-page {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    color: #f8fafc;
+    min-height: 100vh;
+    background: #0b1121;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Header & Breadcrumb */
+.profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    gap: 2rem;
+}
+
+.back-circle-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-circle-btn:hover {
+    background: #3b82f6;
+    color: white;
+    transform: translateX(-5px);
+    border-color: #3b82f6;
+}
+
+.header-title {
+    font-size: 1.1rem;
+    font-weight: 850;
+    color: #3b82f6;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    margin: 0;
+}
+
+/* Summary Card - Large Banner Style */
+.profile-summary-card {
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 3rem;
+    padding: 3.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.summary-left-group {
+    display: flex;
+    align-items: center;
+    gap: 3.5rem;
+}
+
+.summary-avatar {
+    width: 170px;
+    height: 170px;
+    border-radius: 2.5rem;
+    background: #1e293b;
+    border: 6px solid #1e293b;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    font-weight: 950;
+}
+
+.student-fullname {
+    font-size: 3.8rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 0.8rem;
+    color: white;
+    letter-spacing: -0.03em;
+}
+
+.student-meta {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+.summary-badges {
+    display: flex;
+    gap: 1rem;
+}
+
+.p-badge {
+    padding: 0.6rem 1.4rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.badge-verified {
+    background: rgba(16, 185, 129, 0.08);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.badge-verified .dot { width: 8px; height: 8px; background: #34d399; border-radius: 50%; box-shadow: 0 0 10px #34d399; }
+
+.badge-status {
+    background: rgba(59, 130, 246, 0.08);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Completeness Circle */
+.completeness-circle-lg {
+    position: relative;
+    width: 140px;
+    height: 140px;
+}
+
+.circle-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.circle-text .p-val { font-size: 2.2rem; font-weight: 950; color: white; line-height: 1; }
+.circle-text .p-lab { font-size: 0.65rem; font-weight: 800; color: #64748b; margin-top: 2px; }
+
+/* Grid Sections */
+.info-grid-v2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.grid-card-v2 {
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 2.5rem;
+    padding: 3rem;
+}
+
+.grid-card-v2.full-width { grid-column: 1 / -1; }
+
+.card-header-v2 {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.card-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card-icon-box.blue { color: #3b82f6; }
+.card-icon-box.emerald { color: #10b981; }
+.card-icon-box.purple { color: #a78bfa; }
+
+.card-header-v2 h3 {
+    font-size: 1rem;
+    font-weight: 850;
+    color: #64748b;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.card-body-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.data-item-v2 {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.data-label { color: #475569; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
+.data-value { color: white; font-size: 1.2rem; font-weight: 700; }
+
+/* Resource List Styling */
+.resource-item-v2 {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 1.8rem;
+    transition: all 0.3s ease;
+}
+
+.resource-item-v2:hover {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(59, 130, 246, 0.2);
+    transform: translateX(10px);
+}
+
+.res-label { font-size: 0.7rem; font-weight: 800; color: #475569; margin-bottom: 0.2rem; }
+.res-link { color: white; font-weight: 800; font-size: 1.1rem; text-decoration: none; }
+.res-link:hover { color: #3b82f6; }
+
+/* Skills List */
+.skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.skill-pill {
+    padding: 0.8rem 1.5rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border-radius: 1rem;
+    font-weight: 800;
+    font-size: 0.9rem;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Applications Table-like view */
+.drive-reg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.reg-card {
+    background: rgba(15, 23, 42, 0.4);
+    padding: 2rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.reg-card h4 { font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 0.5rem; }
+.reg-type { font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1024px) {
+    .info-grid-v2 { grid-template-columns: 1fr; }
+    .profile-summary-card { flex-direction: column; text-align: center; gap: 3rem; }
+    .summary-left-group { flex-direction: column; gap: 2rem; }
+    .summary-badges { justify-content: center; }
+}
+
+@media (max-width: 640px) {
+    .student-detail-page { padding: 1.5rem; }
+    .student-fullname { font-size: 2.8rem; }
+    .profile-summary-card { padding: 2.5rem; border-radius: 2rem; }
+}

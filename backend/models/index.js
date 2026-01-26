@@ -8,6 +8,7 @@ const Notification = require('./Notification');
 const Shortlist = require('./Shortlist');
 const ActivityLog = require('./ActivityLog');
 const PlatformSettings = require('./PlatformSettings');
+const Invitation = require('./Invitation');
 
 module.exports = {
     User,
@@ -19,5 +20,6 @@ module.exports = {
     Notification,
     Shortlist,
     ActivityLog,
-    PlatformSettings
+    PlatformSettings,
+    Invitation
 };

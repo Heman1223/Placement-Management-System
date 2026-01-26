@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { companyAPI, jobAPI } from '../../services/api';
 import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
-import { Star, Download, Calendar, MessageSquare, CheckCircle, XCircle, Building2, Users, Sparkles, TrendingUp, Eye, GraduationCap, Award, Briefcase, Mail, Phone, ExternalLink, Linkedin, Github, FileText, User } from 'lucide-react';
+import { Star, Download, Calendar, MessageSquare, CheckCircle, XCircle, Building2, Users, Sparkles, TrendingUp, Eye, GraduationCap, Award, Briefcase, Mail, Phone, ExternalLink, Linkedin, Github, FileText, User, Search, Trash2, Send, PlayCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Shortlist.css';
 
@@ -12,17 +13,20 @@ const Shortlist = () => {
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
     const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
+    const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
     const [colleges, setColleges] = useState([]);
     const [selectedJob, setSelectedJob] = useState('');
     const [selectedCollege, setSelectedCollege] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [starFilter, setStarFilter] = useState(''); // Added
     const [actionModal, setActionModal] = useState({ open: false, application: null, action: '' });
     const [remarks, setRemarks] = useState('');
-    const [studentDetailModal, setStudentDetailModal] = useState({ open: false, student: null, loading: false });
     const [notesModal, setNotesModal] = useState({ open: false, application: null });
     const [newNote, setNewNote] = useState('');
     const [downloadLimits, setDownloadLimits] = useState(null);
+    const [showFilters, setShowFilters] = useState(false);
+    const [keyword, setKeyword] = useState('');
 
     useEffect(() => {
         fetchJobs();
@@ -32,7 +36,7 @@ const Shortlist = () => {
 
     useEffect(() => {
         fetchShortlist();
-    }, [selectedJob, selectedCollege, statusFilter]);
+    }, [selectedJob, selectedCollege, statusFilter, starFilter, keyword]);
 
     const fetchJobs = async () => {
         try {
@@ -67,7 +71,9 @@ const Shortlist = () => {
             const params = {
                 page,
                 jobId: selectedJob || undefined,
-                status: statusFilter || undefined
+                status: statusFilter || undefined,
+                isStarStudent: starFilter || undefined,
+                search: keyword || undefined
             };
             const response = await companyAPI.getShortlist(params);
             let apps = response.data.data.applications;
@@ -178,15 +184,8 @@ const Shortlist = () => {
         }
     };
 
-    const viewStudentDetails = async (studentId) => {
-        setStudentDetailModal({ open: true, student: null, loading: true });
-        try {
-            const response = await companyAPI.getStudent(studentId);
-            setStudentDetailModal({ open: true, student: response.data.data, loading: false });
-        } catch (error) {
-            toast.error('Failed to load student details');
-            setStudentDetailModal({ open: false, student: null, loading: false });
-        }
+    const viewStudentDetails = (studentId) => {
+        navigate(`/company/students/${studentId}`);
     };
 
     const getStatusOptions = (currentStatus) => {
@@ -210,9 +209,14 @@ const Shortlist = () => {
                         {student?.name?.firstName?.[0]}{student?.name?.lastName?.[0]}
                     </div>
                     <div>
-                        <span className="student-name">
-                            {student?.name?.firstName} {student?.name?.lastName}
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="student-name">
+                                {student?.name?.firstName} {student?.name?.lastName}
+                            </span>
+                            {student?.isStarStudent && (
+                                <Star size={14} className="text-amber-400 fill-amber-400" />
+                            )}
+                        </div>
                         <span className="student-dept">{student?.department} • {student?.batch}</span>
                     </div>
                 </div>
@@ -337,124 +341,214 @@ const Shortlist = () => {
     };
 
     return (
-        <div className="shortlist-page">
-            <div className="page-header shortlist-header">
-                <div className="header-content">
-                    <div className="header-icon">
-                        <Star size={28} />
+        <div className="shortlist-page-new">
+            <div className="shortlist-main-header">
+                <div className="header-left-group">
+                    <h1 className="header-primary-title">Selection Pipeline</h1>
+                    <div className="p-badge badge-status ml-4 px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[10px] font-bold rounded flex items-center gap-1">
+                        <TrendingUp size={12} />
+                        FOR NEXT PROCESS
                     </div>
-                    <div className="header-text">
-                        <h1>Shortlisted Candidates</h1>
-                        <p>Manage your hiring pipeline efficiently</p>
-                        {downloadLimits && (
-                            <div className="download-limits-info">
-                                <span>Daily: {downloadLimits.dailyRemaining}/{downloadLimits.dailyLimit}</span>
-                                <span>•</span>
-                                <span>Monthly: {downloadLimits.monthlyRemaining}/{downloadLimits.monthlyLimit}</span>
+                    {downloadLimits && (
+                        <div className="limit-badge-green">
+                            {downloadLimits.dailyRemaining}/{downloadLimits.dailyLimit} DAILY
+                        </div>
+                    )}
+                </div>
+                
+                <div className="header-right-controls">
+                    <div className="input-with-icon-wrapper search-top">
+                        <Search size={18} className="input-icon-left" />
+                        <input 
+                            type="text" 
+                            className="search-input-premium"
+                            placeholder="Find in shortlisted..."
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
+                            onFocus={() => setShowFilters(true)}
+                        />
+                    </div>
+                    <Button
+                        icon={Download}
+                        onClick={handleExportCSV}
+                        disabled={exporting || applications.length === 0}
+                        variant="secondary"
+                    >
+                        {exporting ? 'Exporting...' : 'Export CSV'}
+                    </Button>
+                </div>
+            </div>
+
+            {/* Quick Stats Overview */}
+            <div className="shortlist-stats-grid">
+                <div className="stat-card-premium shortlist-total-card">
+                    <span className="stat-label">SHORTLISTED</span>
+                    <div className="stat-main-row">
+                        <span className="stat-count-main">{pipelineStats.shortlisted || 0}</span>
+                        <div className="flex flex-col">
+                            <span className="stat-trend-blue">+0 today</span>
+                        </div>
+                    </div>
+                    <div className="stat-progress-track">
+                        <div className="stat-progress-fill" style={{ width: '40%' }}></div>
+                    </div>
+                </div>
+
+                <div className="stat-card-premium interviewed-card">
+                    <span className="stat-label">INTERVIEWED</span>
+                    <div className="stat-main-row">
+                        <span className="stat-count-main">{pipelineStats.interviewed || 0}</span>
+                        <div className="flex flex-col">
+                            <span className="stat-trend-blue">+0 today</span>
+                        </div>
+                    </div>
+                    <div className="stat-progress-track">
+                        <div className="stat-progress-fill" style={{ width: '20%', background: '#60a5fa' }}></div>
+                    </div>
+                </div>
+
+                <div className="stat-card-premium offered-card">
+                    <span className="stat-label">OFFERED</span>
+                    <div className="stat-main-row">
+                        <span className="stat-count-main">{pipelineStats.offered || 0}</span>
+                        <div className="flex flex-col">
+                            <span className="stat-trend-blue">+0 today</span>
+                        </div>
+                    </div>
+                    <div className="stat-progress-track">
+                        <div className="stat-progress-fill" style={{ width: '15%', background: '#a78bfa' }}></div>
+                    </div>
+                </div>
+
+                <div className="stat-card-premium hired-card">
+                    <span className="stat-label">HIRED</span>
+                    <div className="stat-main-row">
+                        <span className="stat-count-main">{pipelineStats.hired || 0}</span>
+                        <div className="flex flex-col">
+                            <span className="stat-trend-blue">+0 today</span>
+                        </div>
+                    </div>
+                    <div className="stat-progress-track">
+                        <div className="stat-progress-fill" style={{ width: '10%', background: '#10b981' }}></div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Candidates Section */}
+            <div className="candidates-section-card glass-card">
+                <div className="candidates-card-header">
+                    <h2>Candidates</h2>
+                </div>
+                
+                <div className="candidates-list-wrapper">
+                    {showFilters && (
+                        <div className="list-filters-premium animate-in fade-in slide-in-from-top-2">
+                            <div className="filters-row-3">
+                                <div className="filter-group">
+                                    <label>College</label>
+                                    <select value={selectedCollege} onChange={(e) => setSelectedCollege(e.target.value)}>
+                                        <option value="">All Colleges</option>
+                                        {colleges.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="filter-group">
+                                    <label>Job</label>
+                                    <select value={selectedJob} onChange={(e) => setSelectedJob(e.target.value)}>
+                                        <option value="">All Jobs</option>
+                                        {jobs.map(job => <option key={job._id} value={job._id}>{job.title}</option>)}
+                                    </select>
+                                </div>
+                                <div className="filter-group">
+                                    <label>Status</label>
+                                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                                        {statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                    </select>
+                                </div>
                             </div>
+                        </div>
+                    )}
+
+                    <div className="candidates-table-premium">
+                        <div className="table-column-header-premium">
+                            <span className="col-info">STUDENT INFORMATION</span>
+                            <span className="col-job">JOB APPLIED</span>
+                            <span className="col-cgpa">CGPA</span>
+                            <span className="col-status">STATUS</span>
+                            <span className="col-date">APPLIED DATE</span>
+                            <span className="col-actions">ACTIONS</span>
+                        </div>
+                        {loading ? (
+                            <div className="flex justify-center p-12"><div className="loading-spinner" /></div>
+                        ) : applications.length === 0 ? (
+                            <div className="empty-state-card-mini">No shortlisted candidates found.</div>
+                        ) : (
+                            applications.map((app) => (
+                                <div key={app._id} className="student-row-premium">
+                                    <div className="col-info student-info-cell">
+                                        <div className="student-avatar-premium">
+                                            {app.student?.name?.firstName?.[0]}{app.student?.name?.lastName?.[0]}
+                                        </div>
+                                        <div className="student-text-group">
+                                            <h4>{app.student?.name?.firstName} {app.student?.name?.lastName}</h4>
+                                            <p>{app.student?.department} • {app.student?.batch}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="col-job">
+                                        <div className="job-tag-premium">{app.job?.title}</div>
+                                    </div>
+
+                                    <div className="col-cgpa">
+                                        <span className="cgpa-badge">{app.student?.cgpa?.toFixed(2) || '-'}</span>
+                                    </div>
+
+                                    <div className="col-status">
+                                        <div className={`status-pill-premium status-${app.status}`}>
+                                            {app.status.replace('_', ' ')}
+                                        </div>
+                                    </div>
+
+                                    <div className="col-date">
+                                        <span className="date-text">{app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : '-'}</span>
+                                    </div>
+
+                                    <div className="col-actions">
+                                        <div className="action-button-group">
+                                            <button className="row-action-btn view" title="View Profile" onClick={() => viewStudentDetails(app.student?._id)}><Eye size={16} /></button>
+                                            <button className="row-action-btn note" title="Add Note" onClick={() => setNotesModal({ open: true, application: app })}><MessageSquare size={16} /></button>
+                                            
+                                            {getStatusOptions(app.status).includes('interviewed') && (
+                                                <button className="row-action-btn interview" title="Mark Interviewed" onClick={() => setActionModal({ open: true, application: app, action: 'interviewed' })}><PlayCircle size={16} /></button>
+                                            )}
+                                            {getStatusOptions(app.status).includes('offered') && (
+                                                <button className="row-action-btn offer" title="Send Offer" onClick={() => setActionModal({ open: true, application: app, action: 'offered' })}><Send size={16} /></button>
+                                            )}
+                                            {getStatusOptions(app.status).includes('hired') && (
+                                                <button className="row-action-btn hire" title="Mark Hired" onClick={() => setActionModal({ open: true, application: app, action: 'hired' })}><Award size={16} /></button>
+                                            )}
+                                            
+                                            {app.status !== 'rejected' && (
+                                                <button className="row-action-btn reject" title="Reject Candidate" onClick={() => setActionModal({ open: true, application: app, action: 'rejected' })}><XCircle size={16} /></button>
+                                            )}
+                                            
+                                            {app.status !== 'hired' && (
+                                                <button className="row-action-btn remove" title="Remove from Shortlist" onClick={() => handleRemoveFromShortlist(app)}><Trash2 size={16} /></button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
                         )}
                     </div>
                 </div>
-                <Button
-                    icon={Download}
-                    onClick={handleExportCSV}
-                    disabled={exporting || applications.length === 0}
-                    className="export-btn"
-                >
-                    {exporting ? 'Exporting...' : 'Download CSV'}
-                </Button>
-            </div>
 
-            {/* Filters */}
-            <div className="shortlist-filters glass-card">
-                <div className="input-wrapper">
-                    <label className="input-label"><Building2 size={14} /> College</label>
-                    <select
-                        className="input"
-                        value={selectedCollege}
-                        onChange={(e) => setSelectedCollege(e.target.value)}
-                    >
-                        <option value="">All Colleges</option>
-                        {colleges.map(c => (
-                            <option key={c._id} value={c._id}>{c.name}</option>
-                        ))}
-                    </select>
+                <div className="pagination-premium">
+                    <Pagination
+                        current={pagination.current}
+                        total={pagination.total}
+                        onPageChange={(page) => fetchShortlist(page)}
+                    />
                 </div>
-                <div className="input-wrapper">
-                    <label className="input-label">Filter by Job</label>
-                    <select
-                        className="input"
-                        value={selectedJob}
-                        onChange={(e) => setSelectedJob(e.target.value)}
-                    >
-                        <option value="">All Jobs</option>
-                        {jobs.map(job => (
-                            <option key={job._id} value={job._id}>{job.title}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="input-wrapper">
-                    <label className="input-label">Status</label>
-                    <select
-                        className="input"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        {statusOptions.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            {/* Pipeline Summary */}
-            <div className="pipeline-summary">
-                <div className="pipeline-stage stage-shortlisted">
-                    <div className="stage-icon"><Star size={20} /></div>
-                    <div className="stage-content">
-                        <span className="stage-count">{pipelineStats.shortlisted}</span>
-                        <span className="stage-label">Shortlisted</span>
-                    </div>
-                </div>
-                <div className="pipeline-connector"></div>
-                <div className="pipeline-stage stage-interviewed">
-                    <div className="stage-icon"><Calendar size={20} /></div>
-                    <div className="stage-content">
-                        <span className="stage-count">{pipelineStats.interviewed}</span>
-                        <span className="stage-label">Interviewed</span>
-                    </div>
-                </div>
-                <div className="pipeline-connector"></div>
-                <div className="pipeline-stage stage-offered">
-                    <div className="stage-icon"><MessageSquare size={20} /></div>
-                    <div className="stage-content">
-                        <span className="stage-count">{pipelineStats.offered}</span>
-                        <span className="stage-label">Offered</span>
-                    </div>
-                </div>
-                <div className="pipeline-connector"></div>
-                <div className="pipeline-stage stage-hired">
-                    <div className="stage-icon"><CheckCircle size={20} /></div>
-                    <div className="stage-content">
-                        <span className="stage-count">{pipelineStats.hired}</span>
-                        <span className="stage-label">Hired</span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Table */}
-            <div className="table-container glass-card">
-                <Table
-                    columns={columns}
-                    data={applications}
-                    loading={loading}
-                    emptyMessage="No shortlisted candidates yet"
-                />
-                <Pagination
-                    current={pagination.current}
-                    total={pagination.total}
-                    onPageChange={(page) => fetchShortlist(page)}
-                />
             </div>
 
             {/* Action Modal */}
@@ -539,163 +633,6 @@ const Shortlist = () => {
                         </Button>
                     </div>
                 </div>
-            </Modal>
-
-            {/* Student Detail Modal */}
-            <Modal
-                isOpen={studentDetailModal.open}
-                onClose={() => setStudentDetailModal({ open: false, student: null, loading: false })}
-                title="Student Profile"
-                size="lg"
-            >
-                {studentDetailModal.loading ? (
-                    <div className="loading-screen" style={{ padding: 'var(--spacing-8)' }}>
-                        <div className="loading-spinner" />
-                    </div>
-                ) : studentDetailModal.student && (
-                    <div className="student-detail-modal">
-                        {/* Header Section */}
-                        <div className="detail-header">
-                            <div className="detail-avatar">
-                                {studentDetailModal.student.name?.firstName?.[0]}
-                                {studentDetailModal.student.name?.lastName?.[0]}
-                            </div>
-                            <div className="detail-header-info">
-                                <h2>{studentDetailModal.student.name?.firstName} {studentDetailModal.student.name?.lastName}</h2>
-                                <p>{studentDetailModal.student.department} • Batch {studentDetailModal.student.batch}</p>
-                                <p className="college-name">{studentDetailModal.student.college?.name}</p>
-                            </div>
-                        </div>
-
-                        {/* Contact Information */}
-                        <div className="detail-section">
-                            <h4><Mail size={16} /> Contact Information</h4>
-                            <div className="detail-grid">
-                                <div className="detail-field">
-                                    <span className="field-label">Email</span>
-                                    <span className="field-value">{studentDetailModal.student.email}</span>
-                                </div>
-                                <div className="detail-field">
-                                    <span className="field-label">Phone</span>
-                                    <span className="field-value">{studentDetailModal.student.phone || 'Not provided'}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Academic Information */}
-                        <div className="detail-section">
-                            <h4><GraduationCap size={16} /> Academic Information</h4>
-                            <div className="detail-grid">
-                                <div className="detail-field">
-                                    <span className="field-label">Roll Number</span>
-                                    <span className="field-value">{studentDetailModal.student.rollNumber}</span>
-                                </div>
-                                <div className="detail-field">
-                                    <span className="field-label">CGPA</span>
-                                    <span className="field-value cgpa-highlight">{studentDetailModal.student.cgpa?.toFixed(2) || '-'}</span>
-                                </div>
-                                <div className="detail-field">
-                                    <span className="field-label">Active Backlogs</span>
-                                    <span className="field-value">{studentDetailModal.student.backlogs?.active || 0}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Education History */}
-                        {studentDetailModal.student.education && (
-                            <div className="detail-section">
-                                <h4><Award size={16} /> Education History</h4>
-                                <div className="education-grid">
-                                    {studentDetailModal.student.education.tenth?.percentage && (
-                                        <div className="education-card">
-                                            <span className="edu-level">10th</span>
-                                            <span className="edu-percent">{studentDetailModal.student.education.tenth.percentage}%</span>
-                                            <span className="edu-board">{studentDetailModal.student.education.tenth.board}</span>
-                                        </div>
-                                    )}
-                                    {studentDetailModal.student.education.twelfth?.percentage && (
-                                        <div className="education-card">
-                                            <span className="edu-level">12th</span>
-                                            <span className="edu-percent">{studentDetailModal.student.education.twelfth.percentage}%</span>
-                                            <span className="edu-board">{studentDetailModal.student.education.twelfth.board}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Skills */}
-                        {studentDetailModal.student.skills?.length > 0 && (
-                            <div className="detail-section">
-                                <h4><Sparkles size={16} /> Skills</h4>
-                                <div className="skills-list">
-                                    {studentDetailModal.student.skills.map((skill, i) => (
-                                        <span key={i} className="skill-tag">{skill}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Projects */}
-                        {studentDetailModal.student.projects?.length > 0 && (
-                            <div className="detail-section">
-                                <h4><Briefcase size={16} /> Projects</h4>
-                                <div className="projects-list">
-                                    {studentDetailModal.student.projects.map((project, i) => (
-                                        <div key={i} className="project-item">
-                                            <h5>{project.title}</h5>
-                                            <p>{project.description}</p>
-                                            {project.technologies?.length > 0 && (
-                                                <div className="project-tech">
-                                                    {project.technologies.map((tech, j) => (
-                                                        <span key={j} className="tech-tag">{tech}</span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Links */}
-                        <div className="detail-section">
-                            <h4><ExternalLink size={16} /> Links & Resume</h4>
-                            <div className="links-grid">
-                                {studentDetailModal.student.resumeUrl && (
-                                    <a href={studentDetailModal.student.resumeUrl} target="_blank" rel="noopener noreferrer" className="profile-link resume">
-                                        <FileText size={18} /> Resume
-                                    </a>
-                                )}
-                                {studentDetailModal.student.linkedinUrl && (
-                                    <a href={studentDetailModal.student.linkedinUrl} target="_blank" rel="noopener noreferrer" className="profile-link linkedin">
-                                        <Linkedin size={18} /> LinkedIn
-                                    </a>
-                                )}
-                                {studentDetailModal.student.githubUrl && (
-                                    <a href={studentDetailModal.student.githubUrl} target="_blank" rel="noopener noreferrer" className="profile-link github">
-                                        <Github size={18} /> GitHub
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Placement Status */}
-                        <div className="detail-section">
-                            <h4><User size={16} /> Placement Status</h4>
-                            <span className={`placement-status-badge status-${studentDetailModal.student.placementStatus}`}>
-                                {studentDetailModal.student.placementStatus?.replace('_', ' ')}
-                            </span>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="detail-footer">
-                            <Button variant="secondary" onClick={() => setStudentDetailModal({ open: false, student: null, loading: false })}>
-                                Close
-                            </Button>
-                        </div>
-                    </div>
-                )}
             </Modal>
         </div>
     );

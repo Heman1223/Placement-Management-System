@@ -23,15 +23,15 @@ const CollegeAdmins = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        fetchAdmins();
-    }, [pagination.current]);
+        fetchAdmins(1);
+    }, [searchTerm]);
 
-    const fetchAdmins = async () => {
+    const fetchAdmins = async (page = 1) => {
         try {
             setLoading(true);
             const response = await superAdminAPI.getUsers({ 
                 role: 'college_admin',
-                page: pagination.current,
+                page,
                 limit: 10,
                 search: searchTerm || undefined
             });
@@ -46,8 +46,7 @@ const CollegeAdmins = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        setPagination({ ...pagination, current: 1 });
-        fetchAdmins();
+        fetchAdmins(1);
     };
 
     const handleToggleBlock = async (id, isActive) => {
@@ -178,6 +177,12 @@ const CollegeAdmins = () => {
             </motion.div>
 
             {/* Premium Table Wrapper */}
+            <div className="section-title-row">
+                <h2>Administrative Credentials</h2>
+                <div className="flex gap-2">
+                    <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-[10px] font-bold uppercase tracking-wider border border-blue-500/20">Security Audit Active</span>
+                </div>
+            </div>
             <div className="premium-table-container">
                 <table className="premium-table">
                     <thead>
@@ -269,7 +274,7 @@ const CollegeAdmins = () => {
                         <button 
                             className="page-nav-btn"
                             disabled={pagination.current === 1}
-                            onClick={() => setPagination({ ...pagination, current: pagination.current - 1 })}
+                            onClick={() => fetchAdmins(pagination.current - 1)}
                         >
                             <ChevronLeft size={16} />
                         </button>
@@ -277,7 +282,7 @@ const CollegeAdmins = () => {
                             <button
                                 key={i + 1}
                                 className={`page-num-btn ${pagination.current === i + 1 ? 'active' : ''}`}
-                                onClick={() => setPagination({ ...pagination, current: i + 1 })}
+                                onClick={() => fetchAdmins(i + 1)}
                             >
                                 {i + 1}
                             </button>
@@ -285,7 +290,7 @@ const CollegeAdmins = () => {
                         <button 
                             className="page-nav-btn"
                             disabled={pagination.current === pagination.pages}
-                            onClick={() => setPagination({ ...pagination, current: pagination.current + 1 })}
+                            onClick={() => fetchAdmins(pagination.current + 1)}
                         >
                             <ChevronRight size={16} />
                         </button>

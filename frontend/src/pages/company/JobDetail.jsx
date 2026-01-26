@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { companyAPI, jobAPI } from '../../services/api';
 import Button from '../../components/common/Button';
-import { ArrowLeft, User, Mail, Phone, GraduationCap, Award, FileText, Calendar, Filter, MapPin, Briefcase, DollarSign, Clock, Users, CheckCircle } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, GraduationCap, Award, FileText, Calendar, Filter, MapPin, Briefcase, DollarSign, Clock, Users, CheckCircle, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Applicants.css';
 
@@ -114,17 +114,17 @@ const JobDetail = () => {
                     Back to Jobs
                 </Link>
                 <div className="header-content">
-                    <div className="flex justify-between items-start">
-                        <div>
+                    <div className="flex justify-between items-end">
+                        <div className="title-branding-job">
                             <h1>{job.title}</h1>
-                            <div className="flex gap-4 text-gray-500 text-sm mt-1">
+                            <div className="job-meta-header">
                                 <span className="flex items-center gap-1"><MapPin size={14} /> {job.locations?.join(', ') || 'Not specified'}</span>
                                 <span className="flex items-center gap-1"><Briefcase size={14} /> {job.type?.replace('_', ' ')}</span>
                                 <span className="flex items-center gap-1"><Clock size={14} /> Posted: {formatDate(job.createdAt)}</span>
                             </div>
                         </div>
                         <div className="flex gap-2">
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${job.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                            <span className={`status-badge-premium ${job.status === 'open' ? 'active' : 'closed'}`}>
                                 {job.status.toUpperCase()}
                             </span>
                         </div>
@@ -133,15 +133,15 @@ const JobDetail = () => {
             </div>
 
             {/* Tabs */}
-            <div className="tabs-container mb-6 border-b border-gray-200">
+            <div className="tabs-container-premium">
                 <button 
-                    className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'overview' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
                     onClick={() => setActiveTab('overview')}
                 >
                     Overview
                 </button>
                 <button 
-                    className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'applicants' ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    className={`tab-btn ${activeTab === 'applicants' ? 'active' : ''}`}
                     onClick={() => setActiveTab('applicants')}
                 >
                     Applicants ({job.stats?.totalApplications || 0})
@@ -151,27 +151,27 @@ const JobDetail = () => {
             {activeTab === 'overview' ? (
                 <div className="job-overview-content grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
-                        <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="text-lg font-semibold mb-3">Job Description</h3>
-                            <div className="prose max-w-none text-gray-600 whitespace-pre-line">
+                        <section className="job-detail-card">
+                            <h3 className="section-title">Job Description</h3>
+                            <div className="job-content-text">
                                 {job.description}
                             </div>
                         </section>
 
-                        <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="text-lg font-semibold mb-3">Requirements</h3>
-                            <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                        <section className="job-detail-card">
+                            <h3 className="section-title">Requirements</h3>
+                            <ul className="requirements-list">
                                 {job.requirements?.map((req, i) => (
                                     <li key={i}>{req}</li>
                                 ))}
                             </ul>
                         </section>
 
-                        <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="text-lg font-semibold mb-3">Skills Required</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {job.skillsRequired?.map((skill, i) => (
-                                    <span key={i} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
+                        <section className="job-detail-card">
+                            <h3 className="section-title">Skills Required</h3>
+                            <div className="skills-grid-new">
+                                {job.eligibility?.requiredSkills?.map((skill, i) => (
+                                    <span key={i} className="skill-badge-dark">
                                         {skill}
                                     </span>
                                 ))}
@@ -180,48 +180,48 @@ const JobDetail = () => {
                     </div>
 
                     <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="text-lg font-semibold mb-4">Job Stats</h3>
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-600 flex items-center gap-2"><Users size={16}/> Applied</span>
-                                    <span className="font-semibold">{job.stats?.totalApplications || 0}</span>
+                        <div className="job-detail-card">
+                            <h3 className="section-title mb-4">Job Stats</h3>
+                            <div className="job-stats-list">
+                                <div className="stat-row">
+                                    <span className="label"><Users size={16}/> Applied</span>
+                                    <span className="value">{job.stats?.totalApplications || 0}</span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-600 flex items-center gap-2"><CheckCircle size={16}/> Shortlisted</span>
-                                    <span className="font-semibold">{job.stats?.shortlisted || 0}</span>
+                                <div className="stat-row">
+                                    <span className="label"><CheckCircle size={16}/> Shortlisted</span>
+                                    <span className="value">{job.stats?.shortlisted || 0}</span>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gray-600 flex items-center gap-2"><User size={16}/> Hired</span>
-                                    <span className="font-semibold text-green-600">{job.stats?.hired || 0}</span>
+                                <div className="stat-row">
+                                    <span className="label"><User size={16}/> Hired</span>
+                                    <span className="value hired">{job.stats?.hired || 0}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="text-lg font-semibold mb-4">Details</h3>
-                            <div className="space-y-4">
-                                <div>
-                                    <div className="text-sm text-gray-500 mb-1">Salary Package</div>
-                                    <div className="font-medium flex items-center gap-1">
-                                        <DollarSign size={16} className="text-gray-400"/>
+                        <div className="job-detail-card">
+                            <h3 className="section-title mb-4">Details</h3>
+                            <div className="job-details-list">
+                                <div className="detail-row">
+                                    <div className="d-label">Salary Package</div>
+                                    <div className="d-value">
+                                        <DollarSign size={16}/>
                                         {job.salary?.min ? `₹${job.salary.min} - ₹${job.salary.max} ${job.salary.period?.replace('_', ' ')}` : 'Not Disclosed'}
                                     </div>
                                 </div>
-                                <div>
-                                    <div className="text-sm text-gray-500 mb-1">Application Deadline</div>
-                                    <div className="font-medium flex items-center gap-1">
-                                        <Calendar size={16} className="text-gray-400"/>
+                                <div className="detail-row">
+                                    <div className="d-label">Application Deadline</div>
+                                    <div className="d-value">
+                                        <Calendar size={16}/>
                                         {formatDate(job.applicationDeadline)}
                                     </div>
                                 </div>
-                                <div>
-                                    <div className="text-sm text-gray-500 mb-1">Eligible Batches</div>
-                                    <div className="flex gap-2 flex-wrap">
+                                <div className="detail-row">
+                                    <div className="d-label">Eligible Batches</div>
+                                    <div className="batch-container">
                                         {job.eligibility?.allowedBatches?.map(b => (
-                                            <span key={b} className="text-sm bg-gray-50 px-2 py-1 rounded border border-gray-200">{b}</span>
+                                            <span key={b} className="batch-tag-mini">{b}</span>
                                         ))}
-                                        {(!job.eligibility?.allowedBatches || job.eligibility.allowedBatches.length === 0) && <span className="text-sm text-gray-500">All Batches</span>}
+                                        {(!job.eligibility?.allowedBatches || job.eligibility.allowedBatches.length === 0) && <span className="batch-tag-mini">All</span>}
                                     </div>
                                 </div>
                             </div>
@@ -277,8 +277,11 @@ const JobDetail = () => {
                                                 <User size={24} />
                                             </div>
                                             <div className="applicant-info">
-                                                <h3>
+                                                <h3 className="flex items-center gap-2">
                                                     {application.student?.name?.firstName} {application.student?.name?.lastName}
+                                                    {application.student?.isStarStudent && (
+                                                        <Star size={16} className="text-amber-400 fill-amber-400" />
+                                                    )}
                                                 </h3>
                                                 <div className="applicant-meta">
                                                     <span>
@@ -335,7 +338,7 @@ const JobDetail = () => {
                                                     rel="noopener noreferrer"
                                                     className="action-btn view-resume"
                                                 >
-                                                    <FileText size={16} />
+                                                    <Eye size={16} />
                                                     View Resume
                                                 </a>
                                             )}

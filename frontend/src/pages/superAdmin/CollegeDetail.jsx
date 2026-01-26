@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { 
     ArrowLeft, Plus, Mail, Phone, Globe, MapPin, Users, 
     CheckCircle, Briefcase, Bell, Building2, TrendingUp,
-    GraduationCap, Clock, ShieldCheck, Edit2, Trash2
+    GraduationCap, Clock, ShieldCheck, Edit2, Trash2, Star
 } from 'lucide-react';
 import './AdminPages.css';
 
@@ -61,6 +61,22 @@ const CollegeDetail = () => {
         }
     };
 
+    const handleToggleStar = async (student) => {
+        try {
+            await superAdminAPI.toggleStarStudent(student._id);
+            const newStatus = !student.isStarStudent;
+            
+            // Update local state immediately for snappy UI
+            setStudents(prev => prev.map(s => 
+                s._id === student._id ? { ...s, isStarStudent: newStatus } : s
+            ));
+            
+            toast.success(newStatus ? 'Marked as Star Student' : 'Removed from Star Students');
+        } catch (error) {
+            toast.error('Failed to update status');
+        }
+    };
+
     const handleAddStudent = async (e) => {
         e.preventDefault();
         try {
@@ -98,16 +114,27 @@ const CollegeDetail = () => {
         <div className="dashboard p-8">
             {/* Premium Header Banner */}
             <div className="premium-header-banner mb-12">
-                <div className="premium-header-text">
-                    <button 
-                        onClick={() => navigate('/admin/colleges')} 
-                        className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-3 text-sm font-bold"
-                    >
-                        <ArrowLeft size={16} />
-                        Back to Institutions
-                    </button>
-                    <h1>{college.name}</h1>
-                    <p>Institution Profile • Code: {college.code}</p>
+                <div className="flex items-center gap-6">
+                    {college.logo ? (
+                        <div className="w-24 h-24 rounded-2xl bg-white overflow-hidden flex-shrink-0 border border-white/10 shadow-2xl">
+                            <img src={college.logo} alt={college.name} className="w-full h-full object-contain p-2" />
+                        </div>
+                    ) : (
+                        <div className="w-24 h-24 rounded-2xl bg-blue-500/20 flex-shrink-0 flex items-center justify-center border border-blue-500/20 shadow-2xl">
+                            <Building2 size={40} className="text-blue-500" />
+                        </div>
+                    )}
+                    <div className="premium-header-text">
+                        <button 
+                            onClick={() => navigate('/admin/colleges')} 
+                            className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-3 text-sm font-bold"
+                        >
+                            <ArrowLeft size={16} />
+                            Back to Institutions
+                        </button>
+                        <h1>{college.name}</h1>
+                        <p>Institution Profile • Code: {college.code}</p>
+                    </div>
                 </div>
                 <div className={`px-6 py-3 rounded-xl ${college.isVerified ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-amber-500/10 border border-amber-500/20'}`}>
                     <div className="flex items-center gap-2">
@@ -417,6 +444,7 @@ const CollegeDetail = () => {
                                     <th className="text-center py-4 px-4 text-xs font-black text-slate-400 uppercase tracking-wider">CGPA</th>
                                     <th className="text-center py-4 px-4 text-xs font-black text-slate-400 uppercase tracking-wider">Status</th>
                                     <th className="text-center py-4 px-4 text-xs font-black text-slate-400 uppercase tracking-wider">Verified</th>
+                                    <th className="text-center py-4 px-4 text-xs font-black text-slate-400 uppercase tracking-wider">⭐</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -442,6 +470,18 @@ const CollegeDetail = () => {
                                             ) : (
                                                 <Clock size={18} className="mx-auto text-amber-500" />
                                             )}
+                                        </td>
+                                        <td className="py-4 px-4 text-center">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleToggleStar(student);
+                                                }}
+                                                className={`p-1 rounded-lg transition-colors ${student.isStarStudent ? 'text-amber-500 bg-amber-500/10' : 'text-slate-600 hover:text-slate-400 hover:bg-white/5'}`}
+                                                title={student.isStarStudent ? 'Remove Star' : 'Mark as Star'}
+                                            >
+                                                <Star size={18} className={student.isStarStudent ? 'fill-current' : ''} />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

@@ -132,8 +132,14 @@ const studentSchema = new mongoose.Schema({
         name: String,
         issuer: String,
         issueDate: Date,
-        credentialUrl: String
+        credentialUrl: String,
+        fileUrl: String // Added for PDF uploads
     }],
+    about: {
+        type: String,
+        trim: true,
+        maxLength: [1000, 'About section cannot exceed 1000 characters']
+    },
 
     // Projects
     projects: [{
@@ -149,6 +155,7 @@ const studentSchema = new mongoose.Schema({
     portfolioUrl: String,
     linkedinUrl: String,
     githubUrl: String,
+    profilePicture: String,
 
     // Placement Status
     placementStatus: {
@@ -183,6 +190,20 @@ const studentSchema = new mongoose.Schema({
     verifiedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    },
+    // Rejection by college
+    isRejected: {
+        type: Boolean,
+        default: false
+    },
+    rejectedAt: Date,
+    rejectedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    rejectionReason: {
+        type: String,
+        trim: true
     },
 
     // Metadata
@@ -222,6 +243,7 @@ studentSchema.index({ college: 1, department: 1 });
 studentSchema.index({ batch: 1 });
 studentSchema.index({ cgpa: -1 });
 studentSchema.index({ placementStatus: 1 });
+studentSchema.index({ isRejected: 1 });
 studentSchema.index({ skills: 1 });
 studentSchema.index({ isStarStudent: -1 }); // Priority sort
 studentSchema.index({ 'name.firstName': 'text', 'name.lastName': 'text', skills: 'text' });

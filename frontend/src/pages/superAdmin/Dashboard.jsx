@@ -13,6 +13,7 @@ import {
     CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
 } from 'recharts';
 import toast from 'react-hot-toast';
+import RecentPlacements from '../../components/common/RecentPlacements';
 import './SuperAdminDashboard.css';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -23,6 +24,7 @@ const SuperAdminDashboard = () => {
     const [analytics, setAnalytics] = useState(null);
 
     const [recentData, setRecentData] = useState([]);
+    const [recentPlacements, setRecentPlacements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -45,11 +47,12 @@ const SuperAdminDashboard = () => {
             setAnalytics(analyticsRes.data.data);
 
             const merged = [
-                ...(recent.colleges || []).map(c => ({ ...c, type: 'College', date: c.createdAt })),
-                ...(recent.companies || []).map(c => ({ ...c, type: 'Company', date: c.createdAt }))
+                ...(recent.colleges || []).filter(c => !c.isDeleted).map(c => ({ ...c, type: 'College', date: c.createdAt })),
+                ...(recent.companies || []).filter(c => !c.isDeleted).map(c => ({ ...c, type: 'Company', date: c.createdAt }))
             ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
             setRecentData(merged);
+            setRecentPlacements(recent.placements || []);
         } catch (error) {
             if (!silent) toast.error('Failed to load dashboard data');
         } finally {
@@ -97,7 +100,7 @@ const SuperAdminDashboard = () => {
             {/* Premium Statistics Grid */}
             <div className="premium-stat-grid" style={{ marginBottom: '3rem' }}>
                 <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                    <div className="premium-stat-icon bg-blue-500/10 text-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                    <div className="premium-stat-icon bg-blue-500/10 text-blue-500">
                         <Building2 size={20} />
                     </div>
                     <div className="stat-v2-info">
@@ -106,7 +109,7 @@ const SuperAdminDashboard = () => {
                     </div>
                 </motion.div>
                 <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-                    <div className="premium-stat-icon bg-emerald-500/10 text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                    <div className="premium-stat-icon bg-emerald-500/10 text-emerald-500">
                         <Briefcase size={20} />
                     </div>
                     <div className="stat-v2-info">
@@ -115,7 +118,7 @@ const SuperAdminDashboard = () => {
                     </div>
                 </motion.div>
                 <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                    <div className="premium-stat-icon bg-purple-500/10 text-purple-500 shadow-[0_0_20px_rgba(139,92,246,0.2)]">
+                    <div className="premium-stat-icon bg-purple-500/10 text-purple-500">
                         <GraduationCap size={20} />
                     </div>
                     <div className="stat-v2-info">
@@ -124,7 +127,7 @@ const SuperAdminDashboard = () => {
                     </div>
                 </motion.div>
                 <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                    <div className="premium-stat-icon bg-amber-500/10 text-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                    <div className="premium-stat-icon bg-amber-500/10 text-amber-500">
                         <TrendingUp size={20} />
                     </div>
                     <div className="stat-v2-info">
@@ -134,7 +137,11 @@ const SuperAdminDashboard = () => {
                 </motion.div>
             </div>
 
-
+            {/* 3D Recent Placements Section */}
+            <RecentPlacements 
+                placements={recentPlacements} 
+                title="Recent Placements (Network Wide)"
+            />
 
             {/* Analytics Section - Charts First */}
             <div className="analytics-section mb-16">
@@ -372,7 +379,7 @@ const SuperAdminDashboard = () => {
                     </div>
 
                     <div className="recent-list space-y-5">
-                        {recentData.filter(item => item.type === 'College').slice(0, 5).map((item, idx) => (
+                        {recentData.filter(item => item.type === 'College').slice(0, 10).map((item, idx) => (
                             <motion.div
                                 key={idx}
                                 initial={{ opacity: 0, x: -10 }}
@@ -418,7 +425,7 @@ const SuperAdminDashboard = () => {
                     </div>
 
                     <div className="recent-list space-y-5">
-                        {recentData.filter(item => item.type === 'Company').slice(0, 5).map((item, idx) => (
+                        {recentData.filter(item => item.type === 'Company').slice(0, 10).map((item, idx) => (
                             <motion.div
                                 key={idx}
                                 initial={{ opacity: 0, x: -10 }}

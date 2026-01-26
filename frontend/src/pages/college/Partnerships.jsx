@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { collegeAPI } from '../../services/api';
 import './Partnerships.css';
 
 const Partnerships = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('pending'); // pending, active
     const [requests, setRequests] = useState([]);
     const [partners, setPartners] = useState([]);
@@ -98,8 +100,8 @@ const Partnerships = () => {
                                 <div key={req._id} className="request-card">
                                     <div className="company-info">
                                         <div className="info-header">
-                                            <h3>{req?.name}</h3>
-                                            <span className="industry-tag">{req?.industry}</span>
+                                            <h3 style={{ color: '#ffffff', fontSize: '1.2rem', fontWeight: '800' }}>{req?.name}</h3>
+                                            <span className="industry-tag" style={{ color: '#94a3b8' }}>{req?.industry}</span>
                                         </div>
                                         <p><strong>Contact:</strong> {req?.contactPerson?.name || 'N/A'}</p>
                                         <p><strong>Website:</strong> <a href={req?.website} target="_blank" rel="noopener noreferrer">{req?.website}</a></p>
@@ -129,12 +131,16 @@ const Partnerships = () => {
                             <div className="empty-state">No active partners</div>
                         ) : (
                             partners.map(partner => (
-                                <div key={partner._id} className="partner-card">
+                                <div 
+                                    key={partner._id} 
+                                    className="partner-card cursor-pointer hover:border-blue-500/50 transition-all"
+                                    onClick={() => navigate(`/college/companies/${partner._id}`, { state: { company: partner } })}
+                                >
                                     <div className="partner-header">
                                         <img src={partner.logo || '/default-company.png'} alt={partner.name} className="company-logo" />
                                         <div>
-                                            <h3>{partner.name}</h3>
-                                            <span className="industry-text">{partner.industry}</span>
+                                            <h3 style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: 'bold' }}>{partner.name}</h3>
+                                            <span className="industry-text" style={{ color: '#94a3b8' }}>{partner.industry}</span>
                                         </div>
                                     </div>
                                     <div className="partner-details">
@@ -147,7 +153,7 @@ const Partnerships = () => {
                                             <span className="status-active">Active</span>
                                         </div>
                                     </div>
-                                    <div className="partner-actions">
+                                    <div className="partner-actions" onClick={(e) => e.stopPropagation()}>
                                         <button 
                                             className="btn-text-danger"
                                             onClick={() => handleRevoke(partner._id)}

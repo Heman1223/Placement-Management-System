@@ -12,6 +12,7 @@ import {
 import Button from '../../components/common/Button';
 import toast from 'react-hot-toast';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import RecentPlacements from '../../components/common/RecentPlacements';
 import './CollegeDashboard.css';
 
 const CollegeDashboard = () => {
@@ -100,9 +101,9 @@ const CollegeDashboard = () => {
     }
 
     const quickActions = [
-        { label: 'Add Student', icon: Plus, path: '/college/students/new', color: 'primary' },
-        { label: 'Bulk Upload', icon: Upload, path: '/college/upload', color: 'success' },
-        { label: 'View Students', icon: Users, path: '/college/students', color: 'warning' }
+        { label: 'Add Student', icon: Plus, path: '/college/students/new', color: 'blue' },
+        { label: 'Bulk Upload', icon: Upload, path: '/college/upload', color: 'green' },
+        { label: 'View Students', icon: Users, path: '/college/students', color: 'white' }
     ];
 
     // Prepare chart data
@@ -116,45 +117,51 @@ const CollegeDashboard = () => {
     return (
         <div className="dashboard college-dashboard p-8">
             {/* Premium Header Banner */}
-            <div className="premium-header mb-12">
-                <div className="header-content">
+            <div className="premium-header mb-12 flex items-center gap-8">
+                {collegeProfile?.logo ? (
+                    <div className="w-24 h-24 rounded-2xl bg-white overflow-hidden flex-shrink-0 border border-white/10 shadow-2xl">
+                        <img src={collegeProfile.logo} alt={collegeName} className="w-full h-full object-contain p-2" />
+                    </div>
+                ) : (
+                    <div className="w-24 h-24 rounded-2xl bg-white/5 flex-shrink-0 flex items-center justify-center border border-white/10 shadow-2xl">
+                        <Building2 size={40} className="text-white/20" />
+                    </div>
+                )}
+                <div className="header-content flex-1">
                     <h1 className="college-name">{collegeName}</h1>
                     <p className="dashboard-subtitle ">Admin Dashboard <br/> 
                     Institutional Performance & Placement Analytics</p>
                 </div>
-                <button 
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all border border-white/10 text-white font-bold text-sm" 
-                    onClick={handleRefresh} 
-                    disabled={refreshing}
-                >
-                    <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
-                    {refreshing ? 'Syncing...' : 'Refresh Data'}
-                </button>
+                <div className="header-actions-container flex flex-col items-end gap-3">
+                    <button 
+                        className="refresh-trigger flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-all border border-white/10 text-white font-bold text-sm w-full" 
+                        onClick={handleRefresh} 
+                        disabled={refreshing}
+                    >
+                        <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+                        {refreshing ? 'Syncing...' : 'Refresh Data'}
+                    </button>
+                    
+                    <div className="header-quick-actions flex gap-3">
+                        {quickActions.map((action) => (
+                            <Link 
+                                key={action.label} 
+                                to={action.path} 
+                                className={`header-btn btn-${action.color}`}
+                            >
+                                <action.icon size={16} />
+                                <span>{action.label}</span>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
             </div>
 
-            {/* Quick Actions - Floating Cards */}
-            <div className="quick-actions mb-12">
-                {quickActions.map((action, idx) => (
-                    <motion.div
-                        key={action.label}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 * idx }}
-                    >
-                        <Link to={action.path} className={`quick-action-card action-${action.color}`}>
-                            <div className="action-icon">
-                                <action.icon size={24} />
-                            </div>
-                            <span className="action-label">{action.label}</span>
-                        </Link>
-                    </motion.div>
-                ))}
-            </div>
 
             {/* Premium Statistics Grid */}
             <div className="premium-stat-grid mb-16">
                 <motion.div className="premium-stat-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                    <div className="premium-stat-icon bg-blue-500/10 text-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                    <div className="premium-stat-icon bg-blue-500/10 text-blue-500">
                         <GraduationCap size={20} />
                     </div>
                     <div className="stat-v2-info">
@@ -194,9 +201,15 @@ const CollegeDashboard = () => {
                 </motion.div>
             </div>
 
-            {/* Star Students Section */}
+            {/* 3D Recent Placements Section (College Specific) */}
+            <RecentPlacements 
+                placements={stats?.recentPlacements || []} 
+                title={`${collegeName} Recent Placements`}
+            />
+
+            {/* Star Students Section (Redesigned & Relocated) */}
             {starStudents.length > 0 && (
-                <div className="mb-16">
+                <div className="mb-16 mt-8">
                     <div className="flex items-center gap-4 mb-10">
                         <Trophy size={20} className="text-amber-500" />
                         <h2 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em]">Top Institutional Performers</h2>
@@ -208,10 +221,14 @@ const CollegeDashboard = () => {
                             <div key={student._id} className="performer-card group">
                                 <div className="performer-rank">#{index + 1}</div>
                                 <div className="performer-content">
-                                    <div className="performer-avatar">
+                                    <div className="performer-avatar overflow-hidden">
                                         <div className="avatar-ring" />
-                                        <div className="avatar-inner">
-                                            {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
+                                        <div className="avatar-inner w-full h-full">
+                                            {student.profilePicture ? (
+                                                <img src={student.profilePicture} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <>{student.name?.firstName?.[0]}{student.name?.lastName?.[0]}</>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="performer-info">

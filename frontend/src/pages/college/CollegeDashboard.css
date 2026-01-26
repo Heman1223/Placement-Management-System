@@ -67,51 +67,42 @@
     margin: 0;
 }
 
-/* Quick Actions */
-.quick-actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-}
-
-.quick-action-card {
+/* Header Quick Actions - Solid Colors */
+.header-btn {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
-    background: rgba(30, 41, 59, 0.4);
-    backdrop-filter: blur(12px);
-    border-radius: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 0.6rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 700;
     text-decoration: none;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.header-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.btn-blue {
+    background-color: #2563eb;
     color: white;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.quick-action-card:hover {
-    transform: translateY(-4px);
-    background: rgba(30, 41, 59, 0.6);
-    border-color: rgba(255, 255, 255, 0.1);
+.btn-green {
+    background-color: #16a34a;
+    color: white;
 }
 
-.action-icon {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.btn-white {
+    background-color: #ffffff;
+    color: #0f172a;
 }
 
-.action-primary .action-icon { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
-.action-success .action-icon { background: rgba(16, 185, 129, 0.1); color: #34d399; }
-.action-warning .action-icon { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
-
-.action-label {
-    flex: 1;
-    font-weight: 600;
-    font-size: 1rem;
+.btn-white:hover {
+    background-color: #f8fafc;
 }
 
 /* Premium Stats Grid */
@@ -217,46 +208,130 @@
     outline: none !important;
 }
 
-/* Star Students */
-.star-students-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
-
-.star-student-card {
+/* Top Institutional Performers - Modern Flat Design */
+.performer-card {
     background: #1e293b;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2rem;
     padding: 1.5rem;
+    position: relative;
+    transition: all 0.3s ease;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 1rem;
 }
 
-.star-avatar {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f59e0b, #d97706);
+.performer-card:hover {
+    transform: translateY(-5px);
+    background: #243147;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.performer-rank {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.3rem 0.8rem;
+    border-radius: 99px;
+}
+
+.performer-content {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.performer-avatar {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1.25rem;
+    position: relative;
+    background: #0f172a;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.avatar-ring {
+    position: absolute;
+    inset: -3px;
+    border-radius: 1.4rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.performer-card:hover .avatar-ring {
+    border-color: #3b82f6;
+}
+
+.avatar-inner {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    color: white;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #3b82f6;
+    background: #1e293b;
 }
 
-.star-info h3 {
-    margin: 0;
-    color: white;
-    font-size: 1rem;
+.performer-info {
+    flex: 1;
 }
 
-.star-info p {
-    margin: 0;
+.performer-name {
+    margin: 0 0 0.25rem;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.performer-dept {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     color: #94a3b8;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+.performer-stats {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+}
+
+.p-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.p-stat-val {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+}
+
+.p-stat-lab {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Department Stats */

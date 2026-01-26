@@ -19,7 +19,8 @@ const notificationSchema = new mongoose.Schema({
             'interview_scheduled',
             'offer_received',
             'profile_incomplete',
-            'system_announcement'
+            'system_announcement',
+            'new_application'
         ]
     },
     title: {

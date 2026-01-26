@@ -5,7 +5,7 @@ import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
-import { Plus, Search, Filter, CheckCircle, Eye, Edit, Trash2, Upload, Key, User, Download, MoreVertical, Star } from 'lucide-react';
+import { Search, Filter, Plus, Upload, Download, MoreVertical, Eye, Edit, CheckCircle, XCircle, User, Key, Trash2, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './Students.css';
 
@@ -20,6 +20,8 @@ const Students = () => {
     const [resetPasswordModal, setResetPasswordModal] = useState({ open: false, student: null });
     const [newPassword, setNewPassword] = useState('');
     const [profileModal, setProfileModal] = useState({ open: false, student: null, completeness: null });
+    const [rejectionModal, setRejectionModal] = useState({ open: false, id: null, name: '' });
+    const [rejectionReason, setRejectionReason] = useState('');
     const [openDropdown, setOpenDropdown] = useState(null);
 
     const [filters, setFilters] = useState({
@@ -148,12 +150,47 @@ const Students = () => {
             setStudents(prevStudents =>
                 prevStudents.map(student =>
                     student._id === id
-                        ? { ...student, isVerified: true, verifiedAt: new Date() }
+                        ? { ...student, isVerified: true, isRejected: false, verifiedAt: new Date() }
                         : student
                 )
             );
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to verify student');
+        }
+    };
+
+    const handleReject = async (id, name) => {
+        setRejectionModal({ open: true, id, name });
+        setRejectionReason('');
+    };
+
+    const submitRejection = async () => {
+        if (!rejectionReason.trim()) {
+            toast.error('Please provide a reason for rejection');
+            return;
+        }
+
+        try {
+            await collegeAPI.rejectStudent(rejectionModal.id, rejectionReason);
+            toast.error('Student registration rejected', {
+                icon: '❌',
+                style: {
+                    background: '#1e293b',
+                    color: '#fff',
+                    border: '1px solid #ef4444'
+                }
+            });
+
+            setStudents(prevStudents =>
+                prevStudents.map(student =>
+                    student._id === rejectionModal.id
+                        ? { ...student, isVerified: false, isRejected: true, rejectionReason }
+                        : student
+                )
+            );
+            setRejectionModal({ open: false, id: null, name: '' });
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to reject student');
         }
     };
 
@@ -266,17 +303,28 @@ const Students = () => {
             )
         },
         {
-            header: 'Verified',
+            header: 'Status',
             accessor: 'isVerified',
-            render: (val) => (
+            render: (val, row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {val ? (
                         <>
                             <CheckCircle size={18} className="verified-icon" />
                             <span style={{ fontSize: '0.875rem', color: '#34d399', fontWeight: '700' }}>Verified</span>
                         </>
+                    ) : row.isRejected ? (
+                        <>
+                            <XCircle size={18} style={{ color: '#ef4444' }} />
+                            <span style={{ fontSize: '0.875rem', color: '#ef4444', fontWeight: '700' }}>Rejected</span>
+                        </>
                     ) : (
                         <span className="not-verified">Pending</span>
+                    )}
+                    {!row.resumeUrl && (
+                        <div className="incomplete-badge" title="Resume not uploaded">
+                            <span className="dot"></span>
+                            Incomplete
+                        </div>
                     )}
                 </div>
             )
@@ -330,7 +378,7 @@ const Students = () => {
                                 <Edit size={16} />
                                 <span>Edit Student</span>
                             </Link>
-                            {!row.isVerified && (
+                            {!row.isVerified && !row.isRejected && (
                                 <button
                                     className="action-dropdown-item success"
                                     onClick={() => {
@@ -340,6 +388,18 @@ const Students = () => {
                                 >
                                     <CheckCircle size={16} />
                                     <span>Verify Student</span>
+                                </button>
+                            )}
+                            {!row.isVerified && !row.isRejected && (
+                                <button
+                                    className="action-dropdown-item danger"
+                                    onClick={() => {
+                                        handleReject(id, `${row.name.firstName} ${row.name.lastName}`);
+                                        setOpenDropdown(null);
+                                    }}
+                                >
+                                    <XCircle size={16} />
+                                    <span>Reject Student</span>
                                 </button>
                             )}
                             <button
@@ -369,7 +429,7 @@ const Students = () => {
                                     setOpenDropdown(null);
                                 }}
                             >
-                                <Star size={16} />
+                                <Star size={16} className={row.isStarStudent ? 'text-amber-500 fill-current' : ''} />
                                 <span>{row.isStarStudent ? 'Remove Star' : 'Mark as Star'}</span>
                             </button>
                         </div>

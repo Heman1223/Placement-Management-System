@@ -75,8 +75,12 @@ const Register = () => {
             if (!formData.collegeId) newErrors.collegeId = 'College selection is required';
         } else if (role === 'company') {
             if (!formData.companyName) newErrors.companyName = 'Company Name is required';
+            if (!formData.city) newErrors.city = 'City is required';
+            if (!formData.state) newErrors.state = 'State is required';
         } else if (role === 'college_admin') {
             if (!formData.collegeName) newErrors.collegeName = 'College Name is required';
+            if (!formData.city) newErrors.city = 'City is required';
+            if (!formData.state) newErrors.state = 'State is required';
         }
         
         if (!formData.email) newErrors.email = 'Email is required';
@@ -147,7 +151,8 @@ const Register = () => {
                 else navigate('/student');
             }
         } catch (error) {
-            toast.error('Registration failed');
+            const message = error.response?.data?.message || 'Registration failed';
+            toast.error(message);
         } finally {
             setLoading(false);
         }
@@ -511,6 +516,33 @@ const Register = () => {
                                         </div>
                                     </div>
 
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-bold text-slate-300 ml-1">City</label>
+                                            <input
+                                                type="text"
+                                                name="city"
+                                                placeholder="e.g. San Francisco"
+                                                value={formData.city}
+                                                onChange={handleChange}
+                                                className="w-full bg-[#1e293b]/40 border border-slate-800 rounded-xl py-4 px-4 focus:ring-2 focus:ring-blue-600 transition-all outline-none"
+                                            />
+                                            {errors.city && <p className="text-xs text-red-500 ml-1">{errors.city}</p>}
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-bold text-slate-300 ml-1">State</label>
+                                            <input
+                                                type="text"
+                                                name="state"
+                                                placeholder="e.g. California"
+                                                value={formData.state}
+                                                onChange={handleChange}
+                                                className="w-full bg-[#1e293b]/40 border border-slate-800 rounded-xl py-4 px-4 focus:ring-2 focus:ring-blue-600 transition-all outline-none"
+                                            />
+                                            {errors.state && <p className="text-xs text-red-500 ml-1">{errors.state}</p>}
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-1.5">
                                         <label className="text-sm font-bold text-slate-300 ml-1">Official Email</label>
                                         <input
@@ -578,6 +610,33 @@ const Register = () => {
                                                 onChange={handleChange}
                                                 className="w-full bg-[#1e293b]/40 border border-slate-800 rounded-xl py-4 px-4 focus:ring-2 focus:ring-blue-600 transition-all outline-none"
                                             />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-bold text-slate-300 ml-1">City</label>
+                                            <input
+                                                type="text"
+                                                name="city"
+                                                placeholder="e.g. San Francisco"
+                                                value={formData.city}
+                                                onChange={handleChange}
+                                                className="w-full bg-[#1e293b]/40 border border-slate-800 rounded-xl py-4 px-4 focus:ring-2 focus:ring-blue-600 transition-all outline-none"
+                                            />
+                                            {errors.city && <p className="text-xs text-red-500 ml-1">{errors.city}</p>}
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-sm font-bold text-slate-300 ml-1">State</label>
+                                            <input
+                                                type="text"
+                                                name="state"
+                                                placeholder="e.g. California"
+                                                value={formData.state}
+                                                onChange={handleChange}
+                                                className="w-full bg-[#1e293b]/40 border border-slate-800 rounded-xl py-4 px-4 focus:ring-2 focus:ring-blue-600 transition-all outline-none"
+                                            />
+                                            {errors.state && <p className="text-xs text-red-500 ml-1">{errors.state}</p>}
                                         </div>
                                     </div>
 

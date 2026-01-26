@@ -9,10 +9,16 @@ import {
     CheckCircle, XCircle, Eye, Building2, Plus,
     Edit2, Power, Trash2, RotateCcw, MoreVertical,
     Search, Filter, MapPin, Mail, Globe, Users,
-    ArrowUpRight, Clock, ShieldCheck, Bell
+    ArrowUpRight, Clock, ShieldCheck, Bell, TrendingUp
 } from 'lucide-react';
+import {
+    BarChart, Bar, LineChart, Line, XAxis, YAxis,
+    CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
+} from 'recharts';
 import toast from 'react-hot-toast';
 import './AdminPages.css';
+
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f43f5e'];
 
 const Colleges = () => {
     const navigate = useNavigate();
@@ -24,10 +30,14 @@ const Colleges = () => {
     const [detailModal, setDetailModal] = useState({ open: false, college: null });
     const [editModal, setEditModal] = useState({ open: false, college: null });
     const [editForm, setEditForm] = useState({});
+    const [rejectionModal, setRejectionModal] = useState({ open: false, id: null, name: '' });
+    const [rejectionReason, setRejectionReason] = useState('');
     const [openDropdown, setOpenDropdown] = useState(null);
+    const [analytics, setAnalytics] = useState(null);
 
     useEffect(() => {
         fetchColleges();
+        fetchAnalytics();
     }, [filter, searchQuery]);
 
     useEffect(() => {
@@ -58,22 +68,49 @@ const Colleges = () => {
         }
     };
 
+    const fetchAnalytics = async () => {
+        try {
+            const response = await superAdminAPI.getAnalytics();
+            setAnalytics(response.data.data);
+        } catch (error) {
+            console.error('Failed to load analytics');
+        }
+    };
+
 
     const handleApprove = async (id, approved, collegeName) => {
+        if (!approved) {
+            setRejectionModal({ open: true, id, name: collegeName });
+            setRejectionReason('');
+            return;
+        }
+
         try {
-            await superAdminAPI.approveCollege(id, approved);
-            if (approved) {
-                toast.success(`${collegeName} - Approved`);
-            } else {
-                toast.error(`${collegeName} - Rejected`, {
-                    icon: '❌',
-                    style: {
-                        background: '#1e293b',
-                        color: '#fff',
-                        border: '1px solid #ef4444'
-                    }
-                });
-            }
+            await superAdminAPI.approveCollege(id, true);
+            toast.success(`${collegeName} - Approved`);
+            fetchColleges(pagination.current);
+        } catch (error) {
+            toast.error('Action failed');
+        }
+    };
+
+    const submitRejection = async () => {
+        if (!rejectionReason.trim()) {
+            toast.error('Please provide a reason for rejection');
+            return;
+        }
+
+        try {
+            await superAdminAPI.approveCollege(rejectionModal.id, false, rejectionReason);
+            toast.error(`${rejectionModal.name} - Rejected`, {
+                icon: '❌',
+                style: {
+                    background: '#1e293b',
+                    color: '#fff',
+                    border: '1px solid #ef4444'
+                }
+            });
+            setRejectionModal({ open: false, id: null, name: '' });
             fetchColleges(pagination.current);
         } catch (error) {
             toast.error('Action failed');
@@ -179,20 +216,123 @@ const Colleges = () => {
             animate="visible"
             variants={containerVariants}
         >
-            <div className="page-header colleges-header">
-                <div className="header-title-area">
-                    <motion.h1 variants={itemVariants}>Colleges</motion.h1>
-                    <motion.p className="subtitle" variants={itemVariants}>
-                        Super Admin Portal
+            {/* Premium Header Banner */}
+            <div className="premium-header-banner" style={{ marginBottom: '2rem', background: '#1e40af' }}>
+                <div className="premium-header-text">
+                    <motion.h1 variants={itemVariants}>Institutional Network</motion.h1>
+                    <motion.p className="subtitle" variants={itemVariants} style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                        Manage and monitor affiliated colleges and their placement performance.
                     </motion.p>
                 </div>
                 <div className="header-controls">
                     <Link to="/admin/colleges/new">
-                        <Button icon={Plus} variant="primary" className="add-college-btn-header">
+                        <Button icon={Plus} variant="primary" className="add-college-btn-header" style={{ background: 'rgba(255, 255, 255, 0.1)', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
                             Add New College
                         </Button>
                     </Link>
                 </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="charts-section mb-12" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+                {/* Placement Trends Line Chart */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-[#1e293b] border border-white/5 rounded-[2rem] p-8 shadow-2xl"
+                >
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                            <TrendingUp size={20} className="text-blue-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-white font-bold tracking-tight">Placement Performance</h3>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Efficiency Trends across Institutions</p>
+                        </div>
+                    </div>
+                    <div className="h-[250px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={analytics?.placementByCollege?.slice(0, 8)}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                                <XAxis 
+                                    dataKey="collegeName" 
+                                    tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <YAxis 
+                                    tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                                    itemStyle={{ color: '#fff' }}
+                                />
+                                <Line 
+                                    type="monotone" 
+                                    dataKey="placementRate" 
+                                    stroke="#3b82f6" 
+                                    strokeWidth={3}
+                                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4, stroke: '#1e293b' }}
+                                    activeDot={{ r: 6, strokeWidth: 0 }}
+                                    animationDuration={2000}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </motion.div>
+
+                {/* Student Enrollment Bar Chart */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-[#1e293b] border border-white/5 rounded-[2rem] p-8 shadow-2xl"
+                >
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                            <Users size={20} className="text-emerald-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-white font-bold tracking-tight">Student Enrollment</h3>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Data Population per Institution</p>
+                        </div>
+                    </div>
+                    <div className="h-[250px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={analytics?.placementByCollege?.slice(0, 8)}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                                <XAxis 
+                                    dataKey="collegeName" 
+                                    tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <YAxis 
+                                    tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                                    itemStyle={{ color: '#fff' }}
+                                />
+                                <Bar 
+                                    dataKey="total" 
+                                    radius={[6, 6, 0, 0]} 
+                                    barSize={24}
+                                    animationBegin={0}
+                                    animationDuration={1500}
+                                    animationEasing="ease-out"
+                                >
+                                    {analytics?.placementByCollege?.slice(0, 8).map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </motion.div>
             </div>
 
 
@@ -300,7 +440,13 @@ const Colleges = () => {
                             >
                                 <div className="card-top">
                                     <div className="college-avatar">
-                                        {college.name.toLowerCase().includes('university') ? <Building2 size={22} /> : <Eye size={22} />}
+                                        {college.logo ? (
+                                            <img src={college.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                        ) : college.name.toLowerCase().includes('university') ? (
+                                            <Building2 size={22} />
+                                        ) : (
+                                            <Eye size={22} />
+                                        )}
                                     </div>
                                     <div className="college-main-info">
                                         <h3>{college.name}</h3>
@@ -500,7 +646,11 @@ const Colleges = () => {
                     <div className="detail-modal redesigned">
                         <div className="detail-header">
                             <div className="detail-icon">
-                                <Building2 size={32} />
+                                {detailModal.college.logo ? (
+                                    <img src={detailModal.college.logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                                ) : (
+                                    <Building2 size={32} />
+                                )}
                             </div>
                             <div className="detail-title-block">
                                 <h3>{detailModal.college.name}</h3>

@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { 
+    Search, Filter, MapPin, Calendar, DollarSign, 
+    Briefcase, GraduationCap, Building2, Clock, 
+    ArrowRight, CheckCircle, AlertCircle, X, ChevronRight
+} from 'lucide-react';
 import './Jobs.css';
 
 const StudentJobs = () => {
@@ -49,18 +54,18 @@ const StudentJobs = () => {
     };
 
     const handleApply = async (jobId) => {
-        if (!window.confirm('Are you sure you want to apply for this job?')) {
+        if (!window.confirm('Are you sure you want to register for this drive?')) {
             return;
         }
 
         setApplying(true);
         try {
             await api.post(`/student/jobs/${jobId}/apply`);
-            alert('Application submitted successfully!');
+            alert('Registered successfully!');
             fetchJobs(); // Refresh to update hasApplied status
             setSelectedJob(null);
         } catch (error) {
-            alert(error.response?.data?.message || 'Failed to apply for job');
+            alert(error.response?.data?.message || 'Failed to register for job');
         } finally {
             setApplying(false);
         }
@@ -69,153 +74,160 @@ const StudentJobs = () => {
     const formatSalary = (salary) => {
         if (!salary) return 'Not disclosed';
         const { min, max, currency, period } = salary;
-        const periodText = period === 'per_annum' ? 'per annum' : 'per month';
         
         if (min && max) {
-            return `${currency} ${(min / 100000).toFixed(1)} - ${(max / 100000).toFixed(1)} LPA ${periodText}`;
+            const minLPA = (min / 100000).toFixed(1);
+            const maxLPA = (max / 100000).toFixed(1);
+            return `${minLPA} - ${maxLPA} LPA`;
         }
         return 'Not disclosed';
     };
 
     const formatDate = (date) => {
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
+        return new Date(date).toLocaleDateString('en-IN', {
+            day: 'numeric',
             month: 'short',
-            day: 'numeric'
+            year: 'numeric'
         });
     };
 
     const isDeadlineSoon = (deadline) => {
+        if (!deadline) return false;
         const daysLeft = Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24));
         return daysLeft <= 3 && daysLeft > 0;
     };
 
     const isDeadlinePassed = (deadline) => {
+        if (!deadline) return false;
         return new Date(deadline) < new Date();
     };
 
     if (loading && jobs.length === 0) {
-        return <div className="loading">Loading jobs...</div>;
+        return (
+            <div className="jobs-loading-wrap">
+                <div className="loader-spinner"></div>
+            </div>
+        );
     }
 
     return (
-        <div className="student-jobs">
-            <div className="jobs-header">
-                <h1>Available Jobs</h1>
-                <p className="subtitle">Browse and apply for jobs matching your profile</p>
-            </div>
-
-            {/* Filters */}
-            <div className="filters-section">
-                <div className="filter-group">
-                    <input
-                        type="text"
-                        placeholder="Search jobs..."
-                        value={filters.search}
-                        onChange={(e) => handleFilterChange('search', e.target.value)}
-                        className="search-input"
-                    />
+        <div className="student-jobs-page">
+            <header className="jobs-page-header">
+                <div className="header-text">
+                    <h1>Active Job Drives</h1>
+                    <p>Exclusive opportunities tailored for your profile</p>
                 </div>
-                <div className="filter-group">
-                    <select
-                        value={filters.type}
-                        onChange={(e) => handleFilterChange('type', e.target.value)}
-                        className="filter-select"
-                    >
-                        <option value="">All Types</option>
-                        <option value="internship">Internship</option>
-                        <option value="full_time">Full Time</option>
-                        <option value="part_time">Part Time</option>
-                        <option value="contract">Contract</option>
-                    </select>
+                
+                <div className="header-filters">
+                    <div className="search-box-wrap">
+                        <Search size={18} className="search-icon-fixed" />
+                        <input
+                            type="text"
+                            placeholder="Search by role or company..."
+                            value={filters.search}
+                            onChange={(e) => handleFilterChange('search', e.target.value)}
+                        />
+                    </div>
+                    
+                    <div className="filter-select-wrap">
+                        <Filter size={16} className="filter-icon-fixed" />
+                        <select
+                            value={filters.type}
+                            onChange={(e) => handleFilterChange('type', e.target.value)}
+                        >
+                            <option value="">All Job Types</option>
+                            <option value="internship">Internship</option>
+                            <option value="full_time">Full Time</option>
+                            <option value="part_time">Part Time</option>
+                            <option value="contract">Contract</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
+            </header>
 
-            {/* Jobs List */}
+            {/* Jobs Display */}
             {jobs.length === 0 ? (
-                <div className="empty-state">
-                    <div className="empty-icon">📭</div>
-                    <h3>No jobs found</h3>
-                    <p>Try adjusting your filters or check back later for new opportunities</p>
+                <div className="jobs-empty-state">
+                    <div className="empty-icon-ring">
+                        <Briefcase size={40} />
+                    </div>
+                    <h3>No drives currently active</h3>
+                    <p>We'll notify you as soon as a new drive matching your profile opens up.</p>
                 </div>
             ) : (
                 <>
-                    <div className="jobs-grid">
+                    <div className="jobs-flex-grid">
                         {jobs.map((job) => (
-                            <div key={job._id} className="job-card">
-                                <div className="job-header">
-                                    <div className="company-info">
-                                        {job.company?.logo && (
-                                            <img src={job.company.logo} alt={job.company.name} className="company-logo" />
-                                        )}
-                                        <div>
+                            <div key={job._id} className="job-drive-card">
+                                <div className="card-top">
+                                    <div className="comp-brand">
+                                        <div className="comp-logo-box">
+                                            {job.company?.logo ? (
+                                                <img src={job.company.logo} alt={job.company.name} />
+                                            ) : (
+                                                <Building2 size={24} />
+                                            )}
+                                        </div>
+                                        <div className="comp-meta-text">
                                             <h3>{job.title}</h3>
-                                            <p className="company-name">{job.company?.name}</p>
+                                            <p>{job.company?.name}</p>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2">
+                                    
+                                    <div className="job-badges-inline">
                                         {job.isPlacementDrive && (
-                                            <span className="job-type-badge placement-drive">
-                                                Campus Drive
-                                            </span>
+                                            <span className="badge-drive">Campus Drive</span>
                                         )}
-                                        <span className={`job-type-badge ${job.type}`}>
+                                        <span className={`badge-type type-${job.type}`}>
                                             {job.type.replace('_', ' ')}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="job-details">
-                                    <div className="detail-item">
-                                        <span className="icon">💰</span>
+                                <div className="card-mid">
+                                    <div className="meta-point">
+                                        <DollarSign size={14} />
                                         <span>{formatSalary(job.salary)}</span>
                                     </div>
-                                    <div className="detail-item">
-                                        <span className="icon">📍</span>
-                                        <span>{job.locations?.join(', ') || 'Not specified'}</span>
+                                    <div className="meta-point">
+                                        <MapPin size={14} />
+                                        <span>{job.locations?.join(', ') || 'Remote'}</span>
                                     </div>
-                                    <div className="detail-item">
-                                        <span className="icon">💼</span>
+                                    <div className="meta-point">
+                                        <Briefcase size={14} />
                                         <span>{job.workMode}</span>
                                     </div>
-                                    <div className="detail-item">
-                                        <span className="icon">📅</span>
-                                        <span>Deadline: {formatDate(job.applicationDeadline)}</span>
-                                        {isDeadlineSoon(job.applicationDeadline) && (
-                                            <span className="deadline-warning">⚠️ Soon</span>
-                                        )}
+                                    <div className={`meta-point ${isDeadlineSoon(job.applicationDeadline) ? 'deadline-near' : ''}`}>
+                                        <Clock size={14} />
+                                        <span>Ends {formatDate(job.applicationDeadline)}</span>
                                     </div>
                                 </div>
 
-                                {job.eligibility?.minCgpa && (
-                                    <div className="eligibility-info">
-                                        <span className="icon">🎓</span>
-                                        <span>Min CGPA: {job.eligibility.minCgpa}</span>
-                                    </div>
-                                )}
-
-                                <div className="job-actions">
+                                <div className="card-bottom">
                                     <button
                                         onClick={() => navigate(`/student/jobs/${job._id}`)}
-                                        className="btn btn-outline"
+                                        className="btn-view-drive"
                                     >
                                         View Details
+                                        <ChevronRight size={16} />
                                     </button>
+                                    
                                     {job.hasApplied ? (
-                                        <button className="btn btn-applied" disabled>
-                                            ✓ Applied
+                                        <button className="btn-status-done" disabled>
+                                            <CheckCircle size={16} />
+                                            Registered
                                         </button>
                                     ) : isDeadlinePassed(job.applicationDeadline) ? (
-                                        <button className="btn btn-disabled" disabled>
-                                            Deadline Passed
+                                        <button className="btn-status-closed" disabled>
+                                            Closed
                                         </button>
                                     ) : (
                                         <button
                                             onClick={() => handleApply(job._id)}
-                                            className="btn btn-primary"
+                                            className="btn-register-accent"
                                             disabled={applying}
                                         >
-                                            {applying ? 'Applying...' : 'Apply Now'}
+                                            {applying ? 'Registering...' : 'Register'}
                                         </button>
                                     )}
                                 </div>
@@ -223,147 +235,29 @@ const StudentJobs = () => {
                         ))}
                     </div>
 
-                    {/* Pagination */}
+                    {/* Simple Pagination */}
                     {pagination.pages > 1 && (
-                        <div className="pagination">
+                        <div className="jobs-pagination-bar">
                             <button
                                 onClick={() => handleFilterChange('page', filters.page - 1)}
                                 disabled={filters.page === 1}
-                                className="btn btn-secondary"
+                                className="pag-btn"
                             >
                                 Previous
                             </button>
-                            <span className="page-info">
-                                Page {pagination.page} of {pagination.pages}
+                            <span className="pag-count">
+                                {pagination.page} / {pagination.pages}
                             </span>
                             <button
                                 onClick={() => handleFilterChange('page', filters.page + 1)}
                                 disabled={filters.page === pagination.pages}
-                                className="btn btn-secondary"
+                                className="pag-btn"
                             >
                                 Next
                             </button>
                         </div>
                     )}
                 </>
-            )}
-
-            {/* Job Details Modal */}
-            {selectedJob && (
-                <div className="modal-overlay" onClick={() => setSelectedJob(null)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button className="modal-close" onClick={() => setSelectedJob(null)}>×</button>
-                        
-                        <div className="modal-header">
-                            <div className="company-info">
-                                {selectedJob.company?.logo && (
-                                    <img src={selectedJob.company.logo} alt={selectedJob.company.name} className="company-logo-large" />
-                                )}
-                                <div>
-                                    <h2>{selectedJob.title}</h2>
-                                    <p className="company-name">{selectedJob.company?.name}</p>
-                                </div>
-                            </div>
-                            <span className={`job-type-badge ${selectedJob.type}`}>
-                                {selectedJob.type.replace('_', ' ')}
-                            </span>
-                        </div>
-
-                        <div className="modal-body">
-                            <section>
-                                <h3>Job Details</h3>
-                                <div className="details-grid">
-                                    <div className="detail-item">
-                                        <strong>Salary:</strong>
-                                        <span>{formatSalary(selectedJob.salary)}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <strong>Location:</strong>
-                                        <span>{selectedJob.locations?.join(', ')}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <strong>Work Mode:</strong>
-                                        <span>{selectedJob.workMode}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <strong>Deadline:</strong>
-                                        <span>{formatDate(selectedJob.applicationDeadline)}</span>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section>
-                                <h3>Description</h3>
-                                <p className="description">{selectedJob.description}</p>
-                            </section>
-
-                            {selectedJob.eligibility && (
-                                <section>
-                                    <h3>Eligibility Criteria</h3>
-                                    <ul className="eligibility-list">
-                                        {selectedJob.eligibility.minCgpa && (
-                                            <li>Minimum CGPA: {selectedJob.eligibility.minCgpa}</li>
-                                        )}
-                                        {selectedJob.eligibility.maxBacklogs !== undefined && (
-                                            <li>Maximum Backlogs: {selectedJob.eligibility.maxBacklogs}</li>
-                                        )}
-                                        {selectedJob.eligibility.allowedDepartments?.length > 0 && (
-                                            <li>Departments: {selectedJob.eligibility.allowedDepartments.join(', ')}</li>
-                                        )}
-                                        {selectedJob.eligibility.allowedBatches?.length > 0 && (
-                                            <li>Batches: {selectedJob.eligibility.allowedBatches.join(', ')}</li>
-                                        )}
-                                    </ul>
-                                </section>
-                            )}
-
-                            {selectedJob.eligibility?.requiredSkills?.length > 0 && (
-                                <section>
-                                    <h3>Required Skills</h3>
-                                    <div className="skills-list">
-                                        {selectedJob.eligibility.requiredSkills.map((skill, index) => (
-                                            <span key={index} className="skill-tag">{skill}</span>
-                                        ))}
-                                    </div>
-                                </section>
-                            )}
-
-                            {selectedJob.hiringProcess?.length > 0 && (
-                                <section>
-                                    <h3>Hiring Process</h3>
-                                    <ol className="hiring-process">
-                                        {selectedJob.hiringProcess.map((round, index) => (
-                                            <li key={index}>
-                                                <strong>{round.name}</strong>
-                                                {round.description && <p>{round.description}</p>}
-                                            </li>
-                                        ))}
-                                    </ol>
-                                </section>
-                            )}
-                        </div>
-
-                        <div className="modal-footer">
-                            {selectedJob.hasApplied ? (
-                                <button className="btn btn-applied" disabled>
-                                    ✓ Already Applied
-                                </button>
-                            ) : isDeadlinePassed(selectedJob.applicationDeadline) ? (
-                                <button className="btn btn-disabled" disabled>
-                                    Deadline Passed
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => handleApply(selectedJob._id)}
-                                    className="btn btn-primary btn-large"
-                                    disabled={applying}
-                                >
-                                    {applying ? 'Applying...' : 'Apply for this Job'}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
             )}
         </div>
     );

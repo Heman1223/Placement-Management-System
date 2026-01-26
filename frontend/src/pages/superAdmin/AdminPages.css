@@ -2580,3 +2580,104 @@ button[title]:hover::after {
         grid-template-columns: 1fr;
     }
 }
+
+/* Rejection UI Styles */
+.rejection-card-ui {
+    display: flex;
+    flex-direction: column;
+}
+
+.warning-banner {
+    display: flex;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 1rem;
+    align-items: flex-start;
+}
+
+.rejection-textarea:focus {
+    outline: none;
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+/* Premium Header Banner */
+.premium-header-banner {
+    background: #1e40af;
+    border-radius: 1.5rem;
+    padding: 2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.premium-header-banner::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.premium-header-text h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.04em;
+    margin: 0 !important;
+}
+
+.premium-header-text p.subtitle {
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-top: 0.25rem !important;
+}
+
+/* Enhanced Section Title Row */
+.section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 3rem 0 1.5rem;
+    padding: 1.5rem 2rem;
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.section-title-row h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.view-map-link {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+}
+
+.view-map-link:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+}

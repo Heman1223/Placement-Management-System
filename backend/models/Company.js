@@ -90,6 +90,10 @@ const companySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    rejectionReason: {
+        type: String,
+        trim: true
+    },
 
 
     // Active/Blocked status

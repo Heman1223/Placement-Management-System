@@ -67,19 +67,30 @@ const CompanyDetail = () => {
         <div className="dashboard p-8">
             {/* Premium Header Banner */}
             <div className="premium-header-banner mb-12">
-                <div className="premium-header-text">
-                    <button 
-                        onClick={() => navigate('/admin/companies')} 
-                        className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-4 text-sm font-bold"
-                    >
-                        <ArrowLeft size={16} />
-                        Back to Partners
-                    </button>
-                    <h1>{company.name}</h1>
-                    <p className="flex items-center gap-2 mt-2">
-                        {company.type === 'placement_agency' ? 'Recruitment Partner' : 'Corporate Partner'} • 
-                        <span className="opacity-80">{company.industry}</span>
-                    </p>
+                <div className="flex items-center gap-6">
+                    {company.logo ? (
+                        <div className="w-24 h-24 rounded-2xl bg-white overflow-hidden flex-shrink-0 border border-white/10 shadow-2xl">
+                            <img src={company.logo} alt={company.name} className="w-full h-full object-contain p-2" />
+                        </div>
+                    ) : (
+                        <div className="w-24 h-24 rounded-2xl bg-blue-500/20 flex-shrink-0 flex items-center justify-center border border-blue-500/20 shadow-2xl">
+                            <Building2 size={40} className="text-blue-500" />
+                        </div>
+                    )}
+                    <div className="premium-header-text">
+                        <button 
+                            onClick={() => navigate('/admin/companies')} 
+                            className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-4 text-sm font-bold"
+                        >
+                            <ArrowLeft size={16} />
+                            Back to Partners
+                        </button>
+                        <h1>{company.name}</h1>
+                        <p className="flex items-center gap-2 mt-2">
+                            {company.type === 'placement_agency' ? 'Recruitment Partner' : 'Corporate Partner'} • 
+                            <span className="opacity-80">{company.industry}</span>
+                        </p>
+                    </div>
                 </div>
                 <div className={`px-6 py-3 rounded-xl flex items-center gap-3 border ${
                     company.isSuspended ? 'bg-red-500/10 border-red-500/20' :

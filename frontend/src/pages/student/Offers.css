@@ -1,0 +1,352 @@
+/* Offers Page - Recruitment Hub */
+
+.offers-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem;
+    animation: fadeIn 0.4s ease;
+    min-height: 100vh;
+}
+
+.offers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 3rem;
+    gap: 2rem;
+}
+
+.offers-header h1 {
+    font-size: 2.2rem;
+    font-weight: 850;
+    color: white;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.offers-header p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+/* Tab Switcher */
+.tab-switcher {
+    display: flex;
+    background: rgba(30, 41, 59, 0.5);
+    padding: 0.4rem;
+    border-radius: 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+}
+
+.tab-btn {
+    padding: 0.8rem 1.8rem;
+    border-radius: 1rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #94a3b8;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    background: #3b82f6;
+    color: white;
+}
+
+.tab-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: rgba(30, 41, 59, 0.3);
+    border-radius: 2.5rem;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.empty-icon-box {
+    width: 80px;
+    height: 80px;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border-radius: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #64748b;
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Invitations Grid */
+.offers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 2rem;
+}
+
+.invitation-card {
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2rem;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.invitation-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(59, 130, 246, 0.3);
+    background: rgba(30, 41, 59, 0.6);
+}
+
+.inv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.inv-company {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+}
+
+.inv-logo {
+    width: 54px;
+    height: 54px;
+    background: white;
+    border-radius: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem;
+}
+
+.inv-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+.inv-company h4 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 0.2rem;
+}
+
+.inv-company p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.inv-date {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 800;
+}
+
+.inv-body {
+    flex: 1;
+}
+
+.inv-message {
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-clamp: 3;
+}
+
+.inv-meta {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+}
+
+.meta-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    border-radius: 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.inv-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-view-invite {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    width: 100%;
+    padding: 1rem;
+    background: #3b82f6;
+    color: white;
+    border-radius: 1.2rem;
+    font-weight: 800;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.btn-view-invite:hover {
+    background: #2563eb;
+    transform: scale(1.02);
+}
+
+/* Selection List */
+.selection-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.selection-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 1.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.selection-card:hover {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(10px);
+}
+
+.sel-left {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.sel-comp-logo {
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+}
+
+.sel-comp-logo img { width: 100%; height: 100%; object-fit: contain; }
+
+.sel-info h4 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 0.2rem;
+}
+
+.sel-comp-name {
+    color: #3b82f6;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+}
+
+.sel-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.sel-right {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.sel-status {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.status-hired { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.status-offered { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
+.status-interviewed { background: rgba(167, 139, 250, 0.1); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.2); }
+.status-shortlisted { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+.status-rejected { background: rgba(244, 63, 94, 0.1); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.2); }
+
+.sel-link {
+    color: #475569;
+    transition: all 0.3s ease;
+}
+
+.sel-link:hover {
+    color: white;
+    transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1024px) {
+    .offers-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    .offers-page { padding: 1.5rem; }
+    .inv-header { flex-direction: column; gap: 1rem; }
+    .selection-card { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+    .sel-right { width: 100%; justify-content: space-between; }
+}

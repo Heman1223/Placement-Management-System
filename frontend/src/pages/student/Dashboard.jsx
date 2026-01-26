@@ -1,21 +1,33 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
-import { RefreshCw } from 'lucide-react';
+import { 
+    RefreshCw, Briefcase, FileText, User, 
+    Bell, Star, CheckCircle, Clock, 
+    TrendingUp, Award, Zap, ChevronRight,
+    MapPin, Building2, Calendar, Target
+} from 'lucide-react';
+import { 
+    PieChart, Pie, Cell, ResponsiveContainer, 
+    Tooltip as RechartsTooltip, AreaChart, Area, 
+    XAxis, YAxis, CartesianGrid 
+} from 'recharts';
 import toast from 'react-hot-toast';
 import './StudentDashboard.css';
 
 const StudentDashboard = () => {
     const [stats, setStats] = useState(null);
     const [profile, setProfile] = useState(null);
+    const [recentJobs, setRecentJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const navigate = useNavigate();
 
+    const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#1d4ed8'];
+
     useEffect(() => {
         fetchDashboardData();
         
-        // Auto-refresh every 30 seconds
         const interval = setInterval(() => {
             fetchDashboardData(true);
         }, 30000);
@@ -26,19 +38,18 @@ const StudentDashboard = () => {
     const fetchDashboardData = async (silent = false) => {
         if (!silent) setLoading(true);
         try {
-            const [statsRes, profileRes] = await Promise.all([
+            const [statsRes, profileRes, jobsRes] = await Promise.all([
                 api.get('/student/stats'),
-                api.get('/student/profile')
+                api.get('/student/profile'),
+                api.get('/student/jobs?limit=5')
             ]);
             setStats(statsRes.data.data);
             setProfile(profileRes.data.data);
-            
-            if (silent) {
-                console.log('Dashboard data refreshed');
-            }
+            setRecentJobs(jobsRes.data.data);
         } catch (error) {
             if (!silent) {
                 console.error('Error fetching dashboard data:', error);
+                toast.error('Failed to load dashboard');
             }
         } finally {
             setLoading(false);
@@ -49,118 +60,190 @@ const StudentDashboard = () => {
     const handleRefresh = () => {
         setRefreshing(true);
         fetchDashboardData();
-        toast.success('Dashboard refreshed');
+        toast.success('Dashboard updated');
     };
 
     if (loading) {
-        return <div className="loading">Loading dashboard...</div>;
+        return <div className="loading-screen-premium"><div className="loader-ring"></div></div>;
     }
 
     const profileCompleteness = stats?.profileCompleteness || 0;
-    const isProfileIncomplete = profileCompleteness < 80;
+    
+    // Prepare chart data
+    const statusData = stats?.applicationsByStatus ? 
+        Object.entries(stats.applicationsByStatus).map(([name, value]) => ({ 
+            name: name.replace('_', ' ').toUpperCase(), 
+            value 
+        })) : [];
 
     return (
-        <div className="student-dashboard">
-            <div className="dashboard-header">
-                <div>
-                    <h1>Welcome, {profile?.name?.firstName}!</h1>
-                    <p className="subtitle">Track your placement journey</p>
+        <div className="premium-dashboard">
+            {/* Glass Header */}
+            <div className="glass-header">
+                <div className="header-content">
+                    <div className="welcome-section">
+                        <h1>Welcome back, <span className="text-gradient-blue">{profile?.name?.firstName}</span>!</h1>
+                        <p className="subtitle">LPU Placement Management Portal</p>
+                    </div>
+                    <div className="header-actions">
+                        <button 
+                            onClick={handleRefresh} 
+                            disabled={refreshing}
+                            className={`action-btn-circle ${refreshing ? 'spinning' : ''}`}
+                        >
+                            <RefreshCw size={20} />
+                        </button>
+                    </div>
                 </div>
-                <button 
-                    onClick={handleRefresh} 
-                    disabled={refreshing}
-                    className="refresh-btn"
-                    title="Refresh Dashboard"
-                >
-                    <RefreshCw size={18} className={refreshing ? 'spinning' : ''} />
-                    Refresh
-                </button>
+
+                <div className="profile-progress-banner">
+                    <div className="progress-info">
+                        <span className="label">Profile Strength</span>
+                        <span className="value">{profileCompleteness}%</span>
+                    </div>
+                    <div className="progress-bar-container">
+                        <div 
+                            className="progress-bar-fill" 
+                            style={{ width: `${profileCompleteness}%` }}
+                        ></div>
+                    </div>
+                    {profileCompleteness < 100 && (
+                        <Link to="/student/profile" className="complete-btn">
+                            Complete Profile <ChevronRight size={14} />
+                        </Link>
+                    )}
+                </div>
             </div>
 
-            {isProfileIncomplete && (
-                <div className="alert alert-warning">
-                    <strong>Complete Your Profile!</strong>
-                    <p>Your profile is {profileCompleteness}% complete. Complete it to increase your chances of getting hired.</p>
-                    <button onClick={() => navigate('/student/profile')} className="btn btn-primary">
-                        Complete Profile
+            {/* Quick Actions Grid */}
+            <div className="quick-actions-grid">
+                {[
+                    { label: 'Job Drives', path: '/student/jobs', icon: Briefcase, color: 'blue' },
+                    { label: 'My Offers', path: '/student/offers', icon: Award, color: 'green' },
+                    { label: 'Applications', path: '/student/applications', icon: FileText, color: 'amber' },
+                    { label: 'Settings', path: '/student/profile', icon: User, color: 'slate' }
+                ].map((action, i) => (
+                    <button key={i} onClick={() => navigate(action.path)} className={`nav-card card-${action.color}`}>
+                        <div className="nav-icon"><action.icon size={24} /></div>
+                        <span>{action.label}</span>
                     </button>
-                </div>
-            )}
-
-            {!profile?.isVerified && (
-                <div className="alert alert-info">
-                    <strong>Profile Pending Verification</strong>
-                    <p>Your profile is awaiting verification from your college admin.</p>
-                </div>
-            )}
-
-            <div className="stats-grid">
-                <div className="stat-card">
-                    <div className="stat-icon">📊</div>
-                    <div className="stat-content">
-                        <h3>{stats?.totalApplications || 0}</h3>
-                        <p>Total Applications</p>
-                    </div>
-                </div>
-
-                <div className="stat-card">
-                    <div className="stat-icon">💼</div>
-                    <div className="stat-content">
-                        <h3>{stats?.eligibleJobs || 0}</h3>
-                        <p>Eligible Jobs</p>
-                    </div>
-                </div>
-
-                <div className="stat-card">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-content">
-                        <h3>{stats?.applicationsByStatus?.shortlisted || 0}</h3>
-                        <p>Shortlisted</p>
-                    </div>
-                </div>
-
-                <div className="stat-card">
-                    <div className="stat-icon">🎯</div>
-                    <div className="stat-content">
-                        <h3>{profileCompleteness}%</h3>
-                        <p>Profile Complete</p>
-                    </div>
-                </div>
+                ))}
             </div>
 
-            <div className="dashboard-actions">
-                <div className="action-card" onClick={() => navigate('/student/jobs')}>
-                    <div className="action-icon">🔍</div>
-                    <h3>Browse Jobs</h3>
-                    <p>Find jobs matching your profile</p>
-                </div>
-
-                <div className="action-card" onClick={() => navigate('/student/applications')}>
-                    <div className="action-icon">📝</div>
-                    <h3>My Applications</h3>
-                    <p>Track your application status</p>
-                </div>
-
-                <div className="action-card" onClick={() => navigate('/student/profile')}>
-                    <div className="action-icon">👤</div>
-                    <h3>My Profile</h3>
-                    <p>Update your information</p>
-                </div>
-            </div>
-
-            {stats?.applicationsByStatus && Object.keys(stats.applicationsByStatus).length > 0 && (
-                <div className="application-status-section">
-                    <h2>Application Status Breakdown</h2>
-                    <div className="status-grid">
-                        {Object.entries(stats.applicationsByStatus).map(([status, count]) => (
-                            <div key={status} className="status-item">
-                                <span className="status-label">{status.replace('_', ' ')}</span>
-                                <span className="status-count">{count}</span>
+            {/* Main Content Grid */}
+            <div className="dashboard-main-grid">
+                {/* Stats & Charts Section */}
+                <div className="visual-section">
+                    <div className="stats-row">
+                        <div className="stat-glow-card">
+                            <div className="icon-box blue"><Target size={20} /></div>
+                            <div className="details">
+                                <span className="val">{stats?.totalApplications || 0}</span>
+                                <span className="lab">Applications</span>
                             </div>
-                        ))}
+                        </div>
+                        <div className="stat-glow-card">
+                            <div className="icon-box green"><CheckCircle size={20} /></div>
+                            <div className="details">
+                                <span className="val">{stats?.applicationsByStatus?.shortlisted || 0}</span>
+                                <span className="lab">Shortlisted</span>
+                            </div>
+                        </div>
+                        <div className="stat-glow-card">
+                            <div className="icon-box info"><Zap size={20} /></div>
+                            <div className="details">
+                                <span className="val">{stats?.eligibleJobs || 0}</span>
+                                <span className="lab">Eligible Jobs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="charts-container">
+                        <div className="chart-box">
+                            <h3>Application Landscape</h3>
+                            <div className="h-[250px]">
+                                {statusData.length > 0 ? (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={statusData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={80}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {statusData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <RechartsTooltip 
+                                                contentStyle={{ background: '#0f172a', border: 'none', borderRadius: '12px', color: '#fff' }}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="no-data">No application data yet</div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            )}
+
+                {/* Right Column: Recent Jobs & Notifications */}
+                <div className="side-section">
+                    <div className="section-card">
+                        <div className="section-title">
+                            <h3>Recommended for You</h3>
+                            <Link to="/student/jobs" className="view-all">View All</Link>
+                        </div>
+                        <div className="jobs-list">
+                            {recentJobs.length === 0 ? (
+                                <div className="empty-list">No matches found</div>
+                            ) : (
+                                recentJobs.slice(0, 3).map((job) => (
+                                    <div key={job._id} className="mini-job-card" onClick={() => navigate(`/student/jobs/${job._id}`)}>
+                                        <div className="comp-logo-mini">
+                                            {job.company?.logo ? <img src={job.company.logo} alt="" /> : <Building2 size={16} />}
+                                        </div>
+                                        <div className="job-info-mini">
+                                            <h4>{job.title}</h4>
+                                            <p>{job.company?.name}</p>
+                                        </div>
+                                        <ChevronRight size={16} className="arrow" />
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="section-card">
+                        <div className="section-title">
+                            <h3>Important Alerts</h3>
+                            <Link to="/student/notifications" className="view-all">See All</Link>
+                        </div>
+                        <div className="alerts-list">
+                           <div className="alert-item">
+                                <div className="dot blue"></div>
+                                <div className="alert-content">
+                                    <p>Welcome to your <strong>Redesigned Dashboard</strong>!</p>
+                                    <span>Just now</span>
+                                </div>
+                           </div>
+                           {!profile?.isVerified && (
+                               <div className="alert-item">
+                                    <div className="dot amber"></div>
+                                    <div className="alert-content">
+                                        <p>Verification pending from college admin</p>
+                                        <span>Action Required</span>
+                                    </div>
+                               </div>
+                           )}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

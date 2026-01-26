@@ -1,0 +1,354 @@
+/* Company Applications Dashboard - Premium Theme */
+
+.company-apps-page {
+    padding: 2.5rem;
+    max-width: 1450px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease;
+}
+
+.page-header-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+}
+
+.header-left h1 {
+    font-size: 2.4rem;
+    font-weight: 850;
+    color: white;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+}
+
+.header-left p {
+    color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1.2rem;
+}
+
+/* Stats Strip */
+.stats-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.stat-pill {
+    background: rgba(30, 41, 59, 0.4);
+    padding: 1.5rem;
+    border-radius: 1.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    backdrop-filter: blur(10px);
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon.blue { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+.stat-icon.yellow { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
+.stat-icon.purple { background: rgba(167, 139, 250, 0.1); color: #a78bfa; }
+.stat-icon.green { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 850;
+    color: white;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 700;
+}
+
+/* Content Card */
+.content-card-premium {
+    background: rgba(30, 41, 59, 0.3);
+    border-radius: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    backdrop-filter: blur(15px);
+}
+
+.filter-bar {
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.search-wrapper {
+    flex: 1;
+    position: relative;
+    max-width: 500px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 1rem 1.2rem 1rem 3.5rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.2rem;
+    color: white;
+    font-weight: 600;
+}
+
+.search-wrapper input:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.filter-group {
+    display: flex;
+    gap: 1rem;
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(15, 23, 42, 0.6);
+    padding: 0 1.2rem;
+    border-radius: 1.2rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+}
+
+.filter-item select {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 1rem 0;
+    font-weight: 700;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Premium Table */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.premium-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.premium-table th {
+    text-align: left;
+    padding: 1.5rem 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.premium-table td {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    vertical-align: middle;
+}
+
+.app-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Student Cell */
+.student-profile-cell {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.student-avatar-small {
+    width: 42px;
+    height: 42px;
+    border-radius: 1rem;
+    background: #3b82f6;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.student-avatar-small img { width: 100%; height: 100%; object-fit: cover; }
+
+.student-base-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-name-link {
+    font-weight: 800;
+    color: white;
+    font-size: 1rem;
+}
+
+.student-email-sub {
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+/* Job Cell */
+.job-cell-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.job-title-pill {
+    color: #60a5fa;
+    font-weight: 800;
+    font-size: 0.95rem;
+}
+
+.job-type-sub {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+}
+
+/* Status Pills */
+.status-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    font-weight: 850;
+    width: fit-content;
+}
+
+.status-pill .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.status-pending { background: rgba(148, 163, 184, 0.1); color: #94a3b8; }
+.status-pending .dot { background: #94a3b8; }
+
+.status-hired { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+.status-hired .dot { background: #34d399; }
+
+.status-rejected { background: rgba(244, 63, 94, 0.1); color: #fb7185; }
+.status-rejected .dot { background: #fb7185; }
+
+/* Action Buttons */
+.action-buttons-cell {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.btn-action-view, .btn-action-job {
+    width: 38px;
+    height: 38px;
+    border-radius: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-action-view { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+.btn-action-view:hover { background: #3b82f6; color: white; transform: rotate(10deg); }
+
+.btn-action-job { background: rgba(255, 255, 255, 0.05); color: #94a3b8; }
+.btn-action-job:hover { background: rgba(255, 255, 255, 0.15); color: white; }
+
+/* Pagination */
+.pagination-premium {
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.pagination-premium button {
+    padding: 0.8rem 1.5rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    color: white;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.pagination-premium button:hover:not(:disabled) {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.page-numbers button {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-numbers button.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+@media (max-width: 1024px) {
+    .stats-strip { grid-template-columns: repeat(2, 1fr); }
+    .filter-bar { flex-direction: column; }
+    .search-wrapper { max-width: none; }
+}
+
+@media (max-width: 768px) {
+    .stats-strip { grid-template-columns: 1fr; }
+    .page-header-premium { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+    .header-actions { width: 100%; }
+    .header-actions > * { flex: 1; }
+}

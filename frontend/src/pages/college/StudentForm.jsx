@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { collegeAPI } from '../../services/api';
+import api, { collegeAPI, uploadAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Card from '../../components/common/Card';
-import { Save, ArrowLeft, Plus, Trash2, Search, X } from 'lucide-react';
+import { Save, ArrowLeft, Plus, Trash2, Search, X, Camera, User, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './StudentForm.css';
 
@@ -36,6 +36,8 @@ const StudentForm = () => {
         state: '',
         enrollmentStatus: 'active',
         placementEligible: true,
+        about: '',
+        dateOfBirth: '',
         education: {
             tenth: { percentage: '', board: '' },
             twelfth: { percentage: '', board: '', stream: '' },
@@ -43,9 +45,12 @@ const StudentForm = () => {
             pg: { institution: '', degree: '', percentage: '', year: '' }
         },
         skills: [],
+        certifications: [],
+        projects: [],
         linkedinUrl: '',
         githubUrl: '',
-        resumeUrl: ''
+        resumeUrl: '',
+        profilePicture: ''
     });
 
     // Common technical skills list
@@ -73,7 +78,10 @@ const StudentForm = () => {
     const [filteredSkills, setFilteredSkills] = useState([]);
     const skillInputRef = useRef(null);
     const [resumeFile, setResumeFile] = useState(null);
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [uploadingResume, setUploadingResume] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
 
     useEffect(() => {
         fetchDepartments();
@@ -113,14 +121,19 @@ const StudentForm = () => {
                 state: studentData.state || '',
                 enrollmentStatus: studentData.enrollmentStatus || 'active',
                 placementEligible: studentData.placementEligible !== undefined ? studentData.placementEligible : true,
+                about: studentData.about || '',
+                dateOfBirth: studentData.dateOfBirth ? studentData.dateOfBirth.split('T')[0] : '',
                 education: {
                     tenth: studentData.education?.tenth || { percentage: '', board: '' },
                     twelfth: studentData.education?.twelfth || { percentage: '', board: '', stream: '' }
                 },
                 skills: studentData.skills || [],
+                certifications: studentData.certifications || [],
+                projects: studentData.projects || [],
                 linkedinUrl: studentData.linkedinUrl || '',
                 githubUrl: studentData.githubUrl || '',
-                resumeUrl: studentData.resumeUrl || ''
+                resumeUrl: studentData.resumeUrl || '',
+                profilePicture: studentData.profilePicture || ''
             });
         } catch (error) {
             console.error('Error loading student:', error);
@@ -202,6 +215,56 @@ const StudentForm = () => {
         }
     };
 
+    const addCertificate = () => {
+        setFormData(prev => ({
+            ...prev,
+            certifications: [...prev.certifications, { name: '', fileUrl: '' }]
+        }));
+    };
+
+    const removeCertificate = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            certifications: prev.certifications.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleCertificateUpload = async (index, file) => {
+        if (!file) return;
+
+        const uploadFormData = new FormData();
+        uploadFormData.append('certificate', file);
+        if (id) uploadFormData.append('studentId', id);
+
+        toast.loading('Uploading certificate...', { id: 'cert-upload' });
+        try {
+            const response = await uploadAPI.certificate(uploadFormData);
+            
+            const updatedCerts = [...formData.certifications];
+            updatedCerts[index].fileUrl = response.data.data.url;
+            setFormData(prev => ({ ...prev, certifications: updatedCerts }));
+            
+            toast.success('Certificate uploaded', { id: 'cert-upload' });
+        } catch (error) {
+            console.error('Cert upload error:', error);
+            toast.error('Upload failed', { id: 'cert-upload' });
+        }
+    };
+
+    const addProject = () => {
+        setFormData(prev => ({
+            ...prev,
+            projects: [...prev.projects, { title: '', description: '', technologies: '', projectUrl: '', githubUrl: '' }]
+        }));
+    };
+
+    const removeProject = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            projects: prev.projects.filter((_, i) => i !== index)
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
@@ -226,16 +289,45 @@ const StudentForm = () => {
                 setUploadingResume(false);
             }
 
-            // Then save student data
+            // Upload image if selected (for existing student) or handle in a way
+            // Actually, for NEW student, we need the student ID first.
+            // So I'll upload image AFTER student is created if it's new.
+            
+            let studentIdForImage = id;
+
+            // Save student data
+            let savedStudent;
             if (isEdit) {
-                await collegeAPI.updateStudent(id, formData);
-                toast.success('Student updated successfully');
+                const response = await collegeAPI.updateStudent(id, formData);
+                savedStudent = response.data.data;
             } else {
                 const response = await collegeAPI.addStudent(formData);
+                savedStudent = response.data.data;
+                studentIdForImage = savedStudent._id;
+            }
 
+            // Post-save image upload if studentId is available
+            if (imageFile && studentIdForImage) {
+                setUploadingImage(true);
+                const imageFormData = new FormData();
+                imageFormData.append('studentId', studentIdForImage);
+                imageFormData.append('image', imageFile);
+                
+                try {
+                    const { uploadAPI } = await import('../../services/api');
+                    await uploadAPI.image(imageFormData);
+                } catch (imgErr) {
+                    toast.error('Student data saved, but image upload failed');
+                }
+                setUploadingImage(false);
+            }
+
+            if (isEdit) {
+                toast.success('Student updated successfully');
+            } else {
                 // Show credentials if provided
-                if (response.data.data.credentials) {
-                    const { email, password } = response.data.data.credentials;
+                if (savedStudent.credentials) {
+                    const { email, password } = savedStudent.credentials;
                     toast.success(
                         `Student added successfully!\n\nLogin Credentials:\nEmail: ${email}\nPassword: ${password}`,
                         { duration: 8000 }
@@ -250,6 +342,32 @@ const StudentForm = () => {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload an image file');
+            return;
+        }
+
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Image size should be less than 2MB');
+            return;
+        }
+
+        setImageFile(file);
+        
+        // Create preview URL
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result);
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleResumeChange = (e) => {
@@ -290,6 +408,37 @@ const StudentForm = () => {
             </div>
 
             <form onSubmit={handleSubmit}>
+                {/* Profile Image Section */}
+                <Card className="form-card profile-image-card">
+                    <div className="form-student-profile">
+                        <div className="student-form-avatar">
+                            {(imagePreview || formData.profilePicture) ? (
+                                <img src={imagePreview || formData.profilePicture} alt="Student" />
+                            ) : (
+                                <div className="student-form-initials">
+                                    <User size={40} />
+                                </div>
+                            )}
+                            <label htmlFor="student-image-upload" className="student-image-overlay">
+                                <Camera size={20} />
+                                <span>{uploadingImage ? '...' : 'Upload Photo'}</span>
+                            </label>
+                            <input
+                                id="student-image-upload"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                style={{ display: 'none' }}
+                                disabled={uploadingImage}
+                            />
+                        </div>
+                        <div className="student-image-info">
+                            <h3>Student Profile Photo</h3>
+                            <p>Upload a clear passport-sized photograph. Max 2MB.</p>
+                        </div>
+                    </div>
+                </Card>
+
                 {/* 1. Basic Identity (Mandatory) */}
                 <Card title="1️⃣ Basic Identity (Mandatory)" className="form-card">
                     <p className="text-sm text-gray-600 mb-4">These come from college records</p>
@@ -433,10 +582,28 @@ const StudentForm = () => {
                                 <option value="dropped">Dropped</option>
                             </select>
                         </div>
+                        <Input
+                            label="Date of Birth"
+                            type="date"
+                            value={formData.dateOfBirth}
+                            onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+                        />
                     </div>
                 </Card>
 
-                {/* 3. Contact Information (Basic) */}
+                {/* About Me Section */}
+                <Card title="📄 About Me" className="form-card">
+                    <div className="input-wrapper">
+                        <label className="input-label">Description / Summary</label>
+                        <textarea
+                            className="input min-h-[120px] py-3"
+                            value={formData.about}
+                            onChange={(e) => handleChange('about', e.target.value)}
+                            placeholder="Describe yourself for companies (e.g., career goals, professional interests)..."
+                        />
+                        <p className="text-xs text-gray-500 mt-2">This helps companies understand your profile better.</p>
+                    </div>
+                </Card>
                 <Card title="3️⃣ Contact Information (Basic)" className="form-card">
                     <p className="text-sm text-gray-600 mb-4">Keep this minimal</p>
                     <div className="form-grid">
@@ -677,6 +844,146 @@ const StudentForm = () => {
                                     <X size={14} />
                                 </button>
                             </span>
+                        ))}
+                    </div>
+                </Card>
+
+                {/* Projects */}
+                <Card title="🚀 Projects" className="form-card">
+                    <div className="flex justify-between items-center mb-4">
+                        <p className="text-sm text-gray-600">Add your technical project details</p>
+                        <Button type="button" variant="secondary" size="sm" onClick={addProject} icon={Plus}>
+                            Add Project
+                        </Button>
+                    </div>
+                    
+                    <div className="space-y-6">
+                        {formData.projects.map((project, index) => (
+                            <div key={index} className="project-input-row p-5 bg-black/5 rounded-2xl border border-white/5 relative">
+                                <button 
+                                    type="button" 
+                                    className="absolute top-4 right-4 p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                    onClick={() => removeProject(index)}
+                                >
+                                    <Trash2 size={20} />
+                                </button>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <Input
+                                        label="Project Title"
+                                        value={project.title}
+                                        onChange={(e) => {
+                                            const updated = [...formData.projects];
+                                            updated[index].title = e.target.value;
+                                            setFormData(prev => ({ ...prev, projects: updated }));
+                                        }}
+                                        placeholder="e.g., E-commerce Platform"
+                                    />
+                                    <Input
+                                        label="Technologies Used"
+                                        value={project.technologies}
+                                        onChange={(e) => {
+                                            const updated = [...formData.projects];
+                                            updated[index].technologies = e.target.value;
+                                            setFormData(prev => ({ ...prev, projects: updated }));
+                                        }}
+                                        placeholder="e.g., React, Node.js, MongoDB"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <div className="input-wrapper">
+                                        <label className="input-label">Project Description</label>
+                                        <textarea
+                                            className="input min-h-[80px] py-2"
+                                            value={project.description}
+                                            onChange={(e) => {
+                                                const updated = [...formData.projects];
+                                                updated[index].description = e.target.value;
+                                                setFormData(prev => ({ ...prev, projects: updated }));
+                                            }}
+                                            placeholder="Briefly describe what you built and your role..."
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <Input
+                                        label="Project URL"
+                                        value={project.projectUrl}
+                                        onChange={(e) => {
+                                            const updated = [...formData.projects];
+                                            updated[index].projectUrl = e.target.value;
+                                            setFormData(prev => ({ ...prev, projects: updated }));
+                                        }}
+                                        placeholder="https://your-project.com"
+                                    />
+                                    <Input
+                                        label="GitHub URL"
+                                        value={project.githubUrl}
+                                        onChange={(e) => {
+                                            const updated = [...formData.projects];
+                                            updated[index].githubUrl = e.target.value;
+                                            setFormData(prev => ({ ...prev, projects: updated }));
+                                        }}
+                                        placeholder="https://github.com/your-username/repo"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+
+                {/* Certificates */}
+                <Card title="📜 Certificates" className="form-card">
+                    <div className="flex justify-between items-center mb-4">
+                        <p className="text-sm text-gray-600">Upload multiple certificates (PDF or Image)</p>
+                        <Button type="button" variant="secondary" size="sm" onClick={addCertificate} icon={Plus}>
+                            Add New
+                        </Button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        {formData.certifications.map((cert, index) => (
+                            <div key={index} className="certificate-input-row p-4 bg-black/5 rounded-xl border border-white/5">
+                                <div className="flex gap-4 items-end">
+                                    <div className="flex-1">
+                                        <Input
+                                            label="Certificate Name"
+                                            value={cert.name}
+                                            onChange={(e) => {
+                                                const updated = [...formData.certifications];
+                                                updated[index].name = e.target.value;
+                                                setFormData(prev => ({ ...prev, certifications: updated }));
+                                            }}
+                                            placeholder="e.g., AWS Certified Developer"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="input-wrapper">
+                                            <label className="input-label">Upload File</label>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="file"
+                                                    accept=".pdf,image/*"
+                                                    className="text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                                                    onChange={(e) => handleCertificateUpload(index, e.target.files[0])}
+                                                />
+                                                {cert.fileUrl && (
+                                                    <a href={cert.fileUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500">
+                                                        <Eye size={16} />
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        className="mb-1 p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                                        onClick={() => removeCertificate(index)}
+                                    >
+                                        <Trash2 size={20} />
+                                    </button>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </Card>

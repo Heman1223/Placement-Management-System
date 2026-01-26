@@ -1,0 +1,312 @@
+:root {
+    --glass-bg: rgba(30, 41, 59, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --accent-blue: #3b82f6;
+    --dashboard-bg: #0b1121;
+}
+
+.college-profile-page {
+    padding: 2.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    color: #f1f5f9;
+}
+
+/* Header & Banner Section */
+.cp-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 2.5rem;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.cp-banner {
+    height: 160px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    position: relative;
+}
+
+.cp-logo-container {
+    position: absolute;
+    bottom: -50px;
+    left: 4rem;
+    width: 150px;
+    height: 150px;
+    background: #0f172a;
+    border-radius: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: 6px solid #1e293b;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.cp-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.cp-logo-placeholder {
+    color: #64748b;
+}
+
+.cp-info-basic {
+    padding: 4rem 4rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cp-info-basic h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+
+.cp-code {
+    color: #94a3b8;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.cp-university {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--accent-blue);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.9rem;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 0.5rem 1.25rem;
+    border-radius: 99px;
+    width: fit-content;
+    margin-top: 1rem;
+}
+
+/* Grid & Cards */
+.cp-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 2rem;
+    align-items: start;
+}
+
+.mb-6 { margin-bottom: 2rem; }
+
+.cp-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 2rem;
+    padding: 2.5rem;
+    transition: all 0.3s ease;
+}
+
+.cp-card:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.cp-card h3 {
+    font-size: 0.9rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Stats Plate */
+.cp-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.stat-plate {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--glass-border);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    text-align: center;
+}
+
+.s-val {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.s-lab {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Description */
+.description-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+/* Rules Grid */
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.rule-item {
+    padding: 1.25rem;
+    background: rgba(59, 130, 246, 0.05);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 1rem;
+}
+
+.r-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.r-value {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--accent-blue);
+}
+
+/* Departments */
+.departments-card {
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.dept-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59, 130, 246, 0.3) transparent;
+}
+
+.dept-tags::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dept-tags::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dept-tags::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
+}
+
+.dept-pill {
+    padding: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dept-pill::before {
+    content: '•';
+    color: var(--accent-blue);
+    font-weight: 900;
+}
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.contact-item svg {
+    color: var(--accent-blue);
+}
+
+.contact-item a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.contact-item a:hover {
+    color: #60a5fa;
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.location-info svg {
+    color: var(--accent-blue);
+}
+
+/* Base background for consistency */
+.college-profile-page {
+    background: var(--dashboard-bg);
+    min-height: 100vh;
+}
+
+@media (max-width: 1024px) {
+    .cp-grid { grid-template-columns: 1fr; }
+    .cp-info-basic { padding: 4rem 2.5rem 2.5rem; }
+    .cp-logo-container { left: 2.5rem; }
+}
+
+@media (max-width: 640px) {
+    .cp-info-basic h1 { font-size: 2rem; }
+    .cp-logo-container { 
+        width: 100px; 
+        height: 100px; 
+        left: 50%; 
+        transform: translateX(-50%);
+        bottom: -30px; 
+        border-width: 4px;
+    }
+    .cp-info-basic { padding-top: 5rem; text-align: center; align-items: center; }
+}

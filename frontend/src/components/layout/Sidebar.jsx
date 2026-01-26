@@ -2,12 +2,13 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     LayoutDashboard, Users, Building2, GraduationCap, Briefcase,
-    Search, FileText, Settings, Star, Upload, BarChart3, Bell, User, Activity, UserCog
+    Search, FileText, Settings, Star, Upload, BarChart3, Bell, User, Activity, UserCog,
+    Calendar, LineChart
 } from 'lucide-react';
 import './Sidebar.css';
 
 const Sidebar = ({ collapsed, onToggle, mobileOpen }) => {
-    const { user, isSuperAdmin, isCollegeAdmin, isCompany } = useAuth();
+    const { user, isSuperAdmin, isCollegeAdmin, isCompany, isStudent } = useAuth();
     const location = useLocation();
 
     // Get navigation items based on role
@@ -32,17 +33,20 @@ const Sidebar = ({ collapsed, onToggle, mobileOpen }) => {
                 { path: '/college/placements', icon: BarChart3, label: 'Placements' },
                 { path: '/college/partnerships', icon: Building2, label: 'Industry Partnerships' },
                 { path: '/college/company-activity', icon: Activity, label: 'Company Activity' },
-                { path: '/college/activity-logs', icon: Activity, label: 'Activity Logs' }
+                { path: '/college/activity-logs', icon: Activity, label: 'Activity Logs' },
+                { path: '/college/settings', icon: Settings, label: 'Settings' }
             ];
         }
 
         if (isCompany) {
             return [
                 { path: '/company', icon: LayoutDashboard, label: 'Dashboard' },
-                { path: '/company/jobs', icon: Briefcase, label: 'My Jobs' },
-                { path: '/company/partnerships', icon: Building2, label: 'University Partnerships' },
-                { path: '/company/search', icon: Search, label: 'Find Talent' },
-                { path: '/company/shortlist', icon: Star, label: 'Shortlisted' }
+                { path: '/company/jobs', icon: Briefcase, label: 'Job Drives' },
+                { path: '/company/applications', icon: FileText, label: 'Direct Applicants' },
+                { path: '/company/partnerships', icon: Building2, label: 'Colleges' },
+                { path: '/company/search', icon: Search, label: 'Talent Pool' },
+                { path: '/company/shortlist', icon: Star, label: 'Selection Pipeline' },
+                { path: '/company/settings', icon: Settings, label: 'Settings' }
             ];
         }
 
@@ -50,8 +54,10 @@ const Sidebar = ({ collapsed, onToggle, mobileOpen }) => {
         return [
             { path: '/student', icon: LayoutDashboard, label: 'Dashboard' },
             { path: '/student/profile', icon: User, label: 'My Profile' },
-            { path: '/student/jobs', icon: Briefcase, label: 'Browse Jobs' },
-            { path: '/student/applications', icon: FileText, label: 'My Applications' }
+            { path: '/student/college-profile', icon: Building2, label: 'College Profile' },
+            { path: '/student/jobs', icon: Briefcase, label: 'Job Drives' },
+            { path: '/student/offers', icon: Star, label: 'Recruitment Offers' },
+            { path: '/student/applications', icon: FileText, label: 'My Registrations' }
         ];
     };
 
@@ -61,8 +67,10 @@ const Sidebar = ({ collapsed, onToggle, mobileOpen }) => {
         <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'sidebar-open' : ''}`}>
             <div className="sidebar-header">
                 <div className="sidebar-logo">
-                    <GraduationCap className="logo-icon w-6 h-6 md:w-7 md:h-7" />
-                    {!collapsed && <span className="logo-text text-base md:text-lg">PlaceMS</span>}
+                    <div className="logo-square">
+                        <GraduationCap className="logo-icon text-white" />
+                    </div>
+                    {!collapsed && <span className="logo-text">PlaceMS</span>}
                 </div>
             </div>
 
@@ -85,13 +93,38 @@ const Sidebar = ({ collapsed, onToggle, mobileOpen }) => {
 
             <div className="sidebar-footer">
                 {!collapsed && (
-                    <div className="sidebar-user">
+                    <div className="sidebar-user-block">
                         <div className="sidebar-user-avatar">
-                            {user?.email?.[0]?.toUpperCase() || 'U'}
+                            {(isCompany && user?.profile?.logo) ? (
+                                <img src={user.profile.logo} alt="Company Logo" className="sidebar-logo-img" />
+                            ) : (isCollegeAdmin && user?.profile?.logo) ? (
+                                <img src={user.profile.logo} alt="College Logo" className="sidebar-logo-img" />
+                            ) : (
+                                user?.email?.[0]?.toUpperCase() || 'U'
+                            )}
                         </div>
                         <div className="sidebar-user-info">
-                            <span className="sidebar-user-email">{user?.email}</span>
-                            <span className="sidebar-user-role">{user?.role?.replace('_', ' ')}</span>
+                            {isCompany ? (
+                                <>
+                                    <span className="sidebar-user-name">{user?.profile?.name || 'Company'}</span>
+                                    <span className="sidebar-user-role">{user?.email}</span>
+                                </>
+                            ) : isCollegeAdmin ? (
+                                <>
+                                    <span className="sidebar-user-name">{user?.profile?.name || 'College'}</span>
+                                    <span className="sidebar-user-role">{user?.email}</span>
+                                </>
+                            ) : isStudent ? (
+                                <>
+                                    <span className="sidebar-user-name">{user?.profile?.name?.firstName || 'Student'} {user?.profile?.name?.lastName || ''}</span>
+                                    <span className="sidebar-user-role">{user?.email}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="sidebar-user-name">{user?.email?.split('@')[0] || 'Admin'}</span>
+                                    <span className="sidebar-user-role">{user?.email}</span>
+                                </>
+                            )}
                         </div>
                     </div>
                 )}

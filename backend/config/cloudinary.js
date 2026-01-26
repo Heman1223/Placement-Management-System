@@ -30,14 +30,30 @@ const resumeStorage = new CloudinaryStorage({
         // Create a short, clean filename
         const timestamp = Date.now();
         
-        // For PDFs, use 'auto' resource type to allow browser viewing
-        const isPdf = file.mimetype === 'application/pdf';
-        
         return {
             folder: 'placement-system/resumes',
-            allowed_formats: ['pdf', 'doc', 'docx'],
-            resource_type: 'auto',
+            resource_type: 'raw',
             public_id: `resume_${studentId}_${timestamp}`
+        };
+    }
+});
+
+const certificateStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        let studentId = 'unknown';
+        if (req.user?.studentProfile) {
+            studentId = typeof req.user.studentProfile === 'object' 
+                ? req.user.studentProfile._id?.toString() || req.user.studentProfile.toString()
+                : req.user.studentProfile.toString();
+        } else if (req.body?.studentId) {
+            studentId = req.body.studentId;
+        }
+        
+        return {
+            folder: 'placement-system/certificates',
+            resource_type: 'raw',
+            public_id: `cert_${studentId}_${Date.now()}`
         };
     }
 });
@@ -49,6 +65,16 @@ const logoStorage = new CloudinaryStorage({
         folder: 'placement-system/logos',
         allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
         transformation: [{ width: 500, height: 500, crop: 'limit' }]
+    }
+});
+
+// Storage for student profile pictures
+const studentImageStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'placement-system/students',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }]
     }
 });
 
@@ -87,6 +113,27 @@ const uploadLogo = multer({
     }
 });
 
+const uploadStudentImage = multer({
+    storage: studentImageStorage,
+    limits: {
+        fileSize: 2 * 1024 * 1024 // 2MB
+    },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'), false);
+        }
+    }
+});
+
+const uploadCertificate = multer({
+    storage: certificateStorage,
+    limits: {
+        fileSize: 3 * 1024 * 1024 // 3MB
+    }
+});
+
 // Delete file from Cloudinary
 const deleteFile = async (publicId) => {
     try {
@@ -102,5 +149,7 @@ module.exports = {
     cloudinary,
     uploadResume,
     uploadLogo,
+    uploadStudentImage,
+    uploadCertificate,
     deleteFile
 };

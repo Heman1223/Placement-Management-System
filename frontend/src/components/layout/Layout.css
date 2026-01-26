@@ -4,11 +4,11 @@
 }
 
 .layout-admin-dark {
-    background: #0f172a;
+    background: #0b1121;
 }
 
 .layout-admin-dark .layout-content {
-    background: #0f172a !important;
+    background: #0b1121 !important;
     color: white;
 }
 

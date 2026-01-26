@@ -1,13 +1,97 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { companyAPI, jobAPI } from '../../services/api';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Modal from '../../components/common/Modal';
-import { Search, Filter, Star, ExternalLink, Mail, Github, Linkedin, Building2, GraduationCap, Sparkles, Briefcase, Eye, ChevronDown, ChevronUp, Clock, MapPin, X, Award, FileText } from 'lucide-react';
+import { Search, Filter, Star, ExternalLink, Mail, Github, Linkedin, Building2, GraduationCap, Sparkles, Briefcase, Eye, ChevronDown, ChevronUp, Clock, MapPin, X, Award, FileText, Lock, Users, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './SearchStudents.css';
+
+const StudentCard = ({ student, onShortlist, onInvite, viewDetails, shortlistingId }) => (
+    <Card className="student-card" hoverable>
+        <div className="student-header">
+            <div className="student-avatar-placeholder">
+                {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
+            </div>
+            <div className="student-basic-info">
+                <div className="flex items-center gap-2">
+                    <h3>{student.name?.firstName} {student.name?.lastName}</h3>
+                    {student.isStarStudent && (
+                        <div className="group relative">
+                            <Star size={16} className="text-amber-400 fill-amber-400" />
+                        </div>
+                    )}
+                </div>
+                <p>{student.department}</p>
+                {student.college && (
+                    <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold text-slate-500 uppercase tracking-tight">
+                        {student.college.logo ? (
+                            <img src={student.college.logo} alt="" className="w-3.5 h-3.5 object-contain opacity-70" />
+                        ) : (
+                            <Building2 size={12} className="opacity-70" />
+                        )}
+                        <span>{student.college.name}</span>
+                    </div>
+                )}
+            </div>
+            {student.registeredJob ? (
+                <Button
+                    size="sm"
+                    className="shortlist-icon-btn bg-blue-600"
+                    onClick={() => onShortlist(student)}
+                    title="Move to Pipeline"
+                    disabled={shortlistingId === student._id}
+                >
+                    <Star size={18} className="fill-current" />
+                </Button>
+            ) : student.hasInvitation ? (
+                <div className="invitation-sent-badge" title={`Offer sent for ${student.invitationJob}`}>
+                    <Mail size={16} className="text-green-400" />
+                    <span className="text-xs font-bold text-green-400">Sent</span>
+                </div>
+            ) : (
+                <Button
+                    size="sm"
+                    className="shortlist-icon-btn bg-slate-700"
+                    onClick={() => onInvite(student)}
+                    title="Send Recruitment Offer"
+                    disabled={shortlistingId === student._id}
+                >
+                    <Sparkles size={18} />
+                </Button>
+            )}
+        </div>
+        <div className="student-tags">
+            <span className="tag batch-tag">Batch {student.batch}</span>
+            <span className="tag cgpa-tag">CGPA: {student.cgpa?.toFixed(2)}</span>
+        </div>
+        {student.registeredJob && (
+            <div className="registered-for-pill">
+                <div className="dot-blink" />
+                <span>Registered For: <strong>{student.registeredJob}</strong></span>
+            </div>
+        )}
+        {student.hasInvitation && !student.registeredJob && (
+            <div className="invitation-pill">
+                <Mail size={14} className="text-green-400" />
+                <span>Offer Sent: <strong>{student.invitationJob}</strong></span>
+            </div>
+        )}
+        <div className="student-skills-preview">
+            {student.skills?.slice(0, 3).map((skill, i) => (
+                <span key={i} className="skill-pill">{skill}</span>
+            ))}
+            {student.skills?.length > 3 && <span>+{student.skills.length - 3}</span>}
+        </div>
+        <div className="student-card-actions">
+            <Button variant="secondary" fullWidth onClick={() => viewDetails(student._id)}>
+                View Profile
+            </Button>
+        </div>
+    </Card>
+);
 
 const SearchStudents = () => {
     const location = useLocation();
@@ -15,21 +99,24 @@ const SearchStudents = () => {
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
     const [hasSearched, setHasSearched] = useState(false);
+    const navigate = useNavigate();
 
     // Data for dropdowns
     const [jobs, setJobs] = useState([]);
     const [colleges, setColleges] = useState([]);
 
     // UI States
-    const [showFilters, setShowFilters] = useState(true);
-    const [selectedCollege, setSelectedCollege] = useState(null); // New state for selected college
+    const [showFilters, setShowFilters] = useState(false);
+    const [selectedCollege, setSelectedCollege] = useState(null); 
 
     // Action States
     const [shortlistingId, setShortlistingId] = useState(null);
     const [shortlistModal, setShortlistModal] = useState({ open: false, student: null });
-    const [selectedJobForShortlist, setSelectedJobForShortlist] = useState('');
+    const [inviteModal, setInviteModal] = useState({ open: false, student: null });
+    const [selectedJobForInvite, setSelectedJobForInvite] = useState('');
     const [shortlistNotes, setShortlistNotes] = useState('');
-    const [studentDetailModal, setStudentDetailModal] = useState({ open: false, student: null, loading: false });
+    const [inviteMessage, setInviteMessage] = useState('');
+    const [isInviting, setIsInviting] = useState(false);
 
     // Filter States
     const [filters, setFilters] = useState({
@@ -227,19 +314,14 @@ const SearchStudents = () => {
     };
 
     const confirmShortlist = async () => {
-        if (!selectedJobForShortlist) {
-            toast.error('Please select a job to shortlist for');
-            return;
-        }
-
         const student = shortlistModal.student;
         setShortlistingId(student._id);
         const modalStudentName = student.name?.firstName;
         setShortlistModal({ open: false, student: null });
 
         try {
-            await companyAPI.shortlist(student._id, selectedJobForShortlist, shortlistNotes);
-            toast.success(`${modalStudentName} shortlisted successfully!`);
+            await companyAPI.shortlist(student._id, student.registeredJobId, shortlistNotes);
+            toast.success(`${modalStudentName} moved to selection pipeline!`);
         } catch (error) {
             console.error('Shortlist error:', error);
             const msg = error.response?.data?.message || 'Failed to shortlist';
@@ -249,15 +331,37 @@ const SearchStudents = () => {
         }
     };
 
-    const viewStudentDetails = async (studentId) => {
-        setStudentDetailModal({ open: true, student: null, loading: true });
-        try {
-            const response = await companyAPI.getStudent(studentId);
-            setStudentDetailModal({ open: true, student: response.data.data, loading: false });
-        } catch (error) {
-            toast.error('Failed to load student details');
-            setStudentDetailModal({ open: false, student: null, loading: false });
+    const handleInvite = (student) => {
+        if (jobs.length === 0) {
+            toast.error('No active job drives available to send offers for.');
+            return;
         }
+        setSelectedJobForInvite('');
+        setInviteMessage('');
+        setInviteModal({ open: true, student });
+    };
+
+    const confirmInvite = async () => {
+        if (!selectedJobForInvite) {
+            toast.error('Please select a job drive');
+            return;
+        }
+
+        setIsInviting(true);
+        const student = inviteModal.student;
+        try {
+            await companyAPI.inviteToRegister(student._id, selectedJobForInvite, inviteMessage);
+            toast.success(`Recruitment offer sent to ${student.name?.firstName}!`);
+            setInviteModal({ open: false, student: null });
+        } catch (error) {
+            toast.error('Failed to send recruitment offer');
+        } finally {
+            setIsInviting(false);
+        }
+    };
+
+    const viewStudentDetails = (studentId) => {
+        navigate(`/company/students/${studentId}`);
     };
 
     const departments = [
@@ -267,17 +371,32 @@ const SearchStudents = () => {
 
     const batches = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 1 + i);
 
+    const handleRequestAccess = async () => {
+        if (!selectedCollege) return;
+        try {
+            await companyAPI.requestCollegeAccess({ collegeId: selectedCollege._id });
+            toast.success('Partnership request sent successfully');
+            // Optimistically update UI
+            setColleges(prev => prev.map(c => 
+                c._id === selectedCollege._id ? { ...c, accessStatus: 'pending' } : c
+            ));
+            // Update selected college object to reflect new status immediately
+            setSelectedCollege(prev => ({ ...prev, accessStatus: 'pending' }));
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to send request');
+        }
+    };
+
+    // Check lock status
+    const isCollegeLocked = selectedCollege?.isLocked;
+    const accessStatus = selectedCollege?.accessStatus;
+
     return (
         <div className="search-page">
-            <div className="page-header search-header">
-                <div className="header-content">
-                    <div className="header-icon">
-                        <Sparkles size={28} />
-                    </div>
-                    <div>
-                        <h1>Find Talent</h1>
-                        <p>Search and filter to find the perfect candidates</p>
-                    </div>
+            <div className="search-header-simple">
+                <div className="flex flex-col">
+                    <h1>Talent Pool</h1>
+                    <p className="text-slate-500 text-sm font-medium">Discover and identify high-potential candidates across all partner colleges</p>
                 </div>
             </div>
 
@@ -301,6 +420,7 @@ const SearchStudents = () => {
                             placeholder="Search by name, skills, or keywords..."
                             value={filters.keyword}
                             onChange={(e) => handleFilterChange('keyword', e.target.value)}
+                            onClick={() => setShowFilters(!showFilters)}
                             icon={Search}
                             className="main-search-input"
                         />
@@ -448,7 +568,31 @@ const SearchStudents = () => {
 
                 {/* Results Area */}
                 <div className="results-container">
-                    {loading ? (
+                    {isCollegeLocked ? (
+                         <div className="locked-college-state p-12 text-center bg-slate-800/50 rounded-2xl border border-white/10">
+                            <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500">
+                                <Lock size={32} />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Access Restricted</h2>
+                            <p className="text-slate-500 max-w-md mx-auto mb-8">
+                                {selectedCollege.name} does not share student data publicly. You must request a partnership to view their candidates.
+                            </p>
+                            
+                            {accessStatus === 'pending' ? (
+                                <div className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-500/10 text-yellow-600 rounded-xl font-bold border border-yellow-500/20">
+                                    <Clock size={20} />
+                                    Request Pending Approval
+                                </div>
+                            ) : (
+                                <button 
+                                    onClick={handleRequestAccess}
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/25"
+                                >
+                                    Request Partnership
+                                </button>
+                            )}
+                        </div>
+                    ) : loading ? (
                         <div className="loading-screen"><div className="loading-spinner" /></div>
                     ) : students.length === 0 ? (
                         <div className="no-results-state">
@@ -458,58 +602,72 @@ const SearchStudents = () => {
                         </div>
                     ) : (
                         <>
-                            <div className="results-header">
-                                <span>Found {pagination.total} candidates</span>
+                            <div className="results-header pt-4">
+                                <span className="font-bold text-slate-500 text-xs uppercase tracking-widest">Search Results ({pagination.total})</span>
                             </div>
-                            <div className="students-grid">
-                                {students.map(student => (
-                                    <Card key={student._id} className="student-card" hoverable>
-                                        <div className="student-header">
-                                            <div className="student-avatar-placeholder">
-                                                {student.name?.firstName?.[0]}{student.name?.lastName?.[0]}
+
+                            {/* Section: Direct Applicants */}
+                            {students.some(s => s.registeredJob) && (
+                                <div className="applicants-section mt-8">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                                                <Briefcase size={20} />
                                             </div>
-                                            <div className="student-basic-info">
-                                                <div className="flex items-center gap-2">
-                                                    <h3>{student.name?.firstName} {student.name?.lastName}</h3>
-                                                    {student.isStarStudent && (
-                                                        <div className="group relative">
-                                                            <Star size={16} className="text-amber-400 fill-amber-400" />
-                                                            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-slate-800 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                                                Star Student
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <p>{student.department}</p>
+                                            <div>
+                                                <h2 className="text-lg font-bold text-white leading-tight">Direct Applicants</h2>
+                                                <p className="text-xs text-slate-500 font-medium tracking-tight">Candidates who have already registered for your placement drives</p>
                                             </div>
-                                            <Button
-                                                size="sm"
-                                                className="shortlist-icon-btn"
-                                                onClick={() => handleShortlist(student)}
-                                                title="Shortlist"
-                                                disabled={shortlistingId === student._id}
-                                            >
-                                                <Star size={18} />
-                                            </Button>
                                         </div>
-                                        <div className="student-tags">
-                                            <span className="tag batch-tag">Batch {student.batch}</span>
-                                            <span className="tag cgpa-tag">CGPA: {student.cgpa?.toFixed(2)}</span>
+                                    </div>
+                                    <div className="students-grid mb-12">
+                                        {students.filter(s => s.registeredJob).map(student => (
+                                            <StudentCard 
+                                                key={`applicant-${student._id}`} 
+                                                student={student} 
+                                                onShortlist={handleShortlist}
+                                                onInvite={handleInvite}
+                                                viewDetails={viewStudentDetails}
+                                                shortlistingId={shortlistingId}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="section-divider-premium mb-12" style={{ height: '1px', background: 'linear-gradient(to right, rgba(255,255,255,0.05), rgba(255,255,255,0))' }} />
+                                </div>
+                            )}
+
+                            {/* Section: Talent Discovery */}
+                            <div className="discovery-section">
+                                {students.some(s => s.registeredJob) && (
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
+                                            <Sparkles size={20} />
                                         </div>
-                                        <div className="student-skills-preview">
-                                            {student.skills?.slice(0, 3).map((skill, i) => (
-                                                <span key={i} className="skill-pill">{skill}</span>
-                                            ))}
-                                            {student.skills?.length > 3 && <span>+{student.skills.length - 3}</span>}
+                                        <div>
+                                            <h2 className="text-lg font-bold text-white leading-tight">Talent Discovery</h2>
+                                            <p className="text-xs text-slate-500 font-medium tracking-tight">Discover potential candidates and send direct recruitment offers</p>
                                         </div>
-                                        <div className="student-card-actions">
-                                            <Button variant="secondary" fullWidth onClick={() => viewStudentDetails(student._id)}>
-                                                View Profile
-                                            </Button>
+                                    </div>
+                                )}
+                                <div className="students-grid">
+                                    {students.filter(s => !s.registeredJob).map(student => (
+                                        <StudentCard 
+                                            key={`discovery-${student._id}`} 
+                                            student={student} 
+                                            onShortlist={handleShortlist}
+                                            onInvite={handleInvite}
+                                            viewDetails={viewStudentDetails}
+                                            shortlistingId={shortlistingId}
+                                        />
+                                    ))}
+                                    {students.filter(s => !s.registeredJob).length === 0 && students.some(s => s.registeredJob) && (
+                                        <div className="p-12 text-center bg-slate-800/20 rounded-2xl border border-dashed border-white/5">
+                                            <p className="text-slate-500 text-sm">All students in these results have already registered for your drives.</p>
                                         </div>
-                                    </Card>
-                                ))}
+                                    )}
+                                </div>
                             </div>
+
                             {pagination.pages > 1 && (
                                 <div className="pagination">
                                     <Button
@@ -532,6 +690,7 @@ const SearchStudents = () => {
                         </>
                     )}
                 </div>
+
             </div>
 
             {/* Shortlist Modal */}
@@ -543,24 +702,17 @@ const SearchStudents = () => {
             >
                 <div className="shortlist-modal">
                     <p className="modal-subtitle">
-                        Shortlist <strong>{shortlistModal.student?.name?.firstName} {shortlistModal.student?.name?.lastName}</strong> for a position
+                        Move <strong>{shortlistModal.student?.name?.firstName} {shortlistModal.student?.name?.lastName}</strong> to the selection pipeline for a drive they've registered for.
                     </p>
 
-                    <div className="input-wrapper" style={{ marginTop: 'var(--spacing-4)' }}>
-                        <label className="input-label"><Briefcase size={14} /> Select Job *</label>
-                        <select
-                            className="input"
-                            value={selectedJobForShortlist}
-                            onChange={(e) => setSelectedJobForShortlist(e.target.value)}
-                        >
-                            <option value="">-- Select a Job --</option>
-                            {jobs.map(job => (
-                                <option key={job._id} value={job._id}>
-                                    {job.title} ({job.type})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {shortlistModal.student?.registeredJob && (
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mt-4">
+                            <div className="flex items-center gap-2 text-blue-400 text-sm font-bold">
+                                <Briefcase size={16} />
+                                <span>Registered For: {shortlistModal.student.registeredJob}</span>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="input-wrapper" style={{ marginTop: 'var(--spacing-3)' }}>
                         <label className="input-label">Notes (optional)</label>
@@ -579,6 +731,57 @@ const SearchStudents = () => {
                         </Button>
                         <Button onClick={confirmShortlist} icon={Star}>
                             Shortlist
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Invite Modal */}
+            <Modal
+                isOpen={inviteModal.open}
+                onClose={() => setInviteModal({ open: false, student: null })}
+                title="Send Recruitment Offer"
+                size="md"
+            >
+                <div className="invite-modal p-4">
+                    <p className="text-slate-400 mb-6 text-sm">
+                        Send a high-priority recruitment offer to <strong>{inviteModal.student?.name?.firstName} {inviteModal.student?.name?.lastName}</strong>. 
+                        They will receive a notification to register for your selected drive.
+                    </p>
+
+                    <div className="space-y-4">
+                        <div className="form-group">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Link to Job Drive *</label>
+                            <select
+                                className="w-full bg-[#0f172a] border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 transition-all text-sm"
+                                value={selectedJobForInvite}
+                                onChange={(e) => setSelectedJobForInvite(e.target.value)}
+                            >
+                                <option value="">-- Select Drive --</option>
+                                {jobs.map(job => (
+                                    <option key={job._id} value={job._id}>{job.title} ({job.type})</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Offer Details / Personal Message</label>
+                            <textarea
+                                className="w-full bg-[#0f172a] border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 transition-all text-sm"
+                                value={inviteMessage}
+                                onChange={(e) => setInviteMessage(e.target.value)}
+                                placeholder="We've reviewed your profile and think you'd be a great fit for this role..."
+                                rows={4}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 mt-8">
+                        <Button variant="secondary" onClick={() => setInviteModal({ open: false, student: null })}>
+                            Cancel
+                        </Button>
+                        <Button onClick={confirmInvite} loading={isInviting} icon={Sparkles}>
+                            Send Offer
                         </Button>
                     </div>
                 </div>
@@ -604,111 +807,6 @@ const SearchStudents = () => {
                 </div>
             </Modal>
 
-            {/* Student Detail Modal */}
-            <Modal
-                isOpen={studentDetailModal.open}
-                onClose={() => setStudentDetailModal({ open: false, student: null, loading: false })}
-                title="Student Profile"
-                size="lg"
-            >
-                {studentDetailModal.loading ? (
-                    <div className="loading-screen" style={{ padding: 'var(--spacing-8)' }}>
-                        <div className="loading-spinner" />
-                    </div>
-                ) : studentDetailModal.student && (
-                    <div className="student-detail-modal">
-                        <div className="detail-header">
-                            <div className="detail-avatar">
-                                {studentDetailModal.student.name?.firstName?.[0]}
-                                {studentDetailModal.student.name?.lastName?.[0]}
-                            </div>
-                            <div className="detail-header-info">
-                                <h2>{studentDetailModal.student.name?.firstName} {studentDetailModal.student.name?.lastName}</h2>
-                                <p>{studentDetailModal.student.department} • Batch {studentDetailModal.student.batch}</p>
-                                <p className="college-name">{studentDetailModal.student.college?.name}</p>
-                            </div>
-                        </div>
-
-                        {/* Contact */}
-                        <div className="detail-section">
-                            <h4><Mail size={16} /> Contact Information</h4>
-                            <div className="detail-grid">
-                                <div className="detail-field">
-                                    <span className="field-label">Email</span>
-                                    <span className="field-value">{studentDetailModal.student.email}</span>
-                                </div>
-                                <div className="detail-field">
-                                    <span className="field-label">Phone</span>
-                                    <span className="field-value">{studentDetailModal.student.phone || 'Not provided'}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Academic */}
-                        <div className="detail-section">
-                            <h4><GraduationCap size={16} /> Academic Information</h4>
-                            <div className="detail-grid">
-                                <div className="detail-field">
-                                    <span className="field-label">CGPA</span>
-                                    <span className="field-value cgpa-highlight">{studentDetailModal.student.cgpa?.toFixed(2) || '-'}</span>
-                                </div>
-                                <div className="detail-field">
-                                    <span className="field-label">Backlogs</span>
-                                    <span className="field-value">{studentDetailModal.student.backlogs?.active || 0}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Skills */}
-                        {studentDetailModal.student.skills?.length > 0 && (
-                            <div className="detail-section">
-                                <h4><Sparkles size={16} /> Skills</h4>
-                                <div className="skills-list">
-                                    {studentDetailModal.student.skills.map((skill, i) => (
-                                        <span key={i} className="skill-tag">{skill}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Projects */}
-                        {studentDetailModal.student.projects?.length > 0 && (
-                            <div className="detail-section">
-                                <h4><Briefcase size={16} /> Projects</h4>
-                                <div className="projects-list">
-                                    {studentDetailModal.student.projects.map((project, i) => (
-                                        <div key={i} className="project-item">
-                                            <h5>{project.title}</h5>
-                                            <p>{project.description}</p>
-                                            <div className="project-links">
-                                                {project.projectUrl && <a href={project.projectUrl} target="_blank" rel="noreferrer"><ExternalLink size={14} /> Demo</a>}
-                                                {project.githubUrl && <a href={project.githubUrl} target="_blank" rel="noreferrer"><Github size={14} /> Code</a>}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Resume */}
-                        <div className="detail-section">
-                            <h4><FileText size={16} /> Documents</h4>
-                            {studentDetailModal.student.resumeUrl ? (
-                                <a
-                                    href={studentDetailModal.student.resumeUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="profile-link resume"
-                                >
-                                    <FileText size={18} /> View Resume
-                                </a>
-                            ) : (
-                                <p className="text-muted">No resume uploaded</p>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </Modal>
         </div>
     );
 };

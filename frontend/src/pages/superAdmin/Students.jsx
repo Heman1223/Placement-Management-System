@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
+import Table, { Pagination } from '../../components/common/Table';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import {
@@ -34,8 +35,10 @@ const Students = () => {
 
     useEffect(() => {
         fetchStudents();
-        fetchColleges();
+    }, [pagination.current, filters.college, filters.department, filters.placementStatus, filters.isStarStudent]);
 
+    useEffect(() => {
+        fetchColleges();
         const handleClickOutside = (event) => {
             if (!event.target.closest('.table-action-btn') && !event.target.closest('.inline-dropdown')) {
                 setOpenDropdown(null);
@@ -43,7 +46,17 @@ const Students = () => {
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [pagination.current]);
+    }, []);
+
+    useEffect(() => {
+        // Reset to page 1 on search
+        setPagination(prev => ({ ...prev, current: 1 }));
+    }, [filters.search]);
+
+    useEffect(() => {
+        // Fetch on search with delay/debounce logic isn't here but simple fetch is fine for now
+        fetchStudents();
+    }, [filters.search]);
 
     const fetchColleges = async () => {
         try {
@@ -78,8 +91,14 @@ const Students = () => {
     const handleToggleStar = async (student) => {
         try {
             await superAdminAPI.toggleStarStudent(student._id);
-            toast.success(student.isStarStudent ? 'Removed from Star Students' : 'Marked as Star Student');
-            fetchStudents();
+            const newStatus = !student.isStarStudent;
+            
+            // Update local state immediately for snappy UI
+            setStudents(prev => prev.map(s => 
+                s._id === student._id ? { ...s, isStarStudent: newStatus } : s
+            ));
+            
+            toast.success(newStatus ? 'Marked as Star Student' : 'Removed from Star Students');
         } catch (error) {
             toast.error('Failed to update status');
         }
@@ -141,6 +160,160 @@ const Students = () => {
         visible: { opacity: 1, y: 0 }
     };
 
+    const columns = [
+        {
+            header: 'S.No',
+            accessor: '_id',
+            width: '60px',
+            render: (_, __, index) => ((pagination.current - 1) * 10) + index + 1
+        },
+        {
+            header: 'Student',
+            accessor: 'name',
+            render: (val, row, idx) => (
+                <div className="user-cell">
+                    <div className="relative">
+                        <div
+                            className="user-avatar-small shrink-0"
+                            style={{ backgroundColor: getAvatarColor(idx) }}
+                        >
+                            {getInitials(row.name?.firstName, row.name?.lastName)}
+                        </div>
+                        {row.isStarStudent && (
+                            <div className="absolute -top-2 -right-2 bg-slate-900 rounded-full p-1 border border-amber-500 shadow-sm z-20">
+                                <Star size={12} className="text-amber-500 fill-amber-500" />
+                            </div>
+                        )}
+                    </div>
+                    <div className="user-info-text">
+                        <div className="flex items-center gap-2">
+                            <span className="user-name">{row.name?.firstName} {row.name?.lastName}</span>
+                        </div>
+                        <span className="user-subtext">{row.email}</span>
+                    </div>
+                </div>
+            )
+        },
+        { header: 'Roll Number', accessor: 'rollNumber' },
+        { 
+            header: 'College', 
+            accessor: 'college',
+            render: (val) => (
+                <div className="user-info-text">
+                    <span className="text-white font-medium">{val?.name}</span>
+                    <span className="user-subtext">{val?.city || 'Campus'}</span>
+                </div>
+            )
+        },
+        { header: 'Department', accessor: 'department' },
+        { 
+            header: 'CGPA', 
+            accessor: 'cgpa',
+            render: (val) => <span className="font-bold text-blue-400">{val?.toFixed(2) || 'N/A'}</span>
+        },
+        {
+            header: 'Status',
+            accessor: 'placementStatus',
+            render: (val) => (
+                <span className={`status-badge-v2 ${val}`}>
+                    {val?.replace('_', ' ') || 'not placed'}
+                </span>
+            )
+        },
+        {
+            header: 'Verified',
+            accessor: 'isVerified',
+            render: (val) => (
+                <div className={`verify-chip ${val ? 'yes' : 'no'}`}>
+                    {val ? <UserCheck size={14} /> : <XCircle size={14} />}
+                    {val ? 'Yes' : 'No'}
+                </div>
+            )
+        },
+        {
+            header: '⭐',
+            accessor: 'isStarStudent',
+            width: '60px',
+            render: (val, row) => (
+                <div className="flex justify-center">
+                    <button
+                        className={`p-1.5 rounded-lg transition-all ${val ? 'bg-amber-500/20 text-amber-500' : 'text-slate-600 hover:bg-white/5 hover:text-slate-400'}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleStar(row);
+                        }}
+                        title={val ? 'Remove Star' : 'Mark as Star'}
+                    >
+                        <Star size={18} className={val ? 'fill-current' : ''} />
+                    </button>
+                </div>
+            )
+        },
+        {
+            header: 'Actions',
+            accessor: '_id',
+            render: (id, row) => (
+                <div className="relative">
+                    <button
+                        className="table-action-btn"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdown(openDropdown === id ? null : id);
+                        }}
+                        title="More actions"
+                    >
+                        <MoreVertical size={16} />
+                    </button>
+
+                    <AnimatePresence>
+                        {openDropdown === id && (
+                            <motion.div
+                                className="inline-dropdown right-0"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                style={{ right: '100%', top: 0, marginRight: '8px' }}
+                            >
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/admin/students/${id}`);
+                                        setOpenDropdown(null);
+                                    }}
+                                    title="View student profile"
+                                >
+                                    <Eye size={16} /> View Profile
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleToggleStar(row);
+                                        setOpenDropdown(null);
+                                    }}
+                                    className={row.isStarStudent ? 'danger' : 'warning'}
+                                    title={row.isStarStudent ? 'Remove star status' : 'Mark as star student'}
+                                >
+                                    <Star size={16} className={row.isStarStudent ? 'fill-current' : ''} />
+                                    {row.isStarStudent ? 'Remove Star' : 'Mark as Star'}
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDelete(id);
+                                        setOpenDropdown(null);
+                                    }}
+                                    className="danger"
+                                    title="Delete student permanently"
+                                >
+                                    <Trash2 size={16} /> Delete
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            )
+        }
+    ];
+
     return (
         <motion.div
             className="admin-page-v2"
@@ -149,10 +322,10 @@ const Students = () => {
             variants={containerVariants}
         >
             {/* Premium Header Banner */}
-            <div className="premium-header-banner">
+            <div className="premium-header-banner" style={{ background: '#1e40af' }}>
                 <div className="premium-header-text">
-                    <h1>All Students</h1>
-                    <p>Comprehensive overview of students across all registered universities.</p>
+                    <h1>Administrative Registry</h1>
+                    <p>Comprehensive overview of students across the institutional network.</p>
                 </div>
                 <button
                     className={`premium-search-btn rounded-xl bg-white/10 hover:bg-white/20 transition-all ${showFilters ? 'bg-white/20' : ''}`}
@@ -285,206 +458,25 @@ const Students = () => {
             </AnimatePresence>
 
             {/* Premium Table Wrapper */}
-            <div className="premium-table-container">
-                <table className="premium-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Roll Number</th>
-                            <th>College</th>
-                            <th>Department</th>
-                            <th>CGPA</th>
-                            <th>Status</th>
-                            <th>Verified</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan="8" className="text-center py-20">
-                                    <div className="flex flex-col items-center gap-4">
-                                        <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-                                        <span className="text-slate-500 font-medium">Syncing student data...</span>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : students.length > 0 ? (
-                            students.map((student, idx) => (
-                                <tr
-                                    key={student._id}
-                                    onClick={() => navigate(`/admin/students/${student._id}`)}
-                                    style={{ cursor: 'pointer' }}
-                                    className="hover:bg-slate-800/50 transition-colors"
-                                >
-                                    <td>
-                                        <div className="user-cell">
-                                            <div className="relative">
-                                                <div
-                                                    className="user-avatar-small shrink-0"
-                                                    style={{ backgroundColor: getAvatarColor(idx) }}
-                                                >
-                                                    {getInitials(student.name?.firstName, student.name?.lastName)}
-                                                </div>
-                                                {student.isStarStudent && (
-                                                    <div className="absolute -top-2 -right-2 bg-slate-900 rounded-full p-1 border border-amber-500 shadow-sm z-20">
-                                                        <Star size={12} className="text-amber-500 fill-amber-500" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="user-info-text">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="user-name">{student.name?.firstName} {student.name?.lastName}</span>
-                                                    {student.isStarStudent && (
-                                                        <Star size={14} className="text-amber-400 fill-amber-400" />
-                                                    )}
-                                                </div>
-                                                <span className="user-subtext">{student.email}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="font-mono text-xs">{student.rollNumber}</td>
-                                    <td>
-                                        <div className="user-info-text">
-                                            <span className="text-white font-medium">{student.college?.name}</span>
-                                            <span className="user-subtext">{student.college?.city || 'Campus'}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className="px-2 py-1 bg-white/5 rounded text-[11px] font-bold text-slate-400">
-                                            {student.department}
-                                        </span>
-                                    </td>
-                                    <td className="font-bold text-blue-400">{student.cgpa?.toFixed(2) || 'N/A'}</td>
-                                    <td>
-                                        <span className={`status-badge-v2 ${student.placementStatus}`}>
-                                            {student.placementStatus?.replace('_', ' ')}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className={`verify-chip ${student.isVerified ? 'yes' : 'no'}`}>
-                                            {student.isVerified ? <UserCheck size={14} /> : <XCircle size={14} />}
-                                            {student.isVerified ? 'Yes' : 'No'}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="relative">
-                                            <button
-                                                className="table-action-btn"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setOpenDropdown(openDropdown === student._id ? null : student._id);
-                                                }}
-                                                title="More actions"
-                                            >
-                                                <MoreVertical size={16} />
-                                            </button>
-
-                                            <AnimatePresence>
-                                                {openDropdown === student._id && (
-                                                    <motion.div
-                                                        className="inline-dropdown right-0"
-                                                        initial={{ opacity: 0, scale: 0.95 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        exit={{ opacity: 0, scale: 0.95 }}
-                                                        style={{ right: '100%', top: 0, marginRight: '8px' }}
-                                                    >
-
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                navigate(`/admin/students/${student._id}`);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            title="View student profile"
-                                                        >
-                                                            <Eye size={16} /> View Profile
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                handleToggleStar(student);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className={student.isStarStudent ? 'danger' : 'warning'}
-                                                            title={student.isStarStudent ? 'Remove star status' : 'Mark as star student'}
-                                                        >
-                                                            <Star size={16} className={student.isStarStudent ? 'fill-current' : ''} />
-                                                            {student.isStarStudent ? 'Remove Star' : 'Mark as Star'}
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDelete(student._id);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                            className="danger"
-                                                            title="Delete student permanently"
-                                                        >
-                                                            <Trash2 size={16} /> Delete
-                                                        </button>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="8" className="text-center py-20 text-slate-500">
-                                    No students found matching your search criteria.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-
-                {/* Pagination */}
-                <div className="premium-pagination">
-                    <span className="text-xs text-slate-500 font-medium">
-                        Showing {students.length} of {pagination.total} students
-                    </span>
-                    <div className="pagination-controls">
-                        <button
-                            className="page-nav-btn"
-                            disabled={pagination.current === 1}
-                            onClick={() => setPagination({ ...pagination, current: pagination.current - 1 })}
-                        >
-                            <ChevronLeft size={16} />
-                        </button>
-
-                        {[...Array(Math.min(5, pagination.pages))].map((_, i) => {
-                            const pageNum = i + 1;
-                            return (
-                                <button
-                                    key={pageNum}
-                                    className={`page-num-btn ${pagination.current === pageNum ? 'active' : ''}`}
-                                    onClick={() => setPagination({ ...pagination, current: pageNum })}
-                                >
-                                    {pageNum}
-                                </button>
-                            );
-                        })}
-
-                        {pagination.pages > 5 && <span className="text-slate-700 px-2">...</span>}
-                        {pagination.pages > 5 && (
-                            <button
-                                className={`page-num-btn ${pagination.current === pagination.pages ? 'active' : ''}`}
-                                onClick={() => setPagination({ ...pagination, current: pagination.pages })}
-                            >
-                                {pagination.pages}
-                            </button>
-                        )}
-
-                        <button
-                            className="page-nav-btn"
-                            disabled={pagination.current === pagination.pages}
-                            onClick={() => setPagination({ ...pagination, current: pagination.current + 1 })}
-                        >
-                            <ChevronRight size={16} />
-                        </button>
-                    </div>
+            <div className="section-title-row">
+                <h2>Student Database</h2>
+                <div className="flex gap-2">
+                    <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">Verified Records</span>
                 </div>
+            </div>
+            <div className="premium-table-container">
+                <Table
+                    columns={columns}
+                    data={students}
+                    loading={loading}
+                    emptyMessage="No students found matching your search criteria."
+                    onRowClick={(row) => navigate(`/admin/students/${row._id}`)}
+                />
+                <Pagination
+                    current={pagination.current}
+                    total={pagination.total}
+                    onPageChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
+                />
             </div>
 
 

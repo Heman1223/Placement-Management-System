@@ -27,6 +27,8 @@ const Companies = () => {
     const [suspendModal, setSuspendModal] = useState({ open: false, company: null });
     const [suspendForm, setSuspendForm] = useState({ reason: '', endDate: '' });
     const [accessForm, setAccessForm] = useState({ selectedColleges: [], expiryDate: '', downloadLimit: 100 });
+    const [rejectionModal, setRejectionModal] = useState({ open: false, id: null, name: '' });
+    const [rejectionReason, setRejectionReason] = useState('');
     const [openDropdown, setOpenDropdown] = useState(null);
 
     useEffect(() => {
@@ -72,20 +74,38 @@ const Companies = () => {
     };
 
     const handleApprove = async (id, approved, companyName) => {
+        if (!approved) {
+            setRejectionModal({ open: true, id, name: companyName });
+            setRejectionReason('');
+            return;
+        }
+
         try {
-            await superAdminAPI.approveCompany(id, approved);
-            if (approved) {
-                toast.success(`${companyName} - Approved`);
-            } else {
-                toast.error(`${companyName} - Rejected`, {
-                    icon: '❌',
-                    style: {
-                        background: '#1e293b',
-                        color: '#fff',
-                        border: '1px solid #ef4444'
-                    }
-                });
-            }
+            await superAdminAPI.approveCompany(id, true);
+            toast.success(`${companyName} - Approved`);
+            fetchCompanies(pagination.current);
+        } catch (error) {
+            toast.error('Action failed');
+        }
+    };
+
+    const submitRejection = async () => {
+        if (!rejectionReason.trim()) {
+            toast.error('Please provide a reason for rejection');
+            return;
+        }
+
+        try {
+            await superAdminAPI.approveCompany(rejectionModal.id, false, rejectionReason);
+            toast.error(`${rejectionModal.name} - Rejected`, {
+                icon: '❌',
+                style: {
+                    background: '#1e293b',
+                    color: '#fff',
+                    border: '1px solid #ef4444'
+                }
+            });
+            setRejectionModal({ open: false, id: null, name: '' });
             fetchCompanies(pagination.current);
         } catch (error) {
             toast.error('Action failed');
@@ -335,7 +355,11 @@ const Companies = () => {
                             >
                                 <div className="card-top">
                                     <div className="college-avatar company">
-                                        <Briefcase size={22} />
+                                        {company.logo ? (
+                                            <img src={company.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                        ) : (
+                                            <Briefcase size={22} />
+                                        )}
                                     </div>
                                     <div className="college-main-info">
                                         <h3>{company.name}</h3>
@@ -495,7 +519,11 @@ const Companies = () => {
                     <div className="detail-modal redesigned">
                         <div className="detail-header">
                             <div className="detail-icon">
-                                <Briefcase size={32} />
+                                {detailModal.company.logo ? (
+                                    <img src={detailModal.company.logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                                ) : (
+                                    <Briefcase size={32} />
+                                )}
                             </div>
                             <div className="detail-title-block">
                                 <h3>{detailModal.company.name}</h3>

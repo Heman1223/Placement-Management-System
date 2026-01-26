@@ -80,6 +80,10 @@ const collegeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    rejectionReason: {
+        type: String,
+        trim: true
+    },
     // Active status
     isActive: {
         type: Boolean,
@@ -145,6 +149,10 @@ const collegeSchema = new mongoose.Schema({
                 default: true
             },
             requireResumeUpload: {
+                type: Boolean,
+                default: true
+            },
+            showDataWithoutApproval: {
                 type: Boolean,
                 default: true
             }

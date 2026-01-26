@@ -5,7 +5,7 @@ import Button from '../../components/common/Button';
 import {
     ArrowLeft, Mail, Phone, Calendar, Award, Briefcase,
     FileText, Github, Linkedin, Globe, CheckCircle, XCircle,
-    GraduationCap, Star, MapPin, Building2, ExternalLink, Download
+    GraduationCap, Star, MapPin, Building2, ExternalLink, Download, Eye
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import '../college/StudentDetail.css'; // Reusing CSS
@@ -32,6 +32,17 @@ const StudentDetail = () => {
         }
     };
 
+    const handleToggleStar = async () => {
+        try {
+            await superAdminAPI.toggleStarStudent(id);
+            const newStatus = !student.isStarStudent;
+            setStudent({ ...student, isStarStudent: newStatus });
+            toast.success(newStatus ? 'Marked as Star Student' : 'Removed from Star Students');
+        } catch (error) {
+            toast.error('Failed to update star status');
+        }
+    };
+
     if (loading) {
         return <div className="loading-screen"><div className="loading-spinner" /></div>;
     }
@@ -47,6 +58,13 @@ const StudentDetail = () => {
                 <Button variant="ghost" icon={ArrowLeft} onClick={() => navigate('/admin/students')}>
                     Back to Students
                 </Button>
+                <button 
+                    className={`nav-btn-v2 ${student.isStarStudent ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-white/5 text-slate-400 border-white/10'} border px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-white/10 transition-all`}
+                    onClick={handleToggleStar}
+                >
+                    <Star size={18} className={student.isStarStudent ? 'fill-current' : ''} />
+                    <span className="font-bold text-sm">{student.isStarStudent ? 'Star Student' : 'Mark Star'}</span>
+                </button>
             </div>
 
             {/* Profile Overview */}
@@ -72,10 +90,13 @@ const StudentDetail = () => {
                     </div>
                     <p className="text-slate-400 text-lg mb-4">{student.department} • Batch {student.batch}</p>
                     <div className="flex gap-3 flex-wrap">
-                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${student.isVerified ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                            }`}>
+                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                            student.isVerified ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 
+                            student.isRejected ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                            'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                        }`}>
                             {student.isVerified ? <CheckCircle size={14} /> : <XCircle size={14} />}
-                            {student.isVerified ? 'Verified' : 'Pending'}
+                            {student.isVerified ? 'Verified' : student.isRejected ? 'Rejected' : 'Pending'}
                         </span>
                         <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${student.placementStatus === 'placed' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
                                 student.placementStatus === 'in_process' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' :
@@ -117,6 +138,18 @@ const StudentDetail = () => {
                         )}
                     </div>
                 </div>
+
+                {/* About Me */}
+                {student.about && (
+                    <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-6 lg:col-span-2">
+                        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                            <FileText size={20} className="text-amber-500" /> About Candidate
+                        </h2>
+                        <p className="text-slate-300 leading-relaxed text-lg whitespace-pre-wrap">
+                            {student.about}
+                        </p>
+                    </div>
+                )}
 
                 {/* Academic Information */}
                 <div className="bg-[#1e293b] border border-white/5 rounded-2xl p-6">
@@ -207,7 +240,7 @@ const StudentDetail = () => {
                                 className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors group"
                             >
                                 <span className="text-white flex items-center gap-2">
-                                    <Download size={18} className="text-blue-400" /> Resume
+                                    <Eye size={18} className="text-blue-400" /> Resume
                                 </span>
                                 <ExternalLink size={16} className="text-slate-500 group-hover:text-blue-400" />
                             </a>
@@ -344,11 +377,14 @@ const StudentDetail = () => {
                                     {project.description && (
                                         <p className="text-slate-400 text-sm mb-3">{project.description}</p>
                                     )}
-                                    {project.technologies && project.technologies.length > 0 && (
+                                    {project.technologies && (
                                         <div className="flex flex-wrap gap-2">
-                                            {project.technologies.map((tech, i) => (
+                                            {(Array.isArray(project.technologies) 
+                                                ? project.technologies 
+                                                : (typeof project.technologies === 'string' ? project.technologies.split(',') : [])
+                                            ).map((tech, i) => (
                                                 <span key={i} className="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-medium">
-                                                    {tech}
+                                                    {typeof tech === 'string' ? tech.trim() : tech}
                                                 </span>
                                             ))}
                                         </div>
@@ -397,7 +433,7 @@ const StudentDetail = () => {
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition-colors"
                                 >
-                                    <Download size={16} /> View Offer Letter
+                                    <Eye size={16} /> View Offer Letter
                                 </a>
                             </div>
                         )}

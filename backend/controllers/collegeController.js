@@ -39,7 +39,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
                 status: 'approved'
             }
         }
-    });
+    }).select('name industry logo contactPerson size website');
 
     // Department-wise breakdown
     const departmentStats = await Student.aggregate([
@@ -116,6 +116,29 @@ const getDashboardStats = asyncHandler(async (req, res) => {
         }
     ]);
 
+    // Recent placements for the 3D slider (Specific to this college)
+    let recentPlacements = await Student.find({ 
+        college: collegeId, 
+        placementStatus: 'placed' 
+    })
+    .sort({ 'placementDetails.joiningDate': -1, updatedAt: -1 })
+    .limit(10)
+    .select('name department batch placementDetails profilePicture profileCompleteness')
+    .lean();
+
+    // Fix company names if they are ObjectIds
+    const { Company: CompanyModel } = require('../models');
+    recentPlacements = await Promise.all(recentPlacements.map(async (p) => {
+        if (p.placementDetails?.company && p.placementDetails.company.match(/^[0-9a-fA-F]{24}$/)) {
+            const comp = await CompanyModel.findById(p.placementDetails.company).select('name logo');
+            if (comp) {
+                p.placementDetails.companyName = comp.name;
+                p.placementDetails.companyLogo = comp.logo;
+            }
+        }
+        return p;
+    }));
+
     res.json({
         success: true,
         data: {
@@ -135,7 +158,8 @@ const getDashboardStats = asyncHandler(async (req, res) => {
             departmentStats,
             batchStats,
             cgpaRangeStats: formattedCgpaStats,
-            placementStatusStats
+            placementStatusStats,
+            recentPlacements
         }
     });
 });
@@ -511,6 +535,46 @@ const verifyStudent = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc    Reject student registration
+ * @route   PATCH /api/college/students/:id/reject
+ * @access  College Admin
+ */
+const rejectStudent = asyncHandler(async (req, res) => {
+    const collegeId = req.user.collegeProfile._id;
+    const { rejectionReason } = req.body;
+
+    const student = await Student.findOne({
+        _id: req.params.id,
+        college: collegeId
+    });
+
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
+    student.isVerified = false;
+    student.isRejected = true;
+    student.rejectedAt = new Date();
+    student.rejectedBy = req.userId;
+    student.rejectionReason = rejectionReason || 'No reason provided';
+    await student.save();
+
+    // Also update user approval status if user exists
+    if (student.user) {
+        await User.findByIdAndUpdate(student.user, { isApproved: false });
+    }
+
+    res.json({
+        success: true,
+        message: 'Student registration rejected',
+        data: student
+    });
+});
+
+/**
  * @desc    Bulk upload students from Excel
  * @route   POST /api/college/students/bulk
  * @access  College Admin
@@ -636,7 +700,8 @@ module.exports = {
     deleteStudent,
     verifyStudent,
     bulkUploadStudents,
-    getDepartments
+    getDepartments,
+    rejectStudent
 };
 
 /**
@@ -1591,7 +1656,7 @@ const getStudentPlacementActivity = asyncHandler(async (req, res) => {
             select: 'title location jobType salary',
             populate: {
                 path: 'company',
-                select: 'name logo industry'
+                select: 'name logo industry contactPerson website'
             }
         })
         .sort({ createdAt: -1 })
@@ -1734,8 +1799,8 @@ const getPlacementDrives = asyncHandler(async (req, res) => {
     }
 
     const drives = await Job.find(query)
-        .populate('company', 'name logo industry')
         .sort({ driveDate: 1 })
+        .populate('company', 'name logo industry description website')
         .lean();
 
     // Get stats for each drive
@@ -1839,7 +1904,7 @@ module.exports = {
     getCollegeSettings,
     updateCollegeSettings,
     getStudentPlacementActivity,
-    getStudentPlacementActivity,
     getPlacementDrives,
-    toggleStarStudent
+    toggleStarStudent,
+    rejectStudent
 };

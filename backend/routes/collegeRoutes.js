@@ -17,6 +17,7 @@ router.post('/students', collegeController.addStudent);
 router.put('/students/:id', validateObjectId('id'), collegeController.updateStudent);
 router.delete('/students/:id', validateObjectId('id'), collegeController.deleteStudent);
 router.patch('/students/:id/verify', validateObjectId('id'), collegeController.verifyStudent);
+router.patch('/students/:id/reject', validateObjectId('id'), collegeController.rejectStudent);
 router.post('/students/:id/reset-password', validateObjectId('id'), collegeController.resetStudentPassword);
 router.get('/students/:id/placement-activity', validateObjectId('id'), collegeController.getStudentPlacementActivity);
 router.patch('/students/:id/toggle-star', validateObjectId('id'), collegeController.toggleStarStudent);

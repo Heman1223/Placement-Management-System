@@ -5,7 +5,7 @@ import Button from '../../components/common/Button';
 import { 
     ArrowLeft, Briefcase, MapPin, Calendar, DollarSign, Users, 
     Clock, CheckCircle, Building2, Award, Target, TrendingUp,
-    FileText, Send, AlertCircle
+    FileText, Send, AlertCircle, ChevronRight, MapPinned
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './JobDetail.css';
@@ -25,7 +25,7 @@ const JobDetail = () => {
     const fetchJobDetails = async () => {
         setLoading(true);
         try {
-            const response = await jobAPI.getJob(id);
+            const response = await studentAPI.getJob(id);
             setJob(response.data.data);
             
             // Check if already applied
@@ -41,8 +41,8 @@ const JobDetail = () => {
     const checkApplicationStatus = async () => {
         try {
             const response = await studentAPI.getApplications();
-            const applications = response.data.data.applications;
-            const applied = applications.some(app => app.job._id === id);
+            const applications = response.data.data;
+            const applied = applications.some(app => app.job?._id === id);
             setHasApplied(applied);
         } catch (error) {
             console.error('Failed to check application status');
@@ -55,21 +55,30 @@ const JobDetail = () => {
         setApplying(true);
         try {
             await studentAPI.applyJob(job._id);
-            toast.success('Application submitted successfully!');
+            toast.success('Registered successfully!');
             setHasApplied(true);
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to apply for job');
+            toast.error(error.response?.data?.message || 'Failed to register for job');
         } finally {
             setApplying(false);
         }
     };
 
     const formatSalary = (salary) => {
-        if (!salary) return 'Not specified';
-        const min = salary.min ? `₹${(salary.min / 100000).toFixed(1)}L` : '';
-        const max = salary.max ? `₹${(salary.max / 100000).toFixed(1)}L` : '';
-        if (min && max) return `${min} - ${max}`;
-        return min || max || 'Not specified';
+        if (!salary) return 'Not disclosed';
+        const { min, max } = salary;
+        
+        if (min && max) {
+            const minLPA = (min / 100000).toFixed(1);
+            const maxLPA = (max / 100000).toFixed(1);
+            return `${minLPA} - ${maxLPA} LPA`;
+        }
+        return 'Not disclosed';
+    };
+
+    const formatInternshipSalary = (stipend) => {
+        if (!stipend || !stipend.amount) return 'Not specified';
+        return `₹${stipend.amount.toLocaleString('en-IN')} / month`;
     };
 
     const formatDate = (date) => {
@@ -100,9 +109,10 @@ const JobDetail = () => {
             <div className="error-screen">
                 <AlertCircle size={48} />
                 <h2>Job not found</h2>
-                <Button onClick={() => navigate('/student/jobs')}>
+                <button className="back-btn" onClick={() => navigate('/student/jobs')}>
+                    <ArrowLeft size={18} />
                     Back to Jobs
-                </Button>
+                </button>
             </div>
         );
     }
@@ -112,27 +122,26 @@ const JobDetail = () => {
 
     return (
         <div className="job-detail-page">
-            {/* Header */}
-            <div className="job-detail-header">
-                <Button 
-                    variant="secondary" 
-                    icon={ArrowLeft}
-                    onClick={() => navigate('/student/jobs')}
-                    className="back-btn"
-                >
+            <header className="job-detail-header">
+                <button className="back-btn" onClick={() => navigate('/student/jobs')}>
+                    <ArrowLeft size={18} />
                     Back to Jobs
-                </Button>
+                </button>
 
                 <div className="job-header-content">
                     <div className="job-header-left">
                         <div className="company-logo">
-                            <Building2 size={32} />
+                            {job.company?.logo ? (
+                                <img src={job.company.logo} alt={job.company.name} />
+                            ) : (
+                                <Building2 size={32} color="#60a5fa" />
+                            )}
                         </div>
                         <div className="job-header-info">
                             <h1>{job.title}</h1>
                             <div className="job-meta">
                                 <span className="company-name">
-                                    <Building2 size={16} />
+                                    <Building2 size={18} />
                                     {job.company?.name || 'Company'}
                                 </span>
                                 <span className="job-type-badge">{job.type?.replace('_', ' ')}</span>
@@ -145,48 +154,50 @@ const JobDetail = () => {
 
                     <div className="job-header-actions">
                         {hasApplied ? (
-                            <Button disabled className="applied-btn">
+                            <div className="btn-status-done">
                                 <CheckCircle size={18} />
-                                Already Applied
-                            </Button>
+                                Registered
+                            </div>
                         ) : isExpired ? (
-                            <Button disabled>
-                                Application Closed
-                            </Button>
+                            <div className="btn-status-closed">
+                                Registration Closed
+                            </div>
                         ) : (
                             <Button 
                                 onClick={handleApply} 
-                                disabled={applying}
-                                icon={Send}
-                                size="lg"
+                                loading={applying}
+                                className="btn-register-accent"
                             >
-                                {applying ? 'Applying...' : 'Apply Now'}
+                                Register Now
                             </Button>
                         )}
                     </div>
                 </div>
-            </div>
+            </header>
 
-            {/* Quick Info Cards */}
             <div className="quick-info-grid">
                 <div className="info-card">
                     <div className="info-icon salary-icon">
                         <DollarSign size={20} />
                     </div>
                     <div className="info-content">
-                        <span className="info-label">Salary</span>
-                        <span className="info-value">{formatSalary(job.salary)}</span>
+                        <span className="info-label">Allowance</span>
+                        <span className="info-value">
+                            {job.type === 'internship' 
+                                ? formatInternshipSalary(job.stipend) 
+                                : formatSalary(job.salary)}
+                        </span>
                     </div>
                 </div>
 
                 <div className="info-card">
                     <div className="info-icon location-icon">
-                        <MapPin size={20} />
+                        <MapPinned size={20} />
                     </div>
                     <div className="info-content">
                         <span className="info-label">Location</span>
                         <span className="info-value">
-                            {job.locations?.join(', ') || 'Not specified'}
+                            {job.locations?.join(', ') || 'Remote'}
                         </span>
                     </div>
                 </div>
@@ -197,30 +208,29 @@ const JobDetail = () => {
                     </div>
                     <div className="info-content">
                         <span className="info-label">Work Mode</span>
-                        <span className="info-value">{job.workMode || 'Not specified'}</span>
+                        <span className="info-value">{job.workMode || 'Hybrid'}</span>
                     </div>
                 </div>
 
                 <div className="info-card">
                     <div className="info-icon deadline-icon">
-                        <Calendar size={20} />
+                        <Clock size={20} />
                     </div>
                     <div className="info-content">
-                        <span className="info-label">Deadline</span>
+                        <span className="info-label">{job.type === 'internship' ? 'Stint Duration' : 'Decision Date'}</span>
                         <span className="info-value">
-                            {daysRemaining > 0 ? `${daysRemaining} days left` : 'Expired'}
+                            {job.type === 'internship' && job.duration?.value 
+                                ? `${job.duration.value} ${job.duration.unit}` 
+                                : daysRemaining > 0 ? `${daysRemaining} days left` : 'Expired'}
                         </span>
                     </div>
                 </div>
             </div>
 
-            {/* Main Content */}
             <div className="job-detail-content">
-                {/* Left Column */}
                 <div className="job-detail-main">
-                    {/* Description */}
                     <section className="detail-section">
-                        <h2><FileText size={20} /> Job Description</h2>
+                        <h2><FileText size={22} color="#3b82f6" /> Job Description</h2>
                         <div className="description-content">
                             {job.description?.split('\n').map((line, i) => (
                                 <p key={i}>{line}</p>
@@ -228,17 +238,27 @@ const JobDetail = () => {
                         </div>
                     </section>
 
-                    {/* Eligibility */}
+                    {job.requirements?.length > 0 && (
+                        <section className="detail-section">
+                            <h2><Target size={22} color="#10b981" /> Full Requirements</h2>
+                            <ul className="requirements-list-student">
+                                {job.requirements.map((req, i) => (
+                                    <li key={i}>{req}</li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+
                     <section className="detail-section">
-                        <h2><Target size={20} /> Eligibility Criteria</h2>
+                        <h2><Award size={22} color="#f59e0b" /> Eligibility Criteria</h2>
                         <div className="eligibility-grid">
                             <div className="eligibility-item">
                                 <span className="eligibility-label">Minimum CGPA</span>
-                                <span className="eligibility-value">{job.eligibility?.minCgpa || 'Not specified'}</span>
+                                <span className="eligibility-value">{job.eligibility?.minCgpa || '6.0'}</span>
                             </div>
                             <div className="eligibility-item">
-                                <span className="eligibility-label">Maximum Backlogs</span>
-                                <span className="eligibility-value">{job.eligibility?.maxBacklogs ?? 'Not specified'}</span>
+                                <span className="eligibility-label">Max Backlogs</span>
+                                <span className="eligibility-value">{job.eligibility?.maxBacklogs ?? '0'}</span>
                             </div>
                             {job.eligibility?.minTenthPercentage && (
                                 <div className="eligibility-item">
@@ -329,16 +349,16 @@ const JobDetail = () => {
                 <div className="job-detail-sidebar">
                     {/* Apply Card */}
                     <div className="sidebar-card apply-card">
-                        <h3>Ready to Apply?</h3>
-                        <p>Submit your application now and take the next step in your career.</p>
+                        <h3>Ready to Register?</h3>
+                        <p>Submit your registration now and take the next step in your career.</p>
                         {hasApplied ? (
-                            <Button disabled fullWidth className="applied-btn">
-                                <CheckCircle size={18} />
-                                Already Applied
-                            </Button>
+                            <div className="btn-status-done" style={{ width: '100%', justifyContent: 'center', padding: '1rem' }}>
+                                <CheckCircle size={20} />
+                                Already Registered
+                            </div>
                         ) : isExpired ? (
                             <Button disabled fullWidth>
-                                Application Closed
+                                Registration Closed
                             </Button>
                         ) : (
                             <Button 
@@ -347,7 +367,7 @@ const JobDetail = () => {
                                 icon={Send}
                                 fullWidth
                             >
-                                {applying ? 'Applying...' : 'Apply Now'}
+                                {applying ? 'Registering...' : 'Register'}
                             </Button>
                         )}
                     </div>
@@ -403,7 +423,11 @@ const JobDetail = () => {
                         <h3>About Company</h3>
                         <div className="company-info">
                             <div className="company-logo-large">
-                                <Building2 size={40} />
+                                {job.company?.logo ? (
+                                    <img src={job.company.logo} alt={job.company.name} className="w-full h-full object-contain" />
+                                ) : (
+                                    <Building2 size={40} />
+                                )}
                             </div>
                             <h4>{job.company?.name}</h4>
                             {job.company?.industry && (

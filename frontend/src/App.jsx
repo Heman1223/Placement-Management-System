@@ -36,15 +36,17 @@ import CompanyActivity from './pages/college/CompanyActivity';
 import CollegeActivityLogs from './pages/college/ActivityLogs';
 import CollegeSettings from './pages/college/Settings';
 import Partnerships from './pages/college/Partnerships';
+import CollegeCompanyProfile from './pages/college/CompanyProfile';
 
-// Company Pages
 import CompanyDashboard from './pages/company/Dashboard';
 import Jobs from './pages/company/Jobs';
 import JobForm from './pages/company/JobForm';
 import CompanyJobDetail from './pages/company/JobDetail';
 import SearchStudents from './pages/company/SearchStudents';
-import Shortlist from './pages/company/Shortlist';
+import CompanyShortlist from './pages/company/Shortlist';
+import CompanyStudentDetail from './pages/company/StudentDetail';
 import ConnectedColleges from './pages/company/ConnectedColleges';
+import CompanySettings from './pages/company/Settings';
 
 // Student Pages
 import StudentDashboard from './pages/student/Dashboard';
@@ -53,6 +55,9 @@ import StudentJobs from './pages/student/Jobs';
 import JobDetail from './pages/student/JobDetail';
 import StudentApplications from './pages/student/Applications';
 import StudentNotifications from './pages/student/Notifications';
+import CollegeProfile from './pages/student/CollegeProfile';
+import Offers from './pages/student/Offers';
+import CompanyApplications from './pages/company/CompanyApplications';
 
 // Utility Pages
 import PendingApproval from './pages/PendingApproval';
@@ -142,6 +147,7 @@ function App() {
             <Route path="activity-logs" element={<CollegeActivityLogs />} />
             <Route path="settings" element={<CollegeSettings />} />
             <Route path="partnerships" element={<Partnerships />} />
+            <Route path="companies/:id" element={<CollegeCompanyProfile />} />
           </Route>
 
           {/* Company Routes */}
@@ -156,9 +162,12 @@ function App() {
             <Route path="jobs/:id" element={<CompanyJobDetail />} />
             <Route path="jobs/:id/edit" element={<JobForm />} />
             <Route path="jobs/:id/applicants" element={<CompanyJobDetail />} />
+            <Route path="applications" element={<CompanyApplications />} />
             <Route path="search" element={<SearchStudents />} />
-            <Route path="shortlist" element={<Shortlist />} />
+            <Route path="shortlist" element={<CompanyShortlist />} />
+            <Route path="students/:id" element={<CompanyStudentDetail />} />
             <Route path="partnerships" element={<ConnectedColleges />} />
+            <Route path="settings" element={<CompanySettings />} />
           </Route>
 
           {/* Student Routes */}
@@ -173,6 +182,8 @@ function App() {
             <Route path="jobs/:id" element={<JobDetail />} />
             <Route path="applications" element={<StudentApplications />} />
             <Route path="notifications" element={<StudentNotifications />} />
+            <Route path="college-profile" element={<CollegeProfile />} />
+            <Route path="offers" element={<Offers />} />
           </Route>
 
           {/* 404 */}
