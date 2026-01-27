@@ -11,7 +11,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     const companyId = req.user.companyProfile._id;
 
     // Get all job IDs for this company
-    const companyJobIds = await Job.find({ company: companyId }).distinct('_id');
+    const companyJobIds = await Job.find({ company: companyId, isDeleted: { $ne: true } }).distinct('_id');
 
     // Get basic stats
     const [
@@ -22,8 +22,8 @@ const getDashboardStats = asyncHandler(async (req, res) => {
         hired,
         company
     ] = await Promise.all([
-        Job.countDocuments({ company: companyId }),
-        Job.countDocuments({ company: companyId, status: 'open' }),
+        Job.countDocuments({ company: companyId, isDeleted: { $ne: true } }),
+        Job.countDocuments({ company: companyId, status: 'open', isDeleted: { $ne: true } }),
         Application.countDocuments({ job: { $in: companyJobIds } }),
         Application.countDocuments({ job: { $in: companyJobIds }, status: 'shortlisted' }),
         Application.countDocuments({ job: { $in: companyJobIds }, status: 'hired' }),
@@ -42,7 +42,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     if (company.type === 'placement_agency') {
         approvedColleges = company.collegeAccess?.filter(ca => ca.status === 'approved').length || 0;
     } else {
-        approvedColleges = await College.countDocuments({ isVerified: true, isActive: true });
+        approvedColleges = await College.countDocuments({ isVerified: true, isActive: true, isDeleted: { $ne: true } });
     }
 
     // Shortlists by college
@@ -180,7 +180,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     ]);
 
     // Recent jobs
-    const recentJobs = await Job.find({ company: companyId })
+    const recentJobs = await Job.find({ company: companyId, isDeleted: { $ne: true } })
         .sort({ createdAt: -1 })
         .limit(5)
         .select('title type status stats applicationDeadline');
@@ -1609,7 +1609,8 @@ const getStarStudents = asyncHandler(async (req, res) => {
     // Get all star students (not filtered by college access for showcase purposes)
     const starStudents = await Student.find({
         isStarStudent: true,
-        isRejected: false
+        isRejected: false,
+        isDeleted: { $ne: true }
     })
     .populate('college', 'name logo city state')
     .select('name email department batch cgpa skills profilePicture resumeUrl linkedinUrl githubUrl')
@@ -1633,7 +1634,7 @@ const getApplications = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Get all job IDs belonging to this company
-    const jobIds = await Job.find({ company: companyId }).distinct('_id');
+    const jobIds = await Job.find({ company: companyId, isDeleted: { $ne: true } }).distinct('_id');
 
     const query = { job: { $in: jobIds } };
     if (status) query.status = status;

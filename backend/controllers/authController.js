@@ -359,7 +359,7 @@ const getLoginHistory = asyncHandler(async (req, res) => {
  */
 const getPublicColleges = asyncHandler(async (req, res) => {
     const colleges = await College.find({ 
-        isDeleted: false,
+        isDeleted: { $ne: true },
         isActive: true
     }).select('name _id code city state phone');
 

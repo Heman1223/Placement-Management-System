@@ -152,6 +152,19 @@ const jobSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+
+    // Soft delete
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
+    deletedAt: {
+        type: Date
+    },
+    deletedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 }, {
     timestamps: true
@@ -164,10 +177,16 @@ jobSchema.index({ type: 1 });
 jobSchema.index({ 'eligibility.allowedDepartments': 1 });
 jobSchema.index({ 'eligibility.allowedBatches': 1 });
 jobSchema.index({ title: 'text', description: 'text' });
+jobSchema.index({ isDeleted: 1 });
 
 // Virtual to check if job is active
 jobSchema.virtual('isActive').get(function () {
-    return this.status === 'open' && new Date() < this.applicationDeadline;
+    return this.status === 'open' && new Date() < this.applicationDeadline && !this.isDeleted;
 });
+
+// Query helper to exclude soft-deleted records by default
+jobSchema.query.notDeleted = function () {
+    return this.where({ isDeleted: { $ne: true } });
+};
 
 module.exports = mongoose.model('Job', jobSchema);

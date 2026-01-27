@@ -227,6 +227,19 @@ const studentSchema = new mongoose.Schema({
     starredBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    },
+
+    // Soft Delete
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
+    deletedAt: {
+        type: Date
+    },
+    deletedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }
 
 }, {
@@ -250,5 +263,11 @@ studentSchema.index({ 'name.firstName': 'text', 'name.lastName': 'text', skills:
 
 // Compound index for college uniqueness
 studentSchema.index({ college: 1, rollNumber: 1 }, { unique: true });
+studentSchema.index({ isDeleted: 1 });
+
+// Query helper to exclude soft-deleted records by default
+studentSchema.query.notDeleted = function () {
+    return this.where({ isDeleted: { $ne: true } });
+};
 
 module.exports = mongoose.model('Student', studentSchema);

@@ -18,13 +18,13 @@ const getDashboardStats = asyncHandler(async (req, res) => {
         inProcessStudents,
         shortlistedStudents
     ] = await Promise.all([
-        Student.countDocuments({ college: collegeId }),
-        Student.countDocuments({ college: collegeId, isVerified: true }),
-        Student.countDocuments({ college: collegeId, isVerified: true }),
-        Student.countDocuments({ college: collegeId, isVerified: false }),
-        Student.countDocuments({ college: collegeId, placementStatus: 'placed' }),
-        Student.countDocuments({ college: collegeId, placementStatus: 'in_process' }),
-        Student.countDocuments({ college: collegeId, isShortlisted: true })
+        Student.countDocuments({ college: collegeId, isDeleted: { $ne: true } }),
+        Student.countDocuments({ college: collegeId, isVerified: true, isDeleted: { $ne: true } }),
+        Student.countDocuments({ college: collegeId, isVerified: true, isDeleted: { $ne: true } }),
+        Student.countDocuments({ college: collegeId, isVerified: false, isDeleted: { $ne: true } }),
+        Student.countDocuments({ college: collegeId, placementStatus: 'placed', isDeleted: { $ne: true } }),
+        Student.countDocuments({ college: collegeId, placementStatus: 'in_process', isDeleted: { $ne: true } }),
+        Student.countDocuments({ college: collegeId, isShortlisted: true, isDeleted: { $ne: true } })
     ]);
 
     // Get agencies with access to this college
@@ -43,7 +43,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 
     // Department-wise breakdown
     const departmentStats = await Student.aggregate([
-        { $match: { college: collegeId } },
+        { $match: { college: collegeId, isDeleted: { $ne: true } } },
         {
             $group: {
                 _id: '$department',
@@ -58,7 +58,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 
     // Batch-wise breakdown
     const batchStats = await Student.aggregate([
-        { $match: { college: collegeId } },
+        { $match: { college: collegeId, isDeleted: { $ne: true } } },
         {
             $group: {
                 _id: '$batch',
@@ -73,7 +73,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 
     // CGPA range breakdown
     const cgpaRangeStats = await Student.aggregate([
-        { $match: { college: collegeId } },
+        { $match: { college: collegeId, isDeleted: { $ne: true } } },
         {
             $bucket: {
                 groupBy: '$cgpa',
@@ -107,7 +107,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
 
     // Placement status overview
     const placementStatusStats = await Student.aggregate([
-        { $match: { college: collegeId } },
+        { $match: { college: collegeId, isDeleted: { $ne: true } } },
         {
             $group: {
                 _id: '$placementStatus',
@@ -119,7 +119,8 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     // Recent placements for the 3D slider (Specific to this college)
     let recentPlacements = await Student.find({ 
         college: collegeId, 
-        placementStatus: 'placed' 
+        placementStatus: 'placed',
+        isDeleted: { $ne: true }
     })
     .sort({ 'placementDetails.joiningDate': -1, updatedAt: -1 })
     .limit(10)
@@ -187,7 +188,7 @@ const getStudents = asyncHandler(async (req, res) => {
         limit = 10
     } = req.query;
 
-    const query = { college: collegeId };
+    const query = { college: collegeId, isDeleted: { $ne: true } };
 
     // Basic filters
     if (department) query.department = department;
@@ -484,7 +485,16 @@ const deleteStudent = asyncHandler(async (req, res) => {
         });
     }
 
-    await student.deleteOne();
+    // Soft delete student
+    student.isDeleted = true;
+    student.deletedAt = new Date();
+    student.deletedBy = req.userId;
+    await student.save();
+
+    // Deactivate user account if exists
+    if (student.user) {
+        await User.findByIdAndUpdate(student.user, { isActive: false });
+    }
 
     // Update college stats
     await College.findByIdAndUpdate(collegeId, {

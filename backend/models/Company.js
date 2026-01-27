@@ -252,8 +252,8 @@ companySchema.index({ isDeleted: 1 });
 companySchema.index({ name: 'text', industry: 'text' });
 
 // Query helper to exclude soft-deleted records by default
-companySchema.query.notDeleted = function() {
-    return this.where({ isDeleted: false });
+companySchema.query.notDeleted = function () {
+    return this.where({ isDeleted: { $ne: true } });
 };
 
 module.exports = mongoose.model('Company', companySchema);

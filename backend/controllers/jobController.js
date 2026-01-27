@@ -115,9 +115,15 @@ const deleteJob = asyncHandler(async (req, res) => {
     if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
 
     const appCount = await Application.countDocuments({ job: job._id });
-    if (appCount > 0) return res.status(400).json({ success: false, message: 'Cannot delete job with applications' });
+    if (appCount > 0) return res.status(400).json({ success: false, message: 'Cannot delete job with applications. Try closing it instead.' });
 
-    await job.deleteOne();
+    // Soft delete job
+    job.isDeleted = true;
+    job.deletedAt = new Date();
+    job.deletedBy = req.userId;
+    job.status = 'cancelled';
+    await job.save();
+
     await Company.findByIdAndUpdate(companyId, { $inc: { 'stats.totalJobsPosted': -1, ...(job.status === 'open' && { 'stats.activeJobs': -1 }) } });
 
     res.json({ success: true, message: 'Job deleted' });

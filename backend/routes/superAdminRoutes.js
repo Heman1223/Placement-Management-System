@@ -56,10 +56,15 @@ router.patch('/companies/:id/download-limit', validateObjectId('id'), superAdmin
 // Students (Platform-wide)
 router.get('/students', superAdminController.getAllStudents);
 router.get('/students/:id', validateObjectId('id'), superAdminController.getStudentDetails);
-router.patch('/students/:id/toggle-star', validateObjectId('id'), superAdminController.toggleStarStudent); // Also ensure this route exists if I missed it earlier
+router.patch('/students/:id/toggle-star', validateObjectId('id'), superAdminController.toggleStarStudent);
+router.delete('/students/:id', validateObjectId('id'), superAdminController.softDeleteStudent);
+router.patch('/students/:id/restore', validateObjectId('id'), superAdminController.restoreStudent);
+ // Also ensure this route exists if I missed it earlier
 
 // Jobs (Platform-wide)
 router.get('/jobs', superAdminController.getAllJobs);
+router.delete('/jobs/:id', validateObjectId('id'), superAdminController.softDeleteJob);
+router.patch('/jobs/:id/restore', validateObjectId('id'), superAdminController.restoreJob);
 
 // Users
 router.get('/users', superAdminController.getAllUsers);

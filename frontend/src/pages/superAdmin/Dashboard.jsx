@@ -9,11 +9,12 @@ import {
     Search, Bell, MapPin, ShieldCheck, Clock
 } from 'lucide-react';
 import {
-    BarChart, Bar, PieChart, Pie, XAxis, YAxis,
+    BarChart, Bar, PieChart, Pie, XAxis, YAxis, LineChart, Line,
     CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
 } from 'recharts';
 import toast from 'react-hot-toast';
 import RecentPlacements from '../../components/common/RecentPlacements';
+import ShiningStars from '../../components/common/ShiningStars';
 import './SuperAdminDashboard.css';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -25,6 +26,7 @@ const SuperAdminDashboard = () => {
 
     const [recentData, setRecentData] = useState([]);
     const [recentPlacements, setRecentPlacements] = useState([]);
+    const [starStudents, setStarStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -53,6 +55,7 @@ const SuperAdminDashboard = () => {
 
             setRecentData(merged);
             setRecentPlacements(recent.placements || []);
+            setStarStudents(recent.starStudents || []);
         } catch (error) {
             if (!silent) toast.error('Failed to load dashboard data');
         } finally {
@@ -136,6 +139,9 @@ const SuperAdminDashboard = () => {
                     </div>
                 </motion.div>
             </div>
+
+            {/* Shining Stars Section */}
+            <ShiningStars students={starStudents} role="super_admin" />
 
             {/* 3D Recent Placements Section */}
             <RecentPlacements 
@@ -326,33 +332,36 @@ const SuperAdminDashboard = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="h-[320px]">
+                        <div className="h-[320px] relative">
                             <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={analytics?.companiesByIndustry || []}
-                                        dataKey="count"
-                                        nameKey="_id"
-                                        innerRadius={75}
-                                        outerRadius={105}
-                                        paddingAngle={10}
-                                        stroke="none"
-                                    >
-                                        {analytics?.companiesByIndustry?.map((_, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
+                                <LineChart data={analytics?.companiesByIndustry || []}>
+                                    <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                                    <XAxis
+                                        dataKey="_id"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 800 }}
+                                        dy={10}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#64748b', fontSize: 10, fontWeight: 700 }}
+                                    />
                                     <Tooltip
-                                        contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px' }}
+                                        contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '15px' }}
+                                        itemStyle={{ color: '#fff', fontSize: '13px', fontWeight: '900' }}
+                                        labelStyle={{ color: '#64748b', fontSize: '10px', marginBottom: '5px', fontWeight: 'bold' }}
                                     />
-                                    <Legend
-                                        verticalAlign="bottom"
-                                        height={40}
-                                        iconType="circle"
-                                        wrapperStyle={{ fontSize: '9px' }}
-                                        formatter={(value) => <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">{value}</span>}
+                                    <Line 
+                                        type="monotone" 
+                                        dataKey="count" 
+                                        stroke="#10b981" 
+                                        strokeWidth={4} 
+                                        dot={{ fill: '#10b981', r: 6, strokeWidth: 2, stroke: '#1e293b' }}
+                                        activeDot={{ r: 8, strokeWidth: 0 }}
                                     />
-                                </PieChart>
+                                </LineChart>
                             </ResponsiveContainer>
                         </div>
                     </motion.div>

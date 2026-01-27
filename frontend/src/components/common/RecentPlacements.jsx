@@ -61,11 +61,15 @@ const RecentPlacements = ({ placements = [], title = "Success Stories" }) => {
                         <div className="glass-placement-card">
                             <div className="card-top">
                                 <div className="student-profile-img">
-                                    {student.profilePicture ? (
-                                        <img src={student.profilePicture} alt={student.name.firstName} />
+                                    {student?.profilePicture ? (
+                                        <img 
+                                            src={student.profilePicture} 
+                                            alt={student?.name?.firstName || 'Student'} 
+                                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://ui-avatars.com/api/?name=' + (student?.name?.firstName || 'S') + '&background=random'; }}
+                                        />
                                     ) : (
                                         <div className="initials">
-                                            {student.name.firstName[0]}{student.name.lastName[0]}
+                                            {student?.name?.firstName?.[0] || 'S'}{student?.name?.lastName?.[0] || 'S'}
                                         </div>
                                     )}
                                 </div>
@@ -88,8 +92,8 @@ const RecentPlacements = ({ placements = [], title = "Success Stories" }) => {
                                 </div>
                                 
                                 <h3 className="student-name">
-                                    {student.name.firstName} {student.name.lastName}
-                                    {student.isStarStudent && (
+                                    {student?.name?.firstName || 'Student'} {student?.name?.lastName || ''}
+                                    {student?.isStarStudent && (
                                         <Star size={16} className="inline-block ml-2 text-amber-400 fill-amber-400 mb-1" />
                                     )}
                                 </h3>

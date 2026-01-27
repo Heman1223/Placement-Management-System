@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
-import ShiningStars from '../../components/company/ShiningStars';
+import ShiningStars from '../../components/common/ShiningStars';
 import './CompanyDashboard.css';
 
 // Premium color palette for charts

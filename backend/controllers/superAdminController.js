@@ -19,33 +19,41 @@ const getDashboardStats = asyncHandler(async (req, res) => {
         activeJobs
     ] = await Promise.all([
         User.countDocuments(),
-        College.countDocuments(),
-        College.countDocuments({ isVerified: false }),
-        Company.countDocuments(),
-        Company.countDocuments({ isApproved: false }),
-        Student.countDocuments(),
-        Student.countDocuments({ placementStatus: 'placed' }),
-        Job.countDocuments(),
-        Job.countDocuments({ status: 'open' })
+        College.countDocuments({ isDeleted: { $ne: true } }),
+        College.countDocuments({ isVerified: false, isDeleted: { $ne: true } }),
+        Company.countDocuments({ isDeleted: { $ne: true } }),
+        Company.countDocuments({ isApproved: false, isDeleted: { $ne: true } }),
+        Student.countDocuments({ isDeleted: { $ne: true } }),
+        Student.countDocuments({ placementStatus: 'placed', isDeleted: { $ne: true } }),
+        Job.countDocuments({ isDeleted: { $ne: true } }),
+        Job.countDocuments({ status: 'open', isDeleted: { $ne: true } })
     ]);
 
     // Recent registrations
-    const recentColleges = await College.find()
+    const recentColleges = await College.find({ isDeleted: { $ne: true } })
         .sort({ createdAt: -1 })
         .limit(5)
         .select('name code isVerified createdAt logo');
 
-    const recentCompanies = await Company.find()
+    const recentCompanies = await Company.find({ isDeleted: { $ne: true } })
         .sort({ createdAt: -1 })
         .limit(5)
         .select('name type isApproved createdAt logo');
 
     // Recent placements for the 3D slider
-    let recentPlacements = await Student.find({ placementStatus: 'placed' })
+    let recentPlacements = await Student.find({ placementStatus: 'placed', isDeleted: { $ne: true } })
         .sort({ 'placementDetails.joiningDate': -1, updatedAt: -1 })
         .limit(10)
         .populate('college', 'name logo')
-        .select('name college placementDetails')
+        .select('name college placementDetails profilePicture')
+        .lean();
+
+    // Fetch star students for the dashboard
+    const starStudents = await Student.find({ isStarStudent: true, isDeleted: { $ne: true } })
+        .sort({ starredAt: -1, updatedAt: -1 })
+        .limit(10)
+        .populate('college', 'name logo')
+        .select('name department batch cgpa skills profilePicture college')
         .lean();
 
     // Fix company names if they are ObjectIds (from previous bug)
@@ -71,7 +79,8 @@ const getDashboardStats = asyncHandler(async (req, res) => {
             recent: {
                 colleges: recentColleges,
                 companies: recentCompanies,
-                placements: recentPlacements
+                placements: recentPlacements,
+                starStudents: starStudents
             }
         }
     });
@@ -188,7 +197,7 @@ const getCompanies = asyncHandler(async (req, res) => {
 
     // Exclude soft-deleted by default unless explicitly requested
     if (includeDeleted !== 'true') {
-        query.isDeleted = false;
+        query.isDeleted = { $ne: true };
     }
 
     if (status === 'pending') {
@@ -426,11 +435,11 @@ const getCollegeDetails = asyncHandler(async (req, res) => {
 
     // Get student statistics
     const [totalStudents, verifiedStudents, placedStudents, departmentStats] = await Promise.all([
-        Student.countDocuments({ college: college._id }),
-        Student.countDocuments({ college: college._id, isVerified: true }),
-        Student.countDocuments({ college: college._id, placementStatus: 'placed' }),
+        Student.countDocuments({ college: college._id, isDeleted: { $ne: true } }),
+        Student.countDocuments({ college: college._id, isVerified: true, isDeleted: { $ne: true } }),
+        Student.countDocuments({ college: college._id, placementStatus: 'placed', isDeleted: { $ne: true } }),
         Student.aggregate([
-            { $match: { college: college._id } },
+            { $match: { college: college._id, isDeleted: { $ne: true } } },
             {
                 $group: {
                     _id: '$department',
@@ -588,9 +597,14 @@ const addStudentToCollege = asyncHandler(async (req, res) => {
  */
 const getCollegeStudents = asyncHandler(async (req, res) => {
     const collegeId = req.params.id;
-    const { page = 1, limit = 10, search } = req.query;
+    const { page = 1, limit = 10, search, includeDeleted } = req.query;
 
     const query = { college: collegeId };
+
+    // Exclude soft-deleted by default unless explicitly requested
+    if (includeDeleted !== 'true') {
+        query.isDeleted = false;
+    }
 
     if (search) {
         query.$or = [
@@ -667,6 +681,7 @@ const toggleUserStatus = asyncHandler(async (req, res) => {
 const getAnalytics = asyncHandler(async (req, res) => {
     // Placement statistics by college
     const placementByCollege = await Student.aggregate([
+        { $match: { isDeleted: { $ne: true } } },
         {
             $lookup: {
                 from: 'colleges',
@@ -706,6 +721,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
 
     // Student distribution by department
     const studentsByDepartment = await Student.aggregate([
+        { $match: { isDeleted: { $ne: true } } },
         {
             $group: {
                 _id: '$department',
@@ -738,6 +754,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
 
     // Company type distribution
     const companyTypes = await Company.aggregate([
+        { $match: { isDeleted: { $ne: true } } },
         {
             $group: {
                 _id: '$type',
@@ -748,6 +765,7 @@ const getAnalytics = asyncHandler(async (req, res) => {
 
     // Top skills in demand
     const topSkills = await Student.aggregate([
+        { $match: { isDeleted: { $ne: true } } },
         { $unwind: '$skills' },
         {
             $group: {
@@ -755,7 +773,6 @@ const getAnalytics = asyncHandler(async (req, res) => {
                 count: { $sum: 1 }
             }
         },
-        { $sort: { count: -1 } },
         { $limit: 10 }
     ]);
 
@@ -859,10 +876,16 @@ const getAllStudents = asyncHandler(async (req, res) => {
         maxCGPA,
 
         skills,
-        isStarStudent
+        isStarStudent,
+        includeDeleted
     } = req.query;
 
     const query = {};
+
+    // Exclude soft-deleted by default unless explicitly requested
+    if (includeDeleted !== 'true') {
+        query.isDeleted = false;
+    }
 
     // Search filter
     if (search) {
@@ -1618,9 +1641,15 @@ const toggleStarStudent = asyncHandler(async (req, res) => {
  * @access  Super Admin
  */
 const getAllJobs = asyncHandler(async (req, res) => {
-    const { company, status, page = 1, limit = 50 } = req.query;
+    const { company, status, page = 1, limit = 50, includeDeleted } = req.query;
 
     const query = {};
+    
+    // Exclude soft-deleted by default unless explicitly requested
+    if (includeDeleted !== 'true') {
+        query.isDeleted = false;
+    }
+
     if (company) query.company = company;
     if (status) query.status = status;
 
@@ -1646,6 +1675,166 @@ const getAllJobs = asyncHandler(async (req, res) => {
                 total
             }
         }
+    });
+});
+
+/**
+ * @desc    Soft delete student
+ * @route   DELETE /api/super-admin/students/:id
+ * @access  Super Admin
+ */
+const softDeleteStudent = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const student = await Student.findById(id);
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
+    if (student.isDeleted) {
+        return res.status(400).json({
+            success: false,
+            message: 'Student is already deleted'
+        });
+    }
+
+    student.isDeleted = true;
+    student.deletedAt = new Date();
+    student.deletedBy = req.userId;
+    await student.save();
+
+    // Deactivate user account if exists
+    if (student.user) {
+        await User.findByIdAndUpdate(student.user, { isActive: false });
+    }
+
+    // Update college stats
+    await College.findByIdAndUpdate(student.college, {
+        $inc: { 'stats.totalStudents': -1 }
+    });
+
+    res.json({
+        success: true,
+        message: 'Student deleted successfully'
+    });
+});
+
+/**
+ * @desc    Restore soft-deleted student
+ * @route   PATCH /api/super-admin/students/:id/restore
+ * @access  Super Admin
+ */
+const restoreStudent = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const student = await Student.findById(id);
+    if (!student) {
+        return res.status(404).json({
+            success: false,
+            message: 'Student not found'
+        });
+    }
+
+    if (!student.isDeleted) {
+        return res.status(400).json({
+            success: false,
+            message: 'Student is not deleted'
+        });
+    }
+
+    student.isDeleted = false;
+    student.deletedAt = null;
+    student.deletedBy = null;
+    await student.save();
+
+    // Reactivate user account if exists
+    if (student.user) {
+        await User.findByIdAndUpdate(student.user, { isActive: true });
+    }
+
+    // Update college stats
+    await College.findByIdAndUpdate(student.college, {
+        $inc: { 'stats.totalStudents': 1 }
+    });
+
+    res.json({
+        success: true,
+        message: 'Student restored successfully',
+        data: student
+    });
+});
+
+/**
+ * @desc    Soft delete job
+ * @route   DELETE /api/super-admin/jobs/:id
+ * @access  Super Admin
+ */
+const softDeleteJob = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const job = await Job.findById(id);
+    if (!job) {
+        return res.status(404).json({
+            success: false,
+            message: 'Job not found'
+        });
+    }
+
+    if (job.isDeleted) {
+        return res.status(400).json({
+            success: false,
+            message: 'Job is already deleted'
+        });
+    }
+
+    job.isDeleted = true;
+    job.deletedAt = new Date();
+    job.deletedBy = req.userId;
+    job.status = 'cancelled';
+    await job.save();
+
+    res.json({
+        success: true,
+        message: 'Job deleted successfully'
+    });
+});
+
+/**
+ * @desc    Restore soft-deleted job
+ * @route   PATCH /api/super-admin/jobs/:id/restore
+ * @access  Super Admin
+ */
+const restoreJob = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const job = await Job.findById(id);
+    if (!job) {
+        return res.status(404).json({
+            success: false,
+            message: 'Job not found'
+        });
+    }
+
+    if (!job.isDeleted) {
+        return res.status(400).json({
+            success: false,
+            message: 'Job is not deleted'
+        });
+    }
+
+    job.isDeleted = false;
+    job.deletedAt = null;
+    job.deletedBy = null;
+    job.status = 'open'; // Default back to open
+    await job.save();
+
+    res.json({
+        success: true,
+        message: 'Job restored successfully',
+        data: job
     });
 });
 
@@ -1684,6 +1873,10 @@ module.exports = {
     toggleCollegeAdminBlock,
 
     getAllJobs,
+    softDeleteJob,
+    restoreJob,
     toggleStarStudent,
-    getStudentDetails
+    getStudentDetails,
+    softDeleteStudent,
+    restoreStudent
 };

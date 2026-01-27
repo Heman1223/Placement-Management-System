@@ -172,7 +172,7 @@ collegeSchema.index({ 'address.city': 1, 'address.state': 1 });
 
 // Query helper to exclude soft-deleted records by default
 collegeSchema.query.notDeleted = function() {
-    return this.where({ isDeleted: false });
+    return this.where({ isDeleted: { $ne: true } });
 };
 
 module.exports = mongoose.model('College', collegeSchema);
