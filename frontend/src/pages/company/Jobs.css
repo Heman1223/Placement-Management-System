@@ -6,7 +6,7 @@
 }
 
 /* Filter Tabs - Dark Theme */
-.filter-tabs {
+.jobs-page .filter-tabs {
     display: flex;
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-5);
@@ -17,7 +17,7 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.filter-tab {
+.jobs-page .filter-tab {
     padding: var(--spacing-2) var(--spacing-4);
     font-size: 0.875rem;
     font-weight: 500;
@@ -29,12 +29,12 @@
     cursor: pointer;
 }
 
-.filter-tab:hover {
+.jobs-page .filter-tab:hover {
     color: white;
     background: rgba(255, 255, 255, 0.05);
 }
 
-.filter-tab.active {
+.jobs-page .filter-tab.active {
     background: #10b981;
     color: white;
 }

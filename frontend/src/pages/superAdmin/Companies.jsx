@@ -2,21 +2,23 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { superAdminAPI } from '../../services/api';
-import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
-import Input from '../../components/common/Input';
-import { 
-    CheckCircle, XCircle, Eye, Briefcase, Plus, 
-    Edit2, Power, Ban, Trash2, RotateCcw, Building2, 
+import {
+    CheckCircle, XCircle, Eye, Briefcase, Plus,
+    Edit2, Power, Ban, Trash2, RotateCcw, Building2,
     Calendar, Download, MoreVertical, Search, Globe,
-    Users, ShieldCheck, Clock, ShieldAlert, Bell, Mail, ArrowUpRight
+    Users, ShieldCheck, Clock, ShieldAlert, Bell, Mail, ArrowUpRight, Activity, MapPin
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Table, { Pagination } from '../../components/common/Table';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Modal from '../../components/common/Modal';
 import './AdminPages.css';
 
 const Companies = () => {
     const navigate = useNavigate();
     const [companies, setCompanies] = useState([]);
+    const [allCompanies, setAllCompanies] = useState([]);
     const [colleges, setColleges] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
@@ -34,7 +36,11 @@ const Companies = () => {
     useEffect(() => {
         fetchCompanies();
         fetchColleges();
-    }, [filter, searchQuery]);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        applyFilter();
+    }, [filter, allCompanies]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -49,18 +55,31 @@ const Companies = () => {
     const fetchCompanies = async (page = 1) => {
         setLoading(true);
         try {
-            const params = { 
-                page, 
-                status: filter || undefined,
+            const params = {
+                page,
                 search: searchQuery || undefined
             };
             const response = await superAdminAPI.getCompanies(params);
-            setCompanies(response.data.data.companies);
+            const fetchedCompanies = response.data.data.companies;
+            setAllCompanies(fetchedCompanies);
             setPagination(response.data.data.pagination);
         } catch (error) {
             toast.error('Failed to load companies');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const applyFilter = () => {
+        if (!filter) {
+            setCompanies(allCompanies);
+        } else {
+            setCompanies(allCompanies.filter(c => {
+                if (filter === 'approved') return c.isApproved;
+                if (filter === 'pending') return !c.isApproved && !c.isRejected;
+                if (filter === 'rejected') return c.isRejected;
+                return true;
+            }));
         }
     };
 
@@ -82,7 +101,7 @@ const Companies = () => {
 
         try {
             await superAdminAPI.approveCompany(id, true);
-            toast.success(`${companyName} - Approved`);
+            toast.success(`${companyName} - Authorized`);
             fetchCompanies(pagination.current);
         } catch (error) {
             toast.error('Action failed');
@@ -97,14 +116,7 @@ const Companies = () => {
 
         try {
             await superAdminAPI.approveCompany(rejectionModal.id, false, rejectionReason);
-            toast.error(`${rejectionModal.name} - Rejected`, {
-                icon: '❌',
-                style: {
-                    background: '#1e293b',
-                    color: '#fff',
-                    border: '1px solid #ef4444'
-                }
-            });
+            toast.error(`${rejectionModal.name} - Rejected`);
             setRejectionModal({ open: false, id: null, name: '' });
             fetchCompanies(pagination.current);
         } catch (error) {
@@ -113,15 +125,13 @@ const Companies = () => {
     };
 
     const handleToggleActive = async (id, currentStatus) => {
-        const action = currentStatus ? 'block' : 'activate';
-        if (!window.confirm(`Are you sure you want to ${action} this company?`)) return;
-
+        const action = currentStatus ? 'Deactivate' : 'Activate';
         try {
             await superAdminAPI.toggleCompanyStatus(id);
-            toast.success(`Company ${action}ed successfully`);
+            toast.success(`Entity ${action}ed`);
             fetchCompanies(pagination.current);
         } catch (error) {
-            toast.error(`Failed to ${action} company`);
+            toast.error(`Failed to ${action} entity`);
         }
     };
 
@@ -138,33 +148,23 @@ const Companies = () => {
                 suspendForm.reason,
                 suspendForm.endDate
             );
-            toast.success(`Company ${suspendModal.company.isSuspended ? 'unsuspended' : 'suspended'} successfully`);
+            toast.success(`Access ${suspendModal.company.isSuspended ? 'Restored' : 'Suspended'}`);
             setSuspendModal({ open: false, company: null });
             fetchCompanies(pagination.current);
         } catch (error) {
-            toast.error('Failed to suspend company');
+            toast.error('Operation failed');
         }
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this company?')) return;
+        if (!window.confirm('Terminate this corporate partnership?')) return;
 
         try {
             await superAdminAPI.deleteCompany(id);
-            toast.success('Company deleted successfully');
+            toast.success('Partnership Terminated');
             fetchCompanies(pagination.current);
         } catch (error) {
-            toast.error('Failed to delete company');
-        }
-    };
-
-    const handleRestore = async (id) => {
-        try {
-            await superAdminAPI.restoreCompany(id);
-            toast.success('Company restored successfully');
-            fetchCompanies(pagination.current);
-        } catch (error) {
-            toast.error('Failed to restore company');
+            toast.error('Termination failed');
         }
     };
 
@@ -172,10 +172,10 @@ const Companies = () => {
         try {
             const response = await superAdminAPI.getAgencyDetails(company._id);
             const agencyData = response.data.data;
-            
+
             setAccessForm({
                 selectedColleges: agencyData.agencyAccess?.allowedColleges?.map(ac => ac.college._id) || [],
-                expiryDate: agencyData.agencyAccess?.accessExpiryDate ? 
+                expiryDate: agencyData.agencyAccess?.accessExpiryDate ?
                     new Date(agencyData.agencyAccess.accessExpiryDate).toISOString().split('T')[0] : '',
                 downloadLimit: agencyData.agencyAccess?.downloadLimit || 100
             });
@@ -193,473 +193,336 @@ const Companies = () => {
                 await superAdminAPI.setAgencyAccessExpiry(agencyModal.company._id, accessForm.expiryDate);
             }
             await superAdminAPI.setAgencyDownloadLimit(agencyModal.company._id, accessForm.downloadLimit);
-            
-            toast.success('Agency access updated successfully');
+
+            toast.success('Access Permissions Updated');
             setAgencyModal({ open: false, company: null });
             fetchCompanies(pagination.current);
         } catch (error) {
-            toast.error('Failed to update agency access');
+            toast.error('Failed to update access');
         }
     };
 
     const handleRemoveCollege = async (collegeId) => {
         try {
             await superAdminAPI.removeCollegeFromAgency(agencyModal.company._id, collegeId);
-            toast.success('College access removed');
+            toast.success('Connection Severed');
             openAgencyAccessModal(agencyModal.company);
         } catch (error) {
-            toast.error('Failed to remove college access');
+            toast.error('Operation failed');
         }
     };
 
-    const containerVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.4,
-                staggerChildren: 0.05
+    const columns = [
+        {
+            header: 'Corporate Entity',
+            accessor: 'name',
+            render: (name, company) => (
+                <div className="entity-cell">
+                    <div className="entity-icon">
+                        {company.logo ? (
+                            <img src={company.logo} alt="" className="w-full h-full object-contain p-1" />
+                        ) : (
+                            <Briefcase size={16} />
+                        )}
+                    </div>
+                    <div>
+                        <div className="entity-name uppercase">{name}</div>
+                        <div className="entity-meta uppercase tracking-wider">{company.industry || 'General Industry'}</div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            header: 'Phase',
+            accessor: 'isApproved',
+            render: (isApproved, company) => {
+                if (company.isRejected) return <span className="status-badge status-error">Rejected</span>;
+                return (
+                    <span className={`status-badge ${isApproved ? 'status-success' : 'status-pending'}`}>
+                        {isApproved ? 'Authorized' : 'Partnership Review'}
+                    </span>
+                );
             }
+        },
+        {
+            header: 'Sector',
+            accessor: 'industry',
+            render: (val) => <span className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-wider">{val || 'Global'}</span>
+        },
+        {
+            header: 'Authority',
+            accessor: 'contactPerson',
+            render: (val) => (
+                <div className="text-[10px] font-black text-[#4a2c15] uppercase tracking-widest">
+                    {val?.name || 'Unassigned'}
+                </div>
+            )
+        },
+        {
+            header: 'Command',
+            accessor: '_id',
+            render: (_, company) => (
+                <div className="flex gap-2 justify-end action-dropdown-wrapper">
+                    <button
+                        onClick={() => navigate(`/admin/companies/${company._id}`)}
+                        className="w-8 h-8 rounded-lg border border-[#e6d8c3] flex items-center justify-center text-[#6b3f1d] hover:bg-[#faf6ef] transition-colors"
+                        title="View Details"
+                    >
+                        <Eye size={14} />
+                    </button>
+                    <button
+                        className="w-8 h-8 rounded-lg border border-[#e6d8c3] flex items-center justify-center text-[#6b3f1d] hover:bg-[#faf6ef] transition-colors"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdown(openDropdown === company._id ? null : company._id);
+                        }}
+                    >
+                        <MoreVertical size={14} />
+                    </button>
+                    <AnimatePresence>
+                        {openDropdown === company._id && (
+                            <motion.div
+                                className="absolute right-0 mt-8 w-52 bg-white rounded-xl shadow-lg border border-[#e6d8c3] z-50 overflow-hidden"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                            >
+                                <div className="p-1">
+                                    {!company.isApproved && !company.isRejected && (
+                                        <>
+                                            <button
+                                                onClick={() => { handleApprove(company._id, true, company.name); setOpenDropdown(null); }}
+                                                className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#1e7d4d] hover:bg-[#e6f4ea] rounded-lg mb-1 flex items-center gap-2"
+                                            >
+                                                <CheckCircle size={14} /> Authorize Partner
+                                            </button>
+                                            <button
+                                                onClick={() => { handleApprove(company._id, false, company.name); setOpenDropdown(null); }}
+                                                className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#b42318] hover:bg-[#fdeaea] rounded-lg mb-1 flex items-center gap-2"
+                                            >
+                                                <XCircle size={14} /> Decline Request
+                                            </button>
+                                        </>
+                                    )}
+                                    {company.isApproved && company.type === 'placement_agency' && (
+                                        <button
+                                            onClick={() => { openAgencyAccessModal(company); setOpenDropdown(null); }}
+                                            className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#c6a85e] hover:bg-[#faf6ef] rounded-lg mb-1 flex items-center gap-2"
+                                        >
+                                            <ShieldCheck size={14} /> Access Matrix
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => { openSuspendModal(company); setOpenDropdown(null); }}
+                                        className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#b45309] hover:bg-[#fffbeb] rounded-lg mb-1 flex items-center gap-2"
+                                    >
+                                        <Ban size={14} /> {company.isSuspended ? 'Restore' : 'Suspend'} Access
+                                    </button>
+                                    <button
+                                        onClick={() => { handleDelete(company._id); setOpenDropdown(null); }}
+                                        className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#b42318] hover:bg-[#fdeaea] rounded-lg flex items-center gap-2"
+                                    >
+                                        <Trash2 size={14} /> Terminate
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            )
         }
-    };
-
-    const itemVariants = {
-        hidden: { opacity: 0, x: -10 },
-        visible: { opacity: 1, x: 0 }
-    };
+    ];
 
     return (
-        <motion.div 
-            className="admin-page"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-        >
-            <div className="page-header companies-header">
-                <div className="header-title-area">
-                    <motion.h1 variants={itemVariants}>Partnerships</motion.h1>
-                    <motion.p className="subtitle" variants={itemVariants}>
-                        Super Admin Portal
-                    </motion.p>
+        <div className="admin-page">
+            <div className="flex justify-between items-start mb-8">
+                <div>
+                    <h1 className="text-3xl font-semibold text-[#4a2c15] tracking-tight mb-1">Corporate Ecosystem</h1>
+                    <p className="text-xs text-[#8b6f5a] font-medium uppercase tracking-widest leading-none">Global Partner Registry</p>
                 </div>
-                <div className="header-controls">
+                <div className="flex gap-4">
+                    <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f5a]" />
+                        <input
+                            type="text"
+                            placeholder="IDENTIFY ENTITY..."
+                            className="admin-search-input-hardened theme-input pl-10 pr-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all"
+                            style={{ backgroundColor: '#ffffff' }}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
                     <Link to="/admin/companies/new">
-                        <Button icon={Plus} variant="primary" className="add-college-btn-header">
-                            Register New Entity
+                        <Button variant="primary" className="!rounded-lg !bg-[#6b3f1d] admin-action-btn-hardened">
+                            <Plus size={18} className="mr-2" />
+                            <span className="text-[11px] font-bold uppercase tracking-wider">Register Entity</span>
                         </Button>
                     </Link>
                 </div>
             </div>
 
-
-
-            {/* Stats Overview */}
-            <div className="admin-stats-overview colleges-stats">
-                <motion.div className="mini-stat-card card-dark" variants={itemVariants}>
-                    <div className="mini-stat-icon-bg indigo">
-                        <Briefcase size={20} />
+            <div className="filter-tabs">
+                {[
+                    { id: '', label: 'Full Registry' },
+                    { id: 'approved', label: 'Authorized' },
+                    { id: 'pending', label: 'Review Required' },
+                    { id: 'rejected', label: 'Restricted' }
+                ].map((btn) => (
+                    <div
+                        key={btn.id}
+                        onClick={() => setFilter(btn.id)}
+                        className={`filter-tab ${filter === btn.id ? 'active' : ''}`}
+                    >
+                        {btn.label}
                     </div>
-                    <div className="mini-stat-info">
-                        <span className="value">{pagination.total}</span>
-                        <span className="label">Total Partners</span>
-                    </div>
-                </motion.div>
-                <motion.div className="mini-stat-card card-dark" variants={itemVariants}>
-                    <div className="mini-stat-icon-bg green">
-                        <ShieldCheck size={20} />
-                    </div>
-                    <div className="mini-stat-info">
-                        <span className="value">
-                            {companies.filter(c => c.isApproved).length}
-                        </span>
-                        <span className="label">Verified Status</span>
-                    </div>
-                </motion.div>
+                ))}
             </div>
 
-            {/* Search and Filters */}
-            <div className="search-filter-section">
-                <div className="search-bar-modern">
-                    <Search size={18} className="search-icon" />
-                    <input 
-                        type="text" 
-                        placeholder="Search by company name or industry..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-
-                <div className="pill-filters">
-                    <button
-                        className={`pill-btn ${filter === '' ? 'active' : ''}`}
-                        onClick={() => setFilter('')}
-                    >
-                        All Entities
-                    </button>
-                    <button
-                        className={`pill-btn ${filter === 'approved' ? 'active' : ''}`}
-                        onClick={() => setFilter('approved')}
-                    >
-                        Approved
-                    </button>
-                    <button
-                        className={`pill-btn ${filter === 'pending' ? 'active' : ''}`}
-                        onClick={() => setFilter('pending')}
-                    >
-                        Pending
-                        {companies.filter(c => !c.isApproved && !c.isRejected).length > 0 && (
-                            <span className="badge">{companies.filter(c => !c.isApproved && !c.isRejected).length}</span>
-                        )}
-                    </button>
-                    <button
-                        className={`pill-btn ${filter === 'rejected' ? 'active' : ''}`}
-                        onClick={() => setFilter('rejected')}
-                    >
-                        Rejected
-                        {companies.filter(c => c.isRejected).length > 0 && (
-                            <span className="badge">{companies.filter(c => c.isRejected).length}</span>
-                        )}
-                    </button>
-                </div>
-            </div>
-
-            <div className="section-title-row">
-                <h2>Active Partnerships</h2>
-                <button className="view-map-link">Industry Map</button>
-            </div>
-
-            {/* Redesigned Company Cards */}
-            <div className="colleges-cards-grid">
-                <AnimatePresence mode="popLayout">
-                    {loading ? (
-                        <div className="loader-full">
-                            <div className="spinner"></div>
-                            <span>Scanning corporate network...</span>
-                        </div>
-                    ) : companies.length === 0 ? (
-                        <div className="empty-cards-state">
-                            <Briefcase size={48} />
-                            <p>No corporate entities found</p>
-                        </div>
-                    ) : (
-                        companies.map((company) => (
-                            <motion.div 
-                                key={company._id}
-                                className="college-modern-card"
-                                variants={itemVariants}
-                                initial="hidden"
-                                animate="visible"
-                                exit="hidden"
-                                layout
-                            >
-                                <div className="card-top">
-                                    <div className="college-avatar company">
-                                        {company.logo ? (
-                                            <img src={company.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                        ) : (
-                                            <Briefcase size={22} />
-                                        )}
-                                    </div>
-                                    <div className="college-main-info">
-                                        <h3>{company.name}</h3>
-                                        <div className="code-row">
-                                            <span>{company.type?.replace('_', ' ').toUpperCase()}</span>
-                                        </div>
-                                        <div className={`status-pill ${company.isApproved ? 'verified' : company.isRejected ? 'rejected' : 'pending'}`}>
-                                            {company.isApproved ? <CheckCircle size={14} /> : company.isRejected ? <XCircle size={14} /> : <Clock size={14} />}
-                                            <span>{company.isApproved ? 'APPROVED' : company.isRejected ? 'REJECTED' : 'PENDING REVIEW'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="action-dropdown-wrapper" style={{ position: 'relative' }}>
-                                        <button 
-                                            className="more-options-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setOpenDropdown(openDropdown === company._id ? null : company._id);
-                                            }}
-                                        >
-                                            <MoreVertical size={20} />
-                                        </button>
-    
-                                        {/* Inline Actions */}
-                                        <AnimatePresence>
-                                            {openDropdown === company._id && (
-                                                <motion.div 
-                                                    className="inline-dropdown"
-                                                    initial={{ opacity: 0, scale: 0.95 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    exit={{ opacity: 0, scale: 0.95 }}
-                                                >
-                                                    {!company.isApproved && (
-                                                        <>
-                                                            <button 
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleApprove(company._id, true, company.name);
-                                                                    setOpenDropdown(null);
-                                                                }}
-                                                                className="success"
-                                                            >
-                                                                <CheckCircle size={16} /> Approve
-                                                            </button>
-                                                            <button 
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleApprove(company._id, false, company.name);
-                                                                    setOpenDropdown(null);
-                                                                }}
-                                                                className="danger"
-                                                            >
-                                                                <XCircle size={16} /> Reject
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                    {company.isApproved && company.type === 'placement_agency' && (
-                                                        <button 
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                openAgencyAccessModal(company);
-                                                                setOpenDropdown(null);
-                                                            }}
-                                                        >
-                                                            <Building2 size={16} /> Access
-                                                        </button>
-                                                    )}
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            openSuspendModal(company);
-                                                            setOpenDropdown(null);
-                                                        }}
-                                                    >
-                                                        <Ban size={16} /> Suspend
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDelete(company._id);
-                                                            setOpenDropdown(null);
-                                                        }} 
-                                                        className="danger"
-                                                    >
-                                                        <Trash2 size={16} /> Delete
-                                                    </button>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                </div>
-
-                                <div className="card-divider" />
-
-                                <div className="card-stats-row">
-                                    <div className="card-stat">
-                                        <span className="stat-header">INDUSTRY</span>
-                                        <div className="stat-detail">
-                                            <Globe size={14} />
-                                            <span>{company.industry || 'General'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="card-stat">
-                                        <span className="stat-header">AUTHORITY</span>
-                                        <div className="stat-detail">
-                                            <Users size={14} />
-                                            <span>{company.contactPerson?.name || 'N/A'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="card-divider" />
-
-                                <div className="card-footer">
-                                    <div className="footer-email">
-                                        <Mail size={14} />
-                                        <span>{company.contactPerson?.email || 'No email registered'}</span>
-                                    </div>
-                                    <button 
-                                        className="details-link-btn"
-                                        onClick={() => navigate(`/admin/companies/${company._id}`)}
-                                    >
-                                        Profile
-                                    </button>
-                                </div>
-                            </motion.div>
-                        ))
-                    )}
-                </AnimatePresence>
+            <div className="table-container mt-6">
+                <Table
+                    columns={columns}
+                    data={companies}
+                    loading={loading}
+                />
             </div>
 
             {pagination.pages > 1 && (
-                <div className="modern-pagination">
-                    <button 
-                        disabled={pagination.current === 1}
-                        onClick={() => fetchCompanies(pagination.current - 1)}
-                    >
-                        <ArrowUpRight size={18} style={{ transform: 'rotate(-135deg)' }} />
-                    </button>
-                    <span>{pagination.current} / {pagination.pages}</span>
-                    <button 
-                        disabled={pagination.current === pagination.pages}
-                        onClick={() => fetchCompanies(pagination.current + 1)}
-                    >
-                        <ArrowUpRight size={18} style={{ transform: 'rotate(45deg)' }} />
-                    </button>
+                <div className="flex justify-center mt-6">
+                    <Pagination
+                        current={pagination.current}
+                        pages={pagination.pages}
+                        onPageChange={(page) => fetchCompanies(page)}
+                    />
                 </div>
             )}
 
-            {/* Detail Modal */}
             <Modal
-                isOpen={detailModal.open}
-                onClose={() => setDetailModal({ open: false, company: null })}
-                title="Corporate Profile"
-                size="md"
+                isOpen={rejectionModal.open}
+                onClose={() => setRejectionModal({ open: false, id: null, name: '' })}
+                title="Decline Partnership Request"
             >
-                {detailModal.company && (
-                    <div className="detail-modal redesigned">
-                        <div className="detail-header">
-                            <div className="detail-icon">
-                                {detailModal.company.logo ? (
-                                    <img src={detailModal.company.logo} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-                                ) : (
-                                    <Briefcase size={32} />
-                                )}
-                            </div>
-                            <div className="detail-title-block">
-                                <h3>{detailModal.company.name}</h3>
-                                <span className="detail-code">{detailModal.company.type?.replace('_', ' ')}</span>
-                            </div>
-                        </div>
-
-                        <div className="detail-grid">
-                            <div className="detail-item">
-                                <span className="label">Industry Sector</span>
-                                <span className="value">{detailModal.company.industry || 'Not Specified'}</span>
-                            </div>
-                            <div className="detail-item">
-                                <span className="label">Contact Authority</span>
-                                <span className="value">{detailModal.company.contactPerson?.name}</span>
-                                <span className="sub-value">{detailModal.company.contactPerson?.email}</span>
-                            </div>
-                            <div className="detail-item">
-                                <span className="label">Contact Number</span>
-                                <span className="value">{detailModal.company.contactPerson?.phone || 'No phone provided'}</span>
-                            </div>
-                            <div className="detail-item">
-                                <span className="label">Organizational Profile</span>
-                                <span className="value">Size: {detailModal.company.size || 'N/A'}</span>
-                                {detailModal.company.website && (
-                                    <a href={detailModal.company.website} target="_blank" rel="noreferrer" className="sub-value text-blue-500">
-                                        View Website <ArrowUpRight size={12} />
-                                    </a>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="modal-actions-footer">
-                            <Button variant="outline" onClick={() => setDetailModal({ open: false, company: null })}>
-                                Close Profile
-                            </Button>
-                        </div>
+                <div className="p-6">
+                    <div className="mb-6">
+                        <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest mb-2 block">Reason for Rejection</label>
+                        <textarea
+                            placeholder="State mission critical reasons for declining this partnership..."
+                            className="admin-form-input-hardened theme-input w-full p-4 text-sm focus:outline-none"
+                            style={{ backgroundColor: '#ffffff' }}
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                        />
                     </div>
-                )}
+                    <div className="flex gap-4">
+                        <Button
+                            variant="outline"
+                            className="flex-1 !border-[#e6d8c3]"
+                            onClick={() => setRejectionModal({ open: false, id: null, name: '' })}
+                        >
+                            <span className="text-[11px] font-bold uppercase tracking-wider">Abort</span>
+                        </Button>
+                        <Button
+                            variant="primary"
+                            className="flex-1 !bg-[#b42318]"
+                            onClick={submitRejection}
+                        >
+                            <span className="text-[11px] font-bold uppercase tracking-wider">Decline Access</span>
+                        </Button>
+                    </div>
+                </div>
             </Modal>
 
-            {/* Suspend Modal */}
             <Modal
                 isOpen={suspendModal.open}
                 onClose={() => setSuspendModal({ open: false, company: null })}
-                title={suspendModal.company?.isSuspended ? "Unsuspend Organization" : "Suspend Organization"}
-                size="sm"
+                title={suspendModal.company?.isSuspended ? "Restore Partner Access" : "Suspend Organization"}
             >
-                {suspendModal.company && !suspendModal.company.isSuspended && (
-                    <form onSubmit={handleSuspend} className="admin-modern-form">
-                        <div className="warning-banner">
-                            <ShieldAlert size={20} />
-                            <span>Suspension will Revoke all platform access immediately.</span>
-                        </div>
-                        <Input
-                            label="Reason for Action"
-                            required
-                            placeholder="Identify violation or reason..."
-                            value={suspendForm.reason}
-                            onChange={(e) => setSuspendForm({ ...suspendForm, reason: e.target.value })}
-                        />
-                        <Input
-                            label="Self-Unsuspend Date (Optional)"
-                            type="date"
-                            value={suspendForm.endDate}
-                            onChange={(e) => setSuspendForm({ ...suspendForm, endDate: e.target.value })}
-                        />
-                        <div className="modal-actions-footer">
-                            <Button type="button" variant="outline" onClick={() => setSuspendModal({ open: false, company: null })}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" variant="danger">
-                                Suspend Account
-                            </Button>
-                        </div>
-                    </form>
-                )}
-                {suspendModal.company?.isSuspended && (
-                    <div className="admin-modern-form">
-                        <p className="text-slate-300 mb-6">Are you sure you want to restore platform access for <strong>{suspendModal.company.name}</strong>?</p>
-                        <div className="modal-actions-footer">
-                            <Button variant="outline" onClick={() => setSuspendModal({ open: false, company: null })}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleSuspend} variant="primary">
-                                Restore Access
-                            </Button>
-                        </div>
+                {suspendModal.company && (
+                    <div className="p-6">
+                        {!suspendModal.company.isSuspended ? (
+                            <>
+                                <div className="mb-6 p-4 bg-[#fdeaea] rounded-lg border border-[#f5c2c7]">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <ShieldAlert size={18} className="text-[#b42318]" />
+                                        <h4 className="font-bold text-[#b42318] uppercase text-[11px]">System Access Restriction</h4>
+                                    </div>
+                                    <p className="text-[10px] text-[#842029] font-medium uppercase tracking-tight">Revoking platform access for the organization and all associated recruiters.</p>
+                                </div>
+                                <div className="space-y-4 mb-8">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest">Reason</label>
+                                        <Input
+                                            className="admin-form-input-hardened theme-input"
+                                            style={{ backgroundColor: '#ffffff' }}
+                                            placeholder="Violation or administrative directive..."
+                                            value={suspendForm.reason}
+                                            onChange={(e) => setSuspendForm({ ...suspendForm, reason: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest">Sunset Date (Optional)</label>
+                                        <Input
+                                            type="date"
+                                            className="admin-form-input-hardened theme-input"
+                                            style={{ backgroundColor: '#ffffff' }}
+                                            value={suspendForm.endDate}
+                                            onChange={(e) => setSuspendForm({ ...suspendForm, endDate: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <Button
+                                    variant="primary"
+                                    className="w-full !bg-[#b42318]"
+                                    onClick={handleSuspend}
+                                >
+                                    <span className="text-[11px] font-bold uppercase tracking-wider">Confirm Suspension</span>
+                                </Button>
+                            </>
+                        ) : (
+                            <div className="text-center py-4">
+                                <p className="text-xs font-bold text-[#4a2c15] uppercase tracking-widest mb-8">Restore access for <span className="text-[#6b3f1d]">{suspendModal.company.name}</span>?</p>
+                                <Button
+                                    variant="primary"
+                                    className="w-full !bg-[#1e7d4d]"
+                                    onClick={handleSuspend}
+                                >
+                                    <span className="text-[11px] font-bold uppercase tracking-wider">Authorize Recovery</span>
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 )}
             </Modal>
 
-            {/* Agency Access Control Modal */}
             <Modal
                 isOpen={agencyModal.open}
                 onClose={() => setAgencyModal({ open: false, company: null })}
-                title="Partner Access Management"
+                title="Institutional Access Matrix"
                 size="lg"
             >
                 {agencyModal.company && (
-                    <form onSubmit={handleSaveAgencyAccess} className="admin-modern-form">
-                        <div className="agency-access-header">
-                            <Building2 size={24} />
-                            <div>
-                                <h4>{agencyModal.company.name}</h4>
-                                <p className="text-xs text-slate-400">Manage institutional connections and data limits</p>
-                            </div>
-                        </div>
-                        
-                        <div className="form-section">
-                            <label className="label mb-3 block">Connected Institutions</label>
-                            <div className="connected-colleges-list">
+                    <div className="p-8">
+                        <div className="mb-8">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b6f5a] block mb-4">Authorized Institutions</span>
+                            <div className="flex flex-wrap gap-2">
                                 {agencyModal.company.agencyAccess?.allowedColleges?.map((ac) => (
-                                    <div key={ac.college._id} className="connected-item">
-                                        <span>{ac.college.name}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveCollege(ac.college._id)}
-                                            className="remove-btn"
-                                            title="Disconnect Institution"
-                                        >
+                                    <div key={ac.college._id} className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#faf6ef] rounded-lg text-[10px] font-bold text-[#4a2c15] border border-[#e6d8c3]">
+                                        {ac.college.name}
+                                        <button onClick={() => handleRemoveCollege(ac.college._id)} className="text-[#b42318] hover:scale-110 transition-transform">
                                             <XCircle size={14} />
                                         </button>
                                     </div>
                                 ))}
                                 {(!agencyModal.company.agencyAccess?.allowedColleges || agencyModal.company.agencyAccess.allowedColleges.length === 0) && (
-                                    <p className="text-sm text-slate-500 italic">No institutions connected yet.</p>
+                                    <p className="text-[10px] font-medium italic text-[#8b6f5a] uppercase">No institutions currently authorized.</p>
                                 )}
                             </div>
                         </div>
 
-                        <div className="form-section">
-                            <label className="label mb-3 block">Connect New Institutions</label>
+                        <div className="space-y-4 mb-8">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#8b6f5a] block ml-1">Expansion Registry</span>
                             <select
                                 multiple
-                                className="admin-search-input h-40"
+                                className="w-full h-48 bg-[#faf6ef] border border-[#e6d8c3] rounded-xl p-4 text-[10px] font-bold text-[#4a2c15] uppercase tracking-wider focus:outline-none focus:border-[#c6a85e]"
                                 value={accessForm.selectedColleges}
                                 onChange={(e) => setAccessForm({
                                     ...accessForm,
@@ -667,49 +530,42 @@ const Companies = () => {
                                 })}
                             >
                                 {colleges.map((college) => (
-                                    <option key={college._id} value={college._id} className="py-2 px-3">
-                                        {college.name} ({college.code})
+                                    <option key={college._id} value={college._id} className="py-2 border-b border-[#e6d8c3]/30 last:border-none">
+                                        {college.name}
                                     </option>
                                 ))}
                             </select>
-                            <small className="text-slate-500 mt-2 block">Hold Ctrl/Cmd to select multiple institutions</small>
                         </div>
 
-                        <div className="form-row">
-                            <Input
-                                label="Contract Expiry Date"
-                                type="date"
-                                value={accessForm.expiryDate}
-                                onChange={(e) => setAccessForm({ ...accessForm, expiryDate: e.target.value })}
-                                icon={Calendar}
-                            />
-                            <div>
+                        <div className="grid grid-cols-2 gap-8 mb-10 pt-8 border-t border-[#faf6ef]">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest">Access Sunset</label>
                                 <Input
-                                    label="Data Download Quota"
+                                    type="date"
+                                    className="!bg-[#faf6ef] !border-[#e6d8c3]"
+                                    value={accessForm.expiryDate}
+                                    onChange={(e) => setAccessForm({ ...accessForm, expiryDate: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest">Download Quota</label>
+                                <Input
                                     type="number"
                                     min="0"
+                                    className="!bg-[#faf6ef] !border-[#e6d8c3]"
                                     value={accessForm.downloadLimit}
                                     onChange={(e) => setAccessForm({ ...accessForm, downloadLimit: e.target.value })}
-                                    icon={Download}
                                 />
-                                <small className="text-slate-500 block mt-1">
-                                    Utilization: {agencyModal.company.agencyAccess?.downloadCount || 0} / {agencyModal.company.agencyAccess?.downloadLimit || 0}
-                                </small>
                             </div>
                         </div>
 
-                        <div className="modal-actions-footer">
-                            <Button type="button" variant="outline" onClick={() => setAgencyModal({ open: false, company: null })}>
-                                Cancel
-                            </Button>
-                            <Button type="submit" variant="primary">
-                                Save Permissions
-                            </Button>
-                        </div>
-                    </form>
+                        <Button variant="primary" onClick={handleSaveAgencyAccess} className="w-full !bg-[#6b3f1d]">
+                            <span className="text-[11px] font-bold uppercase tracking-wider">Synchronize Permissions</span>
+                        </Button>
+                    </div>
                 )}
             </Modal>
-        </motion.div>
+        </div>
     );
 };
 

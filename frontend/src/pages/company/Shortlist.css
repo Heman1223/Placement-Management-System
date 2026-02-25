@@ -4,24 +4,25 @@
     max-width: 1600px;
     margin: 0 auto;
     color: white;
-    background: transparent; /* Let Layout handle global bg */
+    background: transparent;
+    /* Let Layout handle global bg */
     min-height: 100vh;
 }
 
 /* Header & Badge */
-.shortlist-main-header {
+.shortlist-page-new .shortlist-main-header {
     margin-bottom: 2.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.header-left-group {
+.shortlist-page-new .header-left-group {
     display: flex;
     flex-direction: column;
 }
 
-.header-primary-title {
+.shortlist-page-new .header-primary-title {
     font-size: 3rem;
     font-weight: 900;
     margin: 0;
@@ -29,7 +30,7 @@
     letter-spacing: -0.04em;
 }
 
-.limit-badge-green {
+.shortlist-page-new .limit-badge-green {
     display: inline-flex;
     padding: 0.35rem 0.75rem;
     background: rgba(16, 185, 129, 0.1);
@@ -43,18 +44,18 @@
     margin-top: 0.75rem;
 }
 
-.header-right-controls {
+.shortlist-page-new .header-right-controls {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
-.search-top {
+.shortlist-page-new .search-top {
     width: 400px;
 }
 
 /* Stat Grid */
-.shortlist-stats-grid {
+.shortlist-page-new .shortlist-stats-grid {
     margin-bottom: 3.5rem;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -62,7 +63,7 @@
 }
 
 /* All stats cards use standard dark glass theme */
-.stat-card-premium {
+.shortlist-page-new .stat-card-premium {
     background: rgba(30, 41, 59, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 1.25rem;
@@ -73,13 +74,13 @@
     transition: all 0.3s ease;
 }
 
-.stat-card-premium:hover {
+.shortlist-page-new .stat-card-premium:hover {
     background: rgba(30, 41, 59, 0.6);
     border-color: rgba(59, 130, 246, 0.3);
     transform: translateY(-4px);
 }
 
-.stat-label {
+.shortlist-page-new .stat-label {
     font-size: 0.65rem;
     font-weight: 950;
     color: #94a3b8;
@@ -87,7 +88,7 @@
     letter-spacing: 0.12em;
 }
 
-.stat-main-row {
+.shortlist-page-new .stat-main-row {
     display: flex;
     align-items: baseline;
     gap: 1rem;
@@ -102,7 +103,7 @@
 
 .stat-trend-blue {
     font-size: 0.85rem;
-    color: #3b82f6;
+    color: var(--accent-brand);
     font-weight: 700;
 }
 
@@ -116,12 +117,12 @@
 
 .stat-progress-fill {
     height: 100%;
-    background: #3b82f6;
+    background: var(--accent-brand);
     border-radius: 2px;
 }
 
 /* Candidates Section */
-.candidates-section-card {
+.shortlist-page-new .candidates-section-card {
     background: rgba(30, 41, 59, 0.4);
     border-radius: 1.5rem;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -143,7 +144,8 @@
 }
 
 .candidates-list-wrapper {
-    padding: 0; /* Reset for table feel */
+    padding: 0;
+    /* Reset for table feel */
 }
 
 .list-controls-row {
@@ -189,7 +191,7 @@
 }
 
 /* Filters */
-.list-filters-premium {
+.shortlist-page-new .list-filters-premium {
     background: rgba(30, 41, 59, 0.5);
     border-radius: 1.5rem;
     padding: 1.5rem;
@@ -228,7 +230,7 @@
 }
 
 /* Student Detail Modal - Premium Styling */
-.student-detail-modal {
+.shortlist-page-new .student-detail-modal {
     padding: 1rem;
     color: white;
 }
@@ -248,7 +250,8 @@
     flex-shrink: 0;
 }
 
-.detail-avatar, .detail-avatar-img {
+.detail-avatar,
+.detail-avatar-img {
     width: 100%;
     height: 100%;
     border-radius: 1.5rem;
@@ -263,7 +266,7 @@
     font-size: 2rem;
     font-weight: 900;
     color: white;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .detail-header-info h2 {
@@ -346,7 +349,7 @@
 }
 
 .cgpa-highlight {
-    color: #3b82f6;
+    color: var(--accent-brand);
     font-size: 1.2rem;
 }
 
@@ -438,7 +441,7 @@
 .view-cert-link {
     font-size: 0.8rem;
     font-weight: 700;
-    color: #3b82f6;
+    color: var(--accent-brand);
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -502,7 +505,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    background: #3b82f6;
+    background: var(--accent-brand);
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 0.75rem;
@@ -589,7 +592,8 @@
 .student-avatar-premium {
     width: 3.25rem;
     height: 3.25rem;
-    background: #00897b; /* Emerald/Teal precisely */
+    background: #00897b;
+    /* Emerald/Teal precisely */
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -655,30 +659,35 @@
 }
 
 /* Precise Color Mapping from Screenshot */
-.row-action-btn.view { 
-    background: #8b5cf6 !important; /* Purple */
+.row-action-btn.view {
+    background: #8b5cf6 !important;
+    /* Purple */
     box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
 }
 
-.row-action-btn.note { 
-    background: #64748b !important; /* Slate/Blue */
+.row-action-btn.note {
+    background: #64748b !important;
+    /* Slate/Blue */
     box-shadow: 0 0 10px rgba(100, 116, 139, 0.2);
 }
 
 .row-action-btn.interview,
 .row-action-btn.offer,
-.row-action-btn.hire { 
-    background: #f59e0b !important; /* Orange/Yellow */
+.row-action-btn.hire {
+    background: #f59e0b !important;
+    /* Orange/Yellow */
     box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
 }
 
-.row-action-btn.reject { 
-    background: #ef4444 !important; /* Red */
+.row-action-btn.reject {
+    background: #ef4444 !important;
+    /* Red */
     box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
 }
 
-.row-action-btn.remove { 
-    background: #b91c1c !important; /* Dark Red */
+.row-action-btn.remove {
+    background: #b91c1c !important;
+    /* Dark Red */
     box-shadow: 0 0 10px rgba(185, 28, 28, 0.2);
 }
 
@@ -697,11 +706,30 @@
     text-align: center;
 }
 
-.status-applied { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
-.status-shortlisted { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
-.status-interviewed { background: rgba(139, 92, 246, 0.1); color: #a78bfa; }
-.status-hired { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.status-rejected { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+.status-applied {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+}
+
+.status-shortlisted {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+}
+
+.status-interviewed {
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
+}
+
+.status-hired {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.status-rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+}
 
 .empty-state-card-mini {
     padding: 4rem;
@@ -719,7 +747,7 @@
 }
 
 /* Pipeline Summary - Dark Theme */
-.pipeline-summary {
+.shortlist-page-new .pipeline-summary {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -844,8 +872,8 @@
     border-left-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Table Container - Dark Theme */
-.table-container {
+/* Table Container - Dark Theme — scoped to avoid global leak */
+.shortlist-page-new .table-container {
     padding: var(--spacing-5);
     background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -901,7 +929,7 @@
 }
 
 /* Status Badges - Dark Theme */
-.status-badge {
+.shortlist-page-new .status-badge {
     display: inline-block;
     padding: var(--spacing-1) var(--spacing-3);
     border-radius: var(--radius-full);
@@ -936,7 +964,7 @@
 }
 
 /* Action Buttons - HIGHLY VISIBLE */
-.action-buttons {
+.shortlist-page-new .action-buttons {
     display: flex;
     gap: var(--spacing-2);
 }

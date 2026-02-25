@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 // Layout
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import { LoadingScreen } from './components/common';
 
 // Auth Pages
 import Login from './pages/auth/Login';
@@ -71,7 +72,7 @@ import './styles/globals.css';
 const HomeRedirect = () => {
   const { user, isAuthenticated, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) return <LoadingScreen message="Authenticating Session..." />;
   if (!isAuthenticated) return <Navigate to="/login" />;
 
   switch (user?.role) {
@@ -92,9 +93,10 @@ function App() {
           toastOptions={{
             duration: 4000,
             style: {
-              background: '#1f2937',
-              color: '#f9fafb',
-              borderRadius: '8px'
+              background: '#6b3f1d',
+              color: '#ffffff',
+              borderRadius: '8px',
+              fontWeight: '600'
             }
           }}
         />

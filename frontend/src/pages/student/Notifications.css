@@ -31,14 +31,14 @@
     font-weight: 600;
 }
 
-.filter-tabs {
+.student-notifications .filter-tabs {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 2rem;
     border-bottom: 2px solid #e5e7eb;
 }
 
-.tab {
+.student-notifications .tab {
     padding: 0.75rem 1.5rem;
     background: transparent;
     border: none;
@@ -51,11 +51,11 @@
     margin-bottom: -2px;
 }
 
-.tab:hover {
+.student-notifications .tab:hover {
     color: #667eea;
 }
 
-.tab.active {
+.student-notifications .tab.active {
     color: #667eea;
     border-bottom-color: #667eea;
 }

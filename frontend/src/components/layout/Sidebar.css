@@ -1,14 +1,14 @@
 /* Premium Sidebar Styling - Inspired by HireSync Design */
 
 :root {
-    --sidebar-bg: #0b1121;
+    --sidebar-bg: var(--primary-brand);
     --sidebar-width: 280px;
     --sidebar-collapsed-width: 80px;
-    --sidebar-active-bg: rgba(37, 99, 235, 0.15);
-    --sidebar-text: #94a3b8;
+    --sidebar-active-bg: rgba(139, 94, 60, 0.25);
+    --sidebar-text: rgba(255, 255, 255, 0.7);
     --sidebar-text-active: #ffffff;
-    --sidebar-accent: #2563eb;
-    --sidebar-footer-bg: #162031;
+    --sidebar-accent: var(--accent-brand);
+    --sidebar-footer-bg: rgba(0, 0, 0, 0.2);
 }
 
 .sidebar {
@@ -49,7 +49,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 4px 12px rgba(90, 62, 43, 0.3);
 }
 
 .logo-text {
@@ -90,7 +90,7 @@
 
 .sidebar-link-active {
     background: var(--sidebar-active-bg) !important;
-    color: #3b82f6 !important;
+    color: white !important;
 }
 
 /* The vertical indicator on the RIGHT */
@@ -101,7 +101,7 @@
     top: 0;
     bottom: 0;
     width: 4px;
-    background: #3b82f6;
+    background: var(--accent-brand);
     border-radius: 4px 0 0 4px;
 }
 
@@ -132,12 +132,12 @@
     height: 2.5rem;
     border-radius: 0.5rem;
     overflow: hidden;
-    background: #0b1121;
+    background: var(--primary-dark);
     border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #3b82f6;
+    color: var(--accent-brand);
     font-weight: 800;
 }
 
@@ -199,6 +199,7 @@
     .sidebar {
         transform: translateX(-100%);
     }
+
     .sidebar-open {
         transform: translateX(0);
     }

@@ -6,8 +6,8 @@
     animation: fadeIn 0.3s ease;
 }
 
-/* Empty State */
-.empty-state-card {
+/* Empty State SCOPED */
+.agencies-page .empty-state-card {
     text-align: center;
     padding: var(--spacing-10);
     background: white;
@@ -15,37 +15,37 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
-.empty-state-card svg {
+.agencies-page .empty-state-card svg {
     color: var(--gray-400);
     margin-bottom: var(--spacing-4);
 }
 
-.empty-state-card h3 {
+.agencies-page .empty-state-card h3 {
     margin: 0 0 var(--spacing-2);
     font-size: 1.25rem;
     color: var(--gray-800);
 }
 
-.empty-state-card p {
+.agencies-page .empty-state-card p {
     margin: 0 0 var(--spacing-2);
     color: var(--gray-600);
 }
 
-.info-text {
+.agencies-page .info-text {
     font-size: 0.875rem;
     color: var(--gray-500);
     font-style: italic;
 }
 
 /* Agencies Grid */
-.agencies-grid {
+.agencies-page .agencies-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: var(--spacing-5);
 }
 
 /* Agency Card */
-.agency-card {
+.agencies-page .agency-card {
     background: white;
     border-radius: var(--radius-xl);
     padding: var(--spacing-5);
@@ -54,13 +54,13 @@
     transition: all 0.3s ease;
 }
 
-.agency-card:hover {
+.agencies-page .agency-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 /* Agency Header */
-.agency-header {
+.agencies-page .agency-header {
     display: flex;
     align-items: flex-start;
     gap: var(--spacing-3);
@@ -69,7 +69,7 @@
     border-bottom: 1px solid var(--gray-100);
 }
 
-.agency-icon {
+.agencies-page .agency-icon {
     width: 48px;
     height: 48px;
     background: var(--primary-100);
@@ -81,27 +81,27 @@
     flex-shrink: 0;
 }
 
-.agency-info {
+.agencies-page .agency-info {
     flex: 1;
 }
 
-.agency-info h3 {
+.agencies-page .agency-info h3 {
     margin: 0 0 var(--spacing-1);
     font-size: 1.125rem;
     color: var(--gray-800);
 }
 
-.agency-info p {
+.agencies-page .agency-info p {
     margin: 0;
     font-size: 0.875rem;
     color: var(--gray-500);
 }
 
-.agency-status {
+.agencies-page .agency-status {
     flex-shrink: 0;
 }
 
-.status-badge {
+.agencies-page .status-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -111,28 +111,28 @@
     font-weight: 600;
 }
 
-.status-active {
+.agencies-page .status-active {
     background: var(--success-100);
     color: var(--success-700);
 }
 
-.status-inactive {
+.agencies-page .status-inactive {
     background: var(--gray-200);
     color: var(--gray-700);
 }
 
-.status-suspended {
+.agencies-page .status-suspended {
     background: var(--danger-100);
     color: var(--danger-700);
 }
 
-.status-expired {
+.agencies-page .status-expired {
     background: var(--warning-100);
     color: var(--warning-700);
 }
 
 /* Agency Contact */
-.agency-contact {
+.agencies-page .agency-contact {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-2);
@@ -142,13 +142,13 @@
     border-radius: var(--radius-lg);
 }
 
-.contact-item {
+.agencies-page .contact-item {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-.contact-label {
+.agencies-page .contact-label {
     font-size: 0.7rem;
     font-weight: 600;
     color: var(--gray-500);
@@ -156,20 +156,20 @@
     letter-spacing: 0.5px;
 }
 
-.contact-value {
+.agencies-page .contact-value {
     font-size: 0.875rem;
     color: var(--gray-800);
 }
 
 /* Agency Stats */
-.agency-stats {
+.agencies-page .agency-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-3);
     margin-bottom: var(--spacing-4);
 }
 
-.stat-item {
+.agencies-page .stat-item {
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
@@ -178,25 +178,25 @@
     border-radius: var(--radius-lg);
 }
 
-.stat-item svg {
+.agencies-page .stat-item svg {
     color: var(--primary-500);
     flex-shrink: 0;
 }
 
-.stat-item > div {
+.agencies-page .stat-item>div {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-.stat-value {
+.agencies-page .stat-value {
     font-size: 1rem;
     font-weight: 700;
     color: var(--gray-800);
     line-height: 1;
 }
 
-.stat-label {
+.agencies-page .stat-label {
     font-size: 0.65rem;
     color: var(--gray-500);
     text-transform: uppercase;
@@ -204,7 +204,7 @@
 }
 
 /* Agency Access Info */
-.agency-access-info {
+.agencies-page .agency-access-info {
     display: flex;
     align-items: center;
     gap: var(--spacing-2);
@@ -216,29 +216,29 @@
     color: var(--info-700);
 }
 
-.agency-access-info svg {
+.agencies-page .agency-access-info svg {
     flex-shrink: 0;
 }
 
 /* Agency Actions */
-.agency-actions {
+.agencies-page .agency-actions {
     display: flex;
     gap: var(--spacing-2);
 }
 
-/* Activity Modal */
-.activity-modal {
+/* Activity Modal SCOPED */
+.agencies-page .activity-modal {
     padding: var(--spacing-2) 0;
 }
 
-.activity-stats-grid {
+.agencies-page .activity-stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-4);
     margin-bottom: var(--spacing-6);
 }
 
-.activity-stat-card {
+.agencies-page .activity-stat-card {
     display: flex;
     align-items: center;
     gap: var(--spacing-3);
@@ -247,42 +247,42 @@
     border-radius: var(--radius-lg);
 }
 
-.activity-stat-card svg {
+.agencies-page .activity-stat-card svg {
     color: var(--primary-500);
 }
 
-.activity-stat-card > div {
+.agencies-page .activity-stat-card>div {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
-.activity-stat-value {
+.agencies-page .activity-stat-value {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--gray-800);
     line-height: 1;
 }
 
-.activity-stat-label {
+.agencies-page .activity-stat-label {
     font-size: 0.75rem;
     color: var(--gray-500);
     text-transform: uppercase;
     font-weight: 500;
 }
 
-/* Recent Activity Section */
-.recent-activity-section {
+/* Recent Activity Section SCOPED */
+.agencies-page .recent-activity-section {
     margin-bottom: var(--spacing-4);
 }
 
-.recent-activity-section h4 {
+.agencies-page .recent-activity-section h4 {
     margin: 0 0 var(--spacing-4);
     font-size: 1rem;
     color: var(--gray-700);
 }
 
-.activity-list {
+.agencies-page .activity-list {
     max-height: 400px;
     overflow-y: auto;
     display: flex;
@@ -290,7 +290,7 @@
     gap: var(--spacing-2);
 }
 
-.activity-item {
+.agencies-page .activity-item {
     display: flex;
     align-items: center;
     gap: var(--spacing-3);
@@ -299,7 +299,7 @@
     border-radius: var(--radius-lg);
 }
 
-.activity-icon {
+.agencies-page .activity-icon {
     width: 32px;
     height: 32px;
     background: var(--primary-100);
@@ -311,25 +311,25 @@
     flex-shrink: 0;
 }
 
-.activity-details {
+.agencies-page .activity-details {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-.activity-action {
+.agencies-page .activity-action {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--gray-800);
 }
 
-.activity-time {
+.agencies-page .activity-time {
     font-size: 0.75rem;
     color: var(--gray-500);
 }
 
-.empty-text {
+.agencies-page .empty-text {
     text-align: center;
     padding: var(--spacing-6);
     color: var(--gray-500);
@@ -337,17 +337,17 @@
     font-style: italic;
 }
 
-/* Responsive */
+/* Responsive SCOPED */
 @media (max-width: 768px) {
-    .agencies-grid {
+    .agencies-page .agencies-grid {
         grid-template-columns: 1fr;
     }
 
-    .agency-stats {
+    .agencies-page .agency-stats {
         grid-template-columns: 1fr;
     }
 
-    .activity-stats-grid {
+    .agencies-page .activity-stats-grid {
         grid-template-columns: 1fr;
     }
 }
@@ -357,21 +357,22 @@
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* Tabs */
-.tabs-container {
+/* Tabs SCOPED */
+.agencies-page .tabs-container {
     display: flex;
     gap: var(--spacing-2);
     margin-bottom: var(--spacing-5);
     border-bottom: 2px solid var(--gray-200);
 }
 
-.tab {
+.agencies-page .tab {
     padding: var(--spacing-3) var(--spacing-5);
     background: none;
     border: none;
@@ -384,45 +385,45 @@
     margin-bottom: -2px;
 }
 
-.tab:hover {
+.agencies-page .tab:hover {
     color: var(--primary-600);
 }
 
-.tab.active {
+.agencies-page .tab.active {
     color: var(--primary-600);
     border-bottom-color: var(--primary-600);
 }
 
-/* Available Agency Card */
-.agency-card.available {
+/* Available Agency Card SCOPED */
+.agencies-page .agency-card.available {
     border: 2px dashed var(--primary-300);
     background: var(--primary-50);
 }
 
-.agency-card.available .agency-icon {
+.agencies-page .agency-card.available .agency-icon {
     background: var(--primary-200);
     color: var(--primary-700);
 }
 
-/* Form Groups in Modals */
-.grant-access-modal,
-.settings-modal,
-.revoke-modal {
+/* Form Groups in Modals SCOPED */
+.agencies-page .grant-access-modal,
+.agencies-page .settings-modal,
+.agencies-page .revoke-modal {
     padding: var(--spacing-2) 0;
 }
 
-.grant-access-modal p,
-.settings-modal p,
-.revoke-modal p {
+.agencies-page .grant-access-modal p,
+.agencies-page .settings-modal p,
+.agencies-page .revoke-modal p {
     margin-bottom: var(--spacing-4);
     color: var(--gray-600);
 }
 
-.form-group {
+.agencies-page .form-group {
     margin-bottom: var(--spacing-4);
 }
 
-.form-group label {
+.agencies-page .form-group label {
     display: block;
     margin-bottom: var(--spacing-2);
     font-size: 0.875rem;
@@ -430,7 +431,7 @@
     color: var(--gray-700);
 }
 
-.help-text {
+.agencies-page .help-text {
     display: block;
     margin-top: var(--spacing-1);
     font-size: 0.75rem;
@@ -438,14 +439,14 @@
     font-style: italic;
 }
 
-.warning-text {
+.agencies-page .warning-text {
     font-size: 0.875rem;
     color: var(--danger-600);
     margin-top: var(--spacing-2);
 }
 
-/* Modal Actions */
-.modal-actions {
+/* Modal Actions SCOPED */
+.agencies-page .modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: var(--spacing-3);

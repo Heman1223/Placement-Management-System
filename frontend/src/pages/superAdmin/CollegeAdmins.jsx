@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { superAdminAPI } from '../../services/api';
-import Modal from '../../components/common/Modal';
-import Button from '../../components/common/Button';
-import Input from '../../components/common/Input';
-import { 
+import {
     Users, Key, Lock, Unlock, Edit2, ShieldAlert,
-    Shield, CheckCircle, XCircle, Search, 
-    ChevronLeft, ChevronRight, Building2
+    Shield, CheckCircle, XCircle, Search,
+    ChevronLeft, ChevronRight, Building2,
+    ShieldCheck, Activity, GraduationCap, Settings,
+    Mail, Clock, Trash2, MoreVertical
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Table, { Pagination } from '../../components/common/Table';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
+import Modal from '../../components/common/Modal';
 import './AdminPages.css';
 
 const CollegeAdmins = () => {
@@ -21,15 +24,26 @@ const CollegeAdmins = () => {
     const [editForm, setEditForm] = useState({ email: '' });
     const [newPassword, setNewPassword] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [openDropdown, setOpenDropdown] = useState(null);
 
     useEffect(() => {
         fetchAdmins(1);
     }, [searchTerm]);
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.action-dropdown-wrapper')) {
+                setOpenDropdown(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const fetchAdmins = async (page = 1) => {
         try {
             setLoading(true);
-            const response = await superAdminAPI.getUsers({ 
+            const response = await superAdminAPI.getUsers({
                 role: 'college_admin',
                 page,
                 limit: 10,
@@ -42,11 +56,6 @@ const CollegeAdmins = () => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        fetchAdmins(1);
     };
 
     const handleToggleBlock = async (id, isActive) => {
@@ -101,280 +110,218 @@ const CollegeAdmins = () => {
         }
     };
 
-    const containerVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5, staggerChildren: 0.1 } }
-    };
-
-    const itemVariants = {
-        hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0 }
-    };
+    const columns = [
+        {
+            header: 'Authority Node',
+            accessor: 'email',
+            render: (email, admin) => (
+                <div className="entity-cell">
+                    <div className="entity-icon">
+                        <Building2 size={16} />
+                    </div>
+                    <div>
+                        <div className="entity-name uppercase">{email}</div>
+                        <div className="entity-meta uppercase tracking-widest leading-none mt-1">
+                            Commissioned {new Date(admin.createdAt).toLocaleDateString()}
+                        </div>
+                    </div>
+                </div>
+            )
+        },
+        {
+            header: 'Institutional Mapping',
+            accessor: 'collegeProfile.name',
+            render: (collegeName) => (
+                <div className="text-[10px] font-bold text-[#4a2c15] uppercase flex items-center gap-1.5">
+                    <ShieldCheck size={12} className="text-[#6b3f1d]" /> {collegeName || 'Awaiting Sync'}
+                </div>
+            )
+        },
+        {
+            header: 'Access Level',
+            accessor: 'isActive',
+            render: (isActive, admin) => (
+                <div className="flex flex-col gap-1.5">
+                    <span className={`status-badge ${isActive ? 'status-success' : 'status-pending'}`}>
+                        {isActive ? 'Authorized' : 'Restricted'}
+                    </span>
+                    <span className={`text-[9px] font-bold uppercase tracking-wider ml-1 ${admin.isApproved ? 'text-[#1e7d4d]' : 'text-[#b45309]'}`}>
+                        {admin.isApproved ? 'Identity Verified' : 'Compliance Pending'}
+                    </span>
+                </div>
+            )
+        },
+        {
+            header: 'Command',
+            accessor: '_id',
+            render: (_, admin) => (
+                <div className="flex gap-2 justify-end action-dropdown-wrapper">
+                    <button
+                        onClick={() => openEditModal(admin)}
+                        className="w-8 h-8 rounded-lg border border-[#e6d8c3] flex items-center justify-center text-[#6b3f1d] hover:bg-[#faf6ef] transition-colors"
+                        title="Edit Signature"
+                    >
+                        <Edit2 size={14} />
+                    </button>
+                    <button
+                        className="w-8 h-8 rounded-lg border border-[#e6d8c3] flex items-center justify-center text-[#6b3f1d] hover:bg-[#faf6ef] transition-colors"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdown(openDropdown === admin._id ? null : admin._id);
+                        }}
+                    >
+                        <MoreVertical size={14} />
+                    </button>
+                    <AnimatePresence>
+                        {openDropdown === admin._id && (
+                            <motion.div
+                                className="absolute right-0 mt-8 w-48 bg-white rounded-xl shadow-lg border border-[#e6d8c3] z-50 overflow-hidden"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                            >
+                                <div className="p-1">
+                                    <button
+                                        onClick={() => { openResetModal(admin); setOpenDropdown(null); }}
+                                        className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#6b3f1d] hover:bg-[#faf6ef] rounded-lg mb-1 flex items-center gap-2"
+                                    >
+                                        <Key size={14} /> Reset Credentials
+                                    </button>
+                                    <button
+                                        onClick={() => { handleToggleBlock(admin._id, admin.isActive); setOpenDropdown(null); }}
+                                        className={`w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase rounded-lg flex items-center gap-2 ${admin.isActive ? 'text-[#b42318] hover:bg-[#fdeaea]' : 'text-[#1e7d4d] hover:bg-[#e6f4ea]'}`}
+                                    >
+                                        {admin.isActive ? <Lock size={14} /> : <Unlock size={14} />}
+                                        {admin.isActive ? 'Restrict Access' : 'Restore Authorization'}
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            )
+        }
+    ];
 
     return (
-        <motion.div 
-            className="admin-page-v2"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-        >
-            {/* Premium Header Banner */}
-            <div className="premium-header-banner">
-                <div className="premium-header-text">
-                    <h1>Authority Controls</h1>
-                    <p>Manage and audit security permissions for college administrators.</p>
+        <div className="admin-page">
+            <div className="flex justify-between items-start mb-8">
+                <div>
+                    <h1 className="text-3xl font-semibold text-[#4a2c15] tracking-tight mb-1">Administrative Hierarchy</h1>
+                    <p className="text-xs text-[#8b6f5a] font-medium uppercase tracking-widest leading-none">Global Institutional Authority Registry</p>
                 </div>
-            </div>
-
-            {/* Premium Stat Grid */}
-            <div className="premium-stat-grid">
-                <motion.div className="premium-stat-card" variants={itemVariants}>
-                    <div className="premium-stat-icon bg-indigo-500/10 text-indigo-500">
-                        <Shield size={24} />
-                    </div>
-                    <div className="stat-v2-info">
-                        <span className="stat-label">Total Admins</span>
-                        <span className="stat-value">{pagination.total || 0}</span>
-                    </div>
-                </motion.div>
-                <motion.div className="premium-stat-card" variants={itemVariants}>
-                    <div className="premium-stat-icon bg-emerald-500/10 text-emerald-500">
-                        <CheckCircle size={24} />
-                    </div>
-                    <div className="stat-v2-info">
-                        <span className="stat-label">Active</span>
-                        <span className="stat-value">{admins.filter(a => a.isActive).length}</span>
-                    </div>
-                </motion.div>
-                <motion.div className="premium-stat-card" variants={itemVariants}>
-                    <div className="premium-stat-icon bg-rose-500/10 text-rose-500">
-                        <Lock size={24} />
-                    </div>
-                    <div className="stat-v2-info">
-                        <span className="stat-label">Restricted</span>
-                        <span className="stat-value">{admins.filter(a => !a.isActive).length}</span>
-                    </div>
-                </motion.div>
-            </div>
-
-            {/* Premium Search Container */}
-            <motion.div className="premium-search-container" variants={itemVariants}>
-                <form onSubmit={handleSearch} className="flex-1 flex">
-                    <div className="search-input-wrapper flex-1">
-                        <Search size={18} className="text-slate-500" />
-                        <input 
-                            type="text" 
-                            placeholder="Search admins by email address..." 
+                <div className="flex gap-4">
+                    <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f5a]" />
+                        <input
+                            type="text"
+                            placeholder="IDENTIFY ADMIN..."
+                            className="admin-search-input-hardened theme-input pl-10 pr-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all"
+                            style={{ backgroundColor: '#ffffff' }}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button type="submit" className="premium-search-btn">
-                        <Search size={18} />
-                        Search
-                    </button>
-                </form>
-            </motion.div>
-
-            {/* Premium Table Wrapper */}
-            <div className="section-title-row">
-                <h2>Administrative Credentials</h2>
-                <div className="flex gap-2">
-                    <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-[10px] font-bold uppercase tracking-wider border border-blue-500/20">Security Audit Active</span>
-                </div>
-            </div>
-            <div className="premium-table-container">
-                <table className="premium-table">
-                    <thead>
-                        <tr>
-                            <th>Admin Identity</th>
-                            <th>Institution</th>
-                            <th>Status</th>
-                            <th>Security</th>
-                            <th>Onboarded</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr>
-                                <td colSpan="6" className="text-center py-20">
-                                    <div className="flex flex-col items-center gap-4">
-                                        <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-                                        <span className="text-slate-500 font-medium">Validating authority records...</span>
-                                    </div>
-                                </td>
-                            </tr>
-                        ) : admins.length > 0 ? (
-                            admins.map((admin) => (
-                                <tr key={admin._id}>
-                                    <td>
-                                        <div className="user-cell">
-                                            <div className="user-avatar-small bg-slate-800 border border-white/10 shrink-0">
-                                                <Building2 size={14} className="text-indigo-400" />
-                                            </div>
-                                            <div className="user-info-text">
-                                                <span className="user-name">{admin.email}</span>
-                                                <span className="user-subtext">ID: {admin._id.slice(-8).toUpperCase()}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="user-info-text">
-                                            <span className="text-white font-medium">{admin.collegeProfile?.name || 'Unassigned'}</span>
-                                            <span className="user-subtext">{admin.collegeProfile?.code || 'NO_CODE'}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`status-badge-v2 ${admin.isActive ? 'placed' : 'not_placed'}`}>
-                                            {admin.isActive ? 'Authorized' : 'Restricted'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className={`verify-chip ${admin.isApproved ? 'yes' : 'no'}`}>
-                                            {admin.isApproved ? <CheckCircle size={14} /> : <XCircle size={14} />}
-                                            {admin.isApproved ? 'Verified' : 'Pending'}
-                                        </div>
-                                    </td>
-                                    <td className="text-xs font-mono text-slate-500">{new Date(admin.createdAt).toLocaleDateString()}</td>
-                                    <td>
-                                        <div className="flex gap-1 justify-end">
-                                            <button className="table-action-btn" onClick={() => openEditModal(admin)}>
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button className="table-action-btn" onClick={() => openResetModal(admin)}>
-                                                <Key size={16} />
-                                            </button>
-                                            <button 
-                                                className={`table-action-btn ${admin.isActive ? 'hover:text-amber-500' : 'hover:text-emerald-500'}`}
-                                                onClick={() => handleToggleBlock(admin._id, admin.isActive)}
-                                            >
-                                                {admin.isActive ? <Lock size={16} /> : <Unlock size={16} />}
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="6" className="text-center py-20 text-slate-500">
-                                    No administrative credentials found.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-
-                {/* Pagination */}
-                <div className="premium-pagination">
-                    <span className="text-xs text-slate-500 font-medium">
-                        Showing {admins.length} of {pagination.total} admins
-                    </span>
-                    <div className="pagination-controls">
-                        <button 
-                            className="page-nav-btn"
-                            disabled={pagination.current === 1}
-                            onClick={() => fetchAdmins(pagination.current - 1)}
-                        >
-                            <ChevronLeft size={16} />
-                        </button>
-                        {[...Array(pagination.pages)].map((_, i) => (
-                            <button
-                                key={i + 1}
-                                className={`page-num-btn ${pagination.current === i + 1 ? 'active' : ''}`}
-                                onClick={() => fetchAdmins(i + 1)}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-                        <button 
-                            className="page-nav-btn"
-                            disabled={pagination.current === pagination.pages}
-                            onClick={() => fetchAdmins(pagination.current + 1)}
-                        >
-                            <ChevronRight size={16} />
-                        </button>
-                    </div>
                 </div>
             </div>
 
-            {/* Edit Modal (Redesigned) */}
+            <div className="table-container shadow-sm">
+                <Table
+                    columns={columns}
+                    data={admins}
+                    loading={loading}
+                />
+            </div>
+
+            {!loading && pagination.pages > 1 && (
+                <div className="flex justify-center mt-6">
+                    <Pagination
+                        current={pagination.current}
+                        pages={pagination.pages}
+                        onPageChange={(page) => fetchAdmins(page)}
+                    />
+                </div>
+            )}
+
             <Modal
                 isOpen={editModal.open}
                 onClose={() => setEditModal({ open: false, admin: null })}
-                title="Edit Authority Profile"
-                size="sm"
+                title="Authorization Signature Override"
             >
-                <form onSubmit={handleEditSubmit} className="p-2">
-                    <Input
-                        label="Official Email Address"
-                        type="email"
-                        required
-                        value={editForm.email}
-                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                        placeholder="e.g. admin@college.edu"
-                    />
-                    <div className="flex gap-3 mt-8">
-                        <Button 
-                            type="button" 
-                            variant="outline" 
-                            className="flex-1"
+                <form onSubmit={handleEditSubmit} className="p-6">
+                    <div className="mb-8 space-y-2">
+                        <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest block ml-1">Official Authentication Email</label>
+                        <Input
+                            type="email"
+                            required
+                            className="admin-form-input-hardened theme-input"
+                            style={{ backgroundColor: '#ffffff' }}
+                            value={editForm.email}
+                            onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                            placeholder="ADMIN@INSTITUTION.EDU"
+                        />
+                    </div>
+                    <div className="flex gap-4">
+                        <Button
+                            variant="outline"
+                            className="flex-1 !border-[#e6d8c3]"
                             onClick={() => setEditModal({ open: false, admin: null })}
                         >
-                            Cancel
+                            <span className="text-[11px] font-bold uppercase tracking-wider">Abort</span>
                         </Button>
-                        <Button type="submit" variant="primary" className="flex-1">
-                            Update
+                        <Button type="submit" variant="primary" className="flex-1 !bg-[#6b3f1d]">
+                            <span className="text-[11px] font-bold uppercase tracking-wider">Synchronize Changes</span>
                         </Button>
                     </div>
                 </form>
             </Modal>
 
-            {/* Reset Password Modal (Redesigned) */}
             <Modal
                 isOpen={resetModal.open}
                 onClose={() => setResetModal({ open: false, admin: null })}
-                title="Credential Reset"
-                size="sm"
+                title="Credential Force Reset"
             >
                 {resetModal.admin && (
-                    <form onSubmit={handleResetPassword} className="p-2">
-                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6 flex gap-3 text-amber-500">
-                            <ShieldAlert size={20} className="shrink-0" />
-                            <p className="text-xs leading-relaxed">
-                                You are about to override the login credentials for <strong>{resetModal.admin.email}</strong>. 
-                                This action is recorded in the system audit logs.
+                    <form onSubmit={handleResetPassword} className="p-6">
+                        <div className="mb-6 p-4 bg-[#faf6ef] rounded-lg border border-[#e6d8c3] flex gap-3">
+                            <ShieldAlert size={20} className="text-[#c6a85e] shrink-0" />
+                            <p className="text-[10px] font-bold text-[#8b6f5a] uppercase leading-relaxed tracking-wider">
+                                Executing mandatory security override for authority node: <strong>{resetModal.admin.email}</strong>.
+                                Current active sessions will be terminated.
                             </p>
                         </div>
-                        <Input
-                            label="Temporary Password"
-                            type="password"
-                            required
-                            minLength={6}
-                            placeholder="Min. 6 alphanumeric characters"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            autoComplete="new-password"
-                        />
-                        <div className="flex gap-3 mt-8">
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                className="flex-1"
+
+                        <div className="space-y-2 mb-8">
+                            <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest block ml-1">New Symmetric Access Key</label>
+                            <Input
+                                type="password"
+                                required
+                                minLength={6}
+                                className="admin-form-input-hardened theme-input"
+                                style={{ backgroundColor: '#ffffff' }}
+                                placeholder="MIN. 6 CHARACTERS..."
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="flex gap-4">
+                            <Button
+                                variant="outline"
+                                className="flex-1 !border-[#e6d8c3]"
                                 onClick={() => setResetModal({ open: false, admin: null })}
                             >
-                                Cancel
+                                <span className="text-[11px] font-bold uppercase tracking-wider">Abort Protocol</span>
                             </Button>
-                            <Button type="submit" variant="primary" className="flex-1 bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-500/20">
-                                Reset
+                            <Button type="submit" variant="primary" className="flex-1 !bg-[#6b3f1d]">
+                                <span className="text-[11px] font-bold uppercase tracking-wider">Execute Override</span>
                             </Button>
                         </div>
                     </form>
                 )}
             </Modal>
-        </motion.div>
+        </div>
     );
 };
 
 export default CollegeAdmins;
-

@@ -7,7 +7,7 @@
     color: white;
 }
 
-.header-section {
+.connected-colleges-container .header-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -28,13 +28,13 @@
     color: rgba(255, 255, 255, 0.6);
 }
 
-.colleges-grid {
+.connected-colleges-container .colleges-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
 }
 
-.college-card {
+.connected-colleges-container .college-card {
     background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%);
     border-radius: 1rem;
     padding: 1.5rem;
@@ -95,7 +95,7 @@
     color: rgba(255, 255, 255, 0.7);
 }
 
-.status-badge {
+.connected-colleges-container .status-badge {
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
     font-size: 0.8rem;
@@ -132,7 +132,7 @@
 }
 
 /* Buttons - Dark Theme */
-.btn-primary {
+.connected-colleges-container .btn-primary {
     background: #10b981;
     color: white;
     border: none;
@@ -148,7 +148,7 @@
     transform: translateY(-1px);
 }
 
-.btn-secondary {
+.connected-colleges-container .btn-secondary {
     background: rgba(30, 41, 59, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0.75rem 1.5rem;
@@ -197,7 +197,7 @@
 }
 
 /* Modal - Dark Theme */
-.modal-overlay {
+.connected-colleges-container .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -211,7 +211,7 @@
     backdrop-filter: blur(4px);
 }
 
-.modal-content {
+.connected-colleges-container .modal-content {
     background: #1e293b;
     width: 500px;
     max-width: 90%;
@@ -294,7 +294,7 @@
     color: rgba(255, 255, 255, 0.5);
 }
 
-.empty-state {
+.connected-colleges-container .empty-state {
     text-align: center;
     padding: 4rem 2rem;
     background: rgba(15, 23, 42, 0.5);

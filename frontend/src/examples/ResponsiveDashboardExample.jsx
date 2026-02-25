@@ -49,10 +49,9 @@ const ResponsiveDashboardExample = () => {
         <span
           className={`
             px-2 py-1 rounded-full text-xs font-medium
-            ${
-              value === 'active'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-gray-100 text-gray-800'
+            ${value === 'active'
+              ? 'bg-[var(--primary-brown)]/10 text-[var(--primary-brown)] border border-[var(--primary-brown)]/20 shadow-sm'
+              : 'bg-cream text-muted border border-border/10'
             }
           `}
         >
@@ -162,7 +161,7 @@ const ResponsiveDashboardExample = () => {
                   w-full pl-9 md:pl-10 pr-3 md:pr-4 py-2 md:py-2.5
                   text-sm md:text-base
                   border border-gray-300 rounded-lg
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                  focus:outline-none focus:ring-2 focus:ring-[var(--primary-brown)]/20 focus:border-[var(--primary-brown)]/50
                 "
               />
             </div>
@@ -216,11 +215,11 @@ const ResponsiveDashboardExample = () => {
                 key={item}
                 className="flex items-start gap-3 md:gap-4 p-3 md:p-4 bg-gray-50 rounded-lg"
               >
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[var(--primary-brown)]/10 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 md:w-5 md:h-5 text-[var(--primary-brown)]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs md:text-sm font-medium text-gray-900">
+                  <p className="text-xs md:text-sm font-black text-[var(--primary-brown)] uppercase tracking-tight">
                     New student registered
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">

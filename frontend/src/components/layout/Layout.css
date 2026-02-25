@@ -1,15 +1,14 @@
 .layout {
     display: flex;
     min-height: 100vh;
+    background: #f5efe6;
 }
 
-.layout-admin-dark {
-    background: #0b1121;
-}
-
-.layout-admin-dark .layout-content {
-    background: #0b1121 !important;
-    color: white;
+.layout-content {
+    flex: 1;
+    padding: var(--spacing-6);
+    background: transparent;
+    min-height: calc(100vh - var(--header-height));
 }
 
 .layout-main {

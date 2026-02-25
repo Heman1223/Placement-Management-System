@@ -11,36 +11,36 @@
 
 .elite-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2.5rem;
     padding: 2rem 1rem;
     width: 100%;
 }
 
 .elite-student-card {
     width: 100%;
-    min-height: 400px;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 1px solid rgba(59, 130, 246, 0.15);
+    min-height: 420px;
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-brand) 100%);
+    border: 1px solid rgba(198, 169, 105, 0.2);
     border-radius: 2.5rem;
     position: relative;
-    scroll-snap-align: center;
     display: flex;
     flex-direction: column;
     padding: 2.5rem 2rem;
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-    transition: all 0.3s ease;
+    box-shadow: 0 20px 40px -15px rgba(62, 42, 30, 0.4);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .elite-student-card:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 0 30px 60px -15px rgba(59, 130, 246, 0.2);
+    transform: translateY(-8px);
+    border-color: var(--accent-brand);
+    box-shadow: 0 30px 60px -15px rgba(90, 62, 43, 0.3);
 }
 
 .elite-card-glow {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.05), transparent 60%);
+    background: radial-gradient(circle at top right, rgba(198, 169, 105, 0.1), transparent 60%);
     border-radius: 2.5rem;
     pointer-events: none;
 }
@@ -50,14 +50,14 @@
     top: -12px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(90deg, #3b82f6, #60a5fa);
-    color: #eff6ff;
-    font-size: 0.6rem;
+    background: linear-gradient(90deg, var(--accent-brand), #E8D8C3);
+    color: var(--primary-dark);
+    font-size: 0.65rem;
     font-weight: 900;
-    padding: 0.4rem 1.2rem;
+    padding: 0.5rem 1.5rem;
     border-radius: 2rem;
     letter-spacing: 0.2em;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 5px 15px rgba(198, 169, 105, 0.3);
     white-space: nowrap;
     z-index: 5;
 }
@@ -73,8 +73,8 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    padding: 3px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.5), transparent, rgba(59, 130, 246, 0.5));
+    padding: 4px;
+    background: linear-gradient(135deg, var(--accent-brand), transparent, var(--accent-brand));
 }
 
 .elite-avatar-inner {
@@ -82,8 +82,8 @@
     height: 100%;
     border-radius: 50%;
     overflow: hidden;
-    background: #0f172a;
-    border: 3px solid #1e293b;
+    background: var(--primary-dark);
+    border: 3px solid var(--primary-brand);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -98,23 +98,23 @@
 .elite-initials {
     font-size: 2.2rem;
     font-weight: 900;
-    color: #60a5fa;
-    text-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    color: var(--accent-brand);
+    text-shadow: 0 0 10px rgba(198, 169, 105, 0.3);
 }
 
 .elite-star-decoration {
     position: absolute;
     bottom: 2px;
     right: 2px;
-    background: #1e3a8a;
-    width: 24px;
-    height: 24px;
+    background: var(--primary-brand);
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #60a5fa;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    border: 2px solid var(--accent-brand);
+    box-shadow: 0 0 15px rgba(198, 169, 105, 0.5);
     z-index: 2;
 }
 
@@ -130,24 +130,18 @@
 .elite-college-tag {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 0.8rem;
-    background: rgba(59, 130, 246, 0.08);
-    border: 1px solid rgba(59, 130, 246, 0.15);
+    gap: 0.6rem;
+    padding: 0.5rem 1.25rem;
+    background: rgba(244, 237, 228, 0.1);
+    border: 1px solid rgba(198, 169, 105, 0.3);
     border-radius: 2rem;
-    color: #93c5fd;
-    font-size: 0.65rem;
-    font-weight: 700;
+    color: var(--cream);
+    font-size: 0.7rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 1.25rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
     max-width: 100%;
-}
-
-.elite-college-tag span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .elite-info-main {
@@ -155,27 +149,28 @@
 }
 
 .elite-name {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: white;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.3rem;
     letter-spacing: -0.01em;
 }
 
 .elite-department {
     font-size: 0.75rem;
-    color: #64748b;
+    color: var(--border-theme);
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
+    opacity: 0.7;
 }
 
 .elite-metrics {
     width: 100%;
-    background: rgba(15, 23, 42, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(62, 42, 30, 0.4);
+    border: 1px solid rgba(198, 169, 105, 0.1);
     border-radius: 1.5rem;
-    padding: 1rem;
+    padding: 1.25rem 1rem;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -188,121 +183,55 @@
 }
 
 .elite-metric .label {
-    font-size: 0.55rem;
-    color: #475569;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.2rem;
+    font-size: 0.6rem;
+    color: var(--accent-brand);
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.4rem;
+    opacity: 0.8;
 }
 
 .elite-metric .value {
-    font-size: 1.25rem;
+    font-size: 1.6rem;
     font-weight: 900;
-    color: #60a5fa;
+    color: white;
 }
 
 .elite-metric-divider {
     width: 1px;
-    height: 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.elite-college-tag {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    margin: 0 auto 1rem;
-    padding: 0.4rem 0.8rem;
-    background: rgba(59, 130, 246, 0.05);
-    border: 1px solid rgba(59, 130, 246, 0.1);
-    border-radius: 2rem;
-    color: #60a5fa;
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    max-width: 90%;
-}
-
-.elite-college-tag span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.elite-skills-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 2rem;
-}
-
-.elite-skill-tag {
-    background: rgba(59, 130, 246, 0.05);
-    border: 1px solid rgba(59, 130, 246, 0.15);
-    padding: 0.3rem 0.6rem;
-    border-radius: 0.6rem;
-    font-size: 0.65rem;
-    color: #3b82f6;
-    font-weight: 700;
-}
-
-.elite-skill-more {
-    font-size: 0.65rem;
-    color: #64748b;
-    font-weight: 800;
-}
-
-.elite-action-btn {
-    margin-top: auto;
-    background: linear-gradient(90deg, #1e293b, #0f172a);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    padding: 0.75rem 1.5rem;
-    border-radius: 1rem;
-    color: #60a5fa;
-    font-size: 0.85rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.elite-student-card:hover .elite-action-btn {
-    background: #3b82f6;
-    color: white;
-    border-color: #3b82f6;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    height: 2rem;
+    background: rgba(198, 169, 105, 0.1);
 }
 
 /* Empty State */
 .shining-stars-empty {
     text-align: center;
-    padding: 5rem 2rem;
-    background: rgba(30, 41, 59, 0.4);
-    border: 1px dashed rgba(59, 130, 246, 0.2);
+    padding: 6rem 2rem;
+    background: rgba(90, 62, 43, 0.05);
+    border: 1px dashed var(--border-theme);
     border-radius: 2.5rem;
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+    .elite-cards-grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding: 2rem 0;
+        gap: 1.5rem;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .elite-cards-grid::-webkit-scrollbar {
+        display: none;
+    }
+
     .elite-student-card {
-        flex: 0 0 280px;
-        padding: 1.5rem;
-        height: 420px;
-    }
-    
-    .elite-avatar-wrapper {
-        width: 100px;
-        height: 100px;
-        margin-bottom: 1.5rem;
-    }
-    
-    .elite-name {
-        font-size: 1.25rem;
+        flex: 0 0 290px;
+        scroll-snap-align: center;
+        padding: 2rem 1.5rem;
     }
 }

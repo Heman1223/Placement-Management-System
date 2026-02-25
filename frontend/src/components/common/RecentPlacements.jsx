@@ -28,12 +28,12 @@ const RecentPlacements = ({ placements = [], title = "Success Stories" }) => {
     return (
         <div className="recent-placements-section">
             <div className="flex items-center gap-4 mb-8">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                    <GraduationCap size={20} className="text-emerald-500" />
+                <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <GraduationCap size={20} className="text-accent" />
                 </div>
-                <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>
+                <h2 className="text-xl font-bold text-text tracking-tight">{title}</h2>
                 <div className="live-badge">LIVE UPDATES</div>
-                <div className="h-px bg-white/5 flex-1" />
+                <div className="h-px bg-border/20 flex-1" />
             </div>
 
             <Swiper
@@ -46,7 +46,7 @@ const RecentPlacements = ({ placements = [], title = "Success Stories" }) => {
                     stretch: -50,
                     depth: 200,
                     modifier: 1,
-                    slideShadows: true,
+                    slideShadows: false,
                 }}
                 autoplay={{
                     delay: 4000,
@@ -62,9 +62,9 @@ const RecentPlacements = ({ placements = [], title = "Success Stories" }) => {
                             <div className="card-top">
                                 <div className="student-profile-img">
                                     {student?.profilePicture ? (
-                                        <img 
-                                            src={student.profilePicture} 
-                                            alt={student?.name?.firstName || 'Student'} 
+                                        <img
+                                            src={student.profilePicture}
+                                            alt={student?.name?.firstName || 'Student'}
                                             onError={(e) => { e.target.onerror = null; e.target.src = 'https://ui-avatars.com/api/?name=' + (student?.name?.firstName || 'S') + '&background=random'; }}
                                         />
                                     ) : (
@@ -86,18 +86,18 @@ const RecentPlacements = ({ placements = [], title = "Success Stories" }) => {
                                             <img src={student.placementDetails.companyLogo} alt="" className="w-full h-full object-contain" />
                                         </div>
                                     ) : (
-                                        <Briefcase size={14} className="text-emerald-400" />
+                                        <Briefcase size={14} className="text-accent" />
                                     )}
                                     <span>{student.placementDetails?.companyName || student.placementDetails?.company || 'Leading Tech Firm'}</span>
                                 </div>
-                                
+
                                 <h3 className="student-name">
                                     {student?.name?.firstName || 'Student'} {student?.name?.lastName || ''}
                                     {student?.isStarStudent && (
-                                        <Star size={16} className="inline-block ml-2 text-amber-400 fill-amber-400 mb-1" />
+                                        <Star size={16} className="inline-block ml-2 text-accent fill-accent mb-1" />
                                     )}
                                 </h3>
-                                
+
                                 <p className="college-info flex items-center gap-1.5">
                                     {student.college?.logo && (
                                         <img src={student.college.logo} alt="" className="w-3.5 h-3.5 object-contain rounded-sm bg-white/10" />

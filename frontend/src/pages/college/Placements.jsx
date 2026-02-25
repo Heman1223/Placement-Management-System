@@ -11,12 +11,12 @@ import '../college/CompanyActivity.css'; // Import company activity styles if ne
 const PlacementDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview'); // overview, students, companies
     const [loading, setLoading] = useState(true);
-    
+
     // Data States
     const [stats, setStats] = useState(null);
     const [companyData, setCompanyData] = useState(null);
     const [students, setStudents] = useState([]);
-    
+
     // Filters for Students Tab
     const [studentFilters, setStudentFilters] = useState({
         search: '',
@@ -40,7 +40,7 @@ const PlacementDashboard = () => {
                 collegeAPI.getStudents({ limit: 1000 }), // Get all for client-side filtering or implement server-side
                 collegeAPI.getDepartments()
             ]);
-            
+
             setStats(statsRes.data.data);
             setCompanyData(companiesRes.data.data);
             setStudents(studentsRes.data.data.students);
@@ -159,9 +159,9 @@ const PlacementDashboard = () => {
             {activeTab === 'overview' && stats && (
                 <div className="overview-content">
                     {/* Premium Stats Grid - Matching Dashboard */}
-                    <div className="premium-stat-grid" style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(4, 1fr)', 
+                    <div className="premium-stat-grid" style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(4, 1fr)',
                         gap: '1.5rem',
                         marginBottom: '2rem'
                     }}>
@@ -345,7 +345,7 @@ const PlacementDashboard = () => {
                             boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.3)'
                         }}>
                             <div className="chart-header">
-                                <h3 style={{ 
+                                <h3 style={{
                                     fontSize: '0.875rem',
                                     fontWeight: '800',
                                     color: '#94a3b8',
@@ -358,7 +358,7 @@ const PlacementDashboard = () => {
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                                     <XAxis dataKey="_id" stroke="#94a3b8" style={{ fontSize: '0.75rem' }} />
                                     <YAxis stroke="#94a3b8" style={{ fontSize: '0.75rem' }} />
-                                    <Tooltip 
+                                    <Tooltip
                                         contentStyle={{
                                             background: '#1e293b',
                                             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -373,7 +373,7 @@ const PlacementDashboard = () => {
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                         <div className="chart-card" style={{
+                        <div className="chart-card" style={{
                             background: 'rgba(30, 41, 59, 0.4)',
                             backdropFilter: 'blur(12px)',
                             border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -382,7 +382,7 @@ const PlacementDashboard = () => {
                             boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.3)'
                         }}>
                             <div className="chart-header">
-                                <h3 style={{ 
+                                <h3 style={{
                                     fontSize: '0.875rem',
                                     fontWeight: '800',
                                     color: '#94a3b8',
@@ -390,7 +390,7 @@ const PlacementDashboard = () => {
                                     letterSpacing: '0.1em'
                                 }}>Package Distribution</h3>
                             </div>
-                             <ResponsiveContainer width="100%" height={300}>
+                            <ResponsiveContainer width="100%" height={300}>
                                 <PieChart>
                                     <Pie
                                         data={stats.packageDistribution}
@@ -406,7 +406,7 @@ const PlacementDashboard = () => {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip 
+                                    <Tooltip
                                         contentStyle={{
                                             background: '#1e293b',
                                             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -420,9 +420,9 @@ const PlacementDashboard = () => {
                     </div>
 
                     {/* Additional Row: Top Companies + Placement Trend */}
-                    <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: '1fr 1.5fr', 
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1.5fr',
                         gap: '2rem',
                         marginTop: '2rem'
                     }}>
@@ -436,7 +436,7 @@ const PlacementDashboard = () => {
                             boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.3)'
                         }}>
                             <div className="chart-header" style={{ marginBottom: '1.5rem' }}>
-                                <h3 style={{ 
+                                <h3 style={{
                                     fontSize: '0.875rem',
                                     fontWeight: '800',
                                     color: '#94a3b8',
@@ -479,16 +479,16 @@ const PlacementDashboard = () => {
                                             )}
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ 
-                                                fontSize: '0.875rem', 
-                                                fontWeight: '700', 
+                                            <div style={{
+                                                fontSize: '0.875rem',
+                                                fontWeight: '700',
                                                 color: 'white',
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis',
                                                 whiteSpace: 'nowrap'
                                             }}>{company.name}</div>
-                                            <div style={{ 
-                                                fontSize: '0.75rem', 
+                                            <div style={{
+                                                fontSize: '0.75rem',
                                                 color: '#64748b',
                                                 marginTop: '0.125rem'
                                             }}>{company.industry || 'Technology'}</div>
@@ -538,7 +538,7 @@ const PlacementDashboard = () => {
                             boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.3)'
                         }}>
                             <div className="chart-header">
-                                <h3 style={{ 
+                                <h3 style={{
                                     fontSize: '0.875rem',
                                     fontWeight: '800',
                                     color: '#94a3b8',
@@ -559,16 +559,16 @@ const PlacementDashboard = () => {
                                     total: item.total
                                 })) || []}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                                    <XAxis 
-                                        dataKey="name" 
-                                        stroke="#94a3b8" 
+                                    <XAxis
+                                        dataKey="name"
+                                        stroke="#94a3b8"
                                         style={{ fontSize: '0.75rem' }}
                                     />
-                                    <YAxis 
-                                        stroke="#94a3b8" 
+                                    <YAxis
+                                        stroke="#94a3b8"
                                         style={{ fontSize: '0.75rem' }}
                                     />
-                                    <Tooltip 
+                                    <Tooltip
                                         contentStyle={{
                                             background: '#1e293b',
                                             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -577,19 +577,19 @@ const PlacementDashboard = () => {
                                         }}
                                     />
                                     <Legend wrapperStyle={{ color: '#94a3b8' }} />
-                                    <Line 
-                                        type="monotone" 
-                                        dataKey="placed" 
-                                        stroke="#10b981" 
+                                    <Line
+                                        type="monotone"
+                                        dataKey="placed"
+                                        stroke="#10b981"
                                         strokeWidth={3}
                                         dot={{ fill: '#10b981', r: 5 }}
                                         activeDot={{ r: 7 }}
                                         name="Placed Students"
                                     />
-                                    <Line 
-                                        type="monotone" 
-                                        dataKey="total" 
-                                        stroke="#60a5fa" 
+                                    <Line
+                                        type="monotone"
+                                        dataKey="total"
+                                        stroke="#60a5fa"
                                         strokeWidth={2}
                                         strokeDasharray="5 5"
                                         dot={{ fill: '#60a5fa', r: 4 }}
@@ -617,12 +617,12 @@ const PlacementDashboard = () => {
                                 onChange={(e) => setStudentFilters({ ...studentFilters, search: e.target.value })}
                             />
                         </div>
-                        
-                        <Button 
-                            variant="secondary" 
-                            icon={Filter} 
+
+                        <Button
+                            variant="secondary"
+                            icon={Filter}
                             onClick={() => setShowFilters(!showFilters)}
-                            className={showFilters ? 'bg-blue-500/10 text-blue-500 !border-blue-500/30' : ''}
+                            className={showFilters ? 'bg-primary/10 text-primary !border-primary/30' : ''}
                         >
                             Filters
                         </Button>
@@ -694,13 +694,13 @@ const PlacementDashboard = () => {
                                             </span>
                                         </td>
                                         <td>
-                                            {student.placementStatus === 'placed' 
+                                            {student.placementStatus === 'placed'
                                                 ? getCompanyName(student.placementDetails?.company)
                                                 : '-'}
                                         </td>
                                         <td>
-                                            {student.placementStatus === 'placed' 
-                                                ? `${student.placementDetails?.package || 0} LPA` 
+                                            {student.placementStatus === 'placed'
+                                                ? `${student.placementDetails?.package || 0} LPA`
                                                 : '-'}
                                         </td>
                                         <td>
@@ -712,7 +712,7 @@ const PlacementDashboard = () => {
                                 ))}
                                 {filteredStudents.length === 0 && (
                                     <tr>
-                                        <td colSpan="9" style={{textAlign: 'center', padding: '2rem'}}>
+                                        <td colSpan="9" style={{ textAlign: 'center', padding: '2rem' }}>
                                             No students found matching filters
                                         </td>
                                     </tr>
@@ -730,9 +730,9 @@ const PlacementDashboard = () => {
                         <div className="company-detail-view animate-in fade-in slide-in-from-right-4 duration-300">
                             {/* Detail Header */}
                             <div className="flex items-center gap-6 mb-8">
-                                <Button 
-                                    variant="secondary" 
-                                    icon={ArrowLeft} 
+                                <Button
+                                    variant="secondary"
+                                    icon={ArrowLeft}
                                     onClick={() => setSelectedCompany(null)}
                                 >
                                     Back
@@ -766,7 +766,7 @@ const PlacementDashboard = () => {
                                             {selectedCompany.hired} Total
                                         </span>
                                     </h3>
-                                    
+
                                     <div className="table-container" style={{ overflowX: 'auto' }}>
                                         <table className="data-table" style={{ minWidth: '100%', width: 'max-content' }}>
                                             <thead>
@@ -780,21 +780,21 @@ const PlacementDashboard = () => {
                                             </thead>
                                             <tbody>
                                                 {students
-                                                    .filter(s => 
-                                                        s.placementStatus === 'placed' && 
+                                                    .filter(s =>
+                                                        s.placementStatus === 'placed' &&
                                                         (s.placementDetails?.company === selectedCompany._id || s.placementDetails?.company === selectedCompany.name)
                                                     )
                                                     .map(student => (
-                                                    <tr key={student._id}>
-                                                        <td>{student.rollNumber}</td>
-                                                        <td>{student.name.firstName} {student.name.lastName}</td>
-                                                        <td>{student.department}</td>
-                                                        <td>{student.placementDetails?.package || 0} LPA</td>
-                                                        <td>
-                                                            <Link to={`/college/students/${student._id}`} className="text-blue-400 hover:underline text-sm">View Profile</Link>
-                                                        </td>
-                                                    </tr>
-                                                ))}
+                                                        <tr key={student._id}>
+                                                            <td>{student.rollNumber}</td>
+                                                            <td>{student.name.firstName} {student.name.lastName}</td>
+                                                            <td>{student.department}</td>
+                                                            <td>{student.placementDetails?.package || 0} LPA</td>
+                                                            <td>
+                                                                <Link to={`/college/students/${student._id}`} className="text-blue-400 hover:underline text-sm">View Profile</Link>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
                                                 {students.filter(s => s.placementStatus === 'placed' && (s.placementDetails?.company === selectedCompany._id || s.placementDetails?.company === selectedCompany.name)).length === 0 && (
                                                     <tr>
                                                         <td colSpan="5" className="text-center py-8 text-slate-400">
@@ -811,9 +811,9 @@ const PlacementDashboard = () => {
                     ) : (
                         <>
                             {/* Premium Summary Row */}
-                            <div className="premium-stat-grid" style={{ 
-                                display: 'grid', 
-                                gridTemplateColumns: 'repeat(4, 1fr)', 
+                            <div className="premium-stat-grid" style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(4, 1fr)',
                                 gap: '1.5rem',
                                 marginBottom: '2rem'
                             }}>
@@ -913,8 +913,8 @@ const PlacementDashboard = () => {
                             {/* Companies Grid */}
                             <div className="companies-grid">
                                 {companyData.companies.map(company => (
-                                    <div 
-                                        key={company._id} 
+                                    <div
+                                        key={company._id}
                                         className="company-activity-card cursor-pointer hover:!border-blue-500/50"
                                         onClick={() => setSelectedCompany(company)}
                                     >

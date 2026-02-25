@@ -4,3 +4,5 @@ export { default as Input } from './Input';
 export { default as Card, StatsCard } from './Card';
 export { default as Table, Pagination } from './Table';
 export { default as Modal } from './Modal';
+export { default as LoadingScreen } from './LoadingScreen';
+export * from './UIPrimitives';

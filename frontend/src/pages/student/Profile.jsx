@@ -85,16 +85,16 @@ const StudentProfile = () => {
         try {
             // Upload resume to Cloudinary
             const uploadResponse = await uploadAPI.resume(formData);
-            
+
             const resumeUrl = uploadResponse.data.data.url;
-            
+
             // Save resume URL to student profile
             const updateResponse = await api.put('/student/profile', { resumeUrl });
-            
+
             // Update local state
             setProfile(updateResponse.data.data);
             setFormData(updateResponse.data.data);
-            
+
             alert('Resume uploaded successfully!');
         } catch (error) {
             console.error('Error uploading resume:', error);
@@ -125,11 +125,11 @@ const StudentProfile = () => {
 
         try {
             const uploadResponse = await uploadAPI.image(formData);
-            
+
             const imageUrl = uploadResponse.data.data.url;
             setProfile(prev => ({ ...prev, profilePicture: imageUrl }));
             setFormData(prev => ({ ...prev, profilePicture: imageUrl }));
-            
+
             alert('Profile picture updated successfully!');
         } catch (error) {
             console.error('Error uploading image:', error);
@@ -212,14 +212,14 @@ const StudentProfile = () => {
                 </div>
                 <div className="profile-header-info flex items-center gap-4">
                     {profile?.college?.logo && (
-                        <div className="w-12 h-12 rounded-lg bg-slate-800/50 overflow-hidden flex-shrink-0 border border-white/10 shadow-sm">
+                        <div className="w-12 h-12 rounded-lg bg-[var(--accent-brand)]/10 overflow-hidden flex-shrink-0 border border-[var(--border-theme)] shadow-sm">
                             <img src={profile.college.logo} alt={profile.college.name} className="w-full h-full object-contain p-1" />
                         </div>
                     )}
                     <div>
                         <h1 className="flex items-center gap-3">
                             {profile?.name?.firstName} {profile?.name?.lastName}
-                            <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded border border-blue-500/30">Theme V2</span>
+                            <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-accent/20 text-accent rounded border border-accent/30">Theme V2</span>
                         </h1>
                         <p className="student-identifier">
                             {profile?.college?.name && <span className="college-name-tag">{profile.college.name}</span>}
@@ -429,8 +429,8 @@ const StudentProfile = () => {
                         <div className="space-y-4 mt-4">
                             {formData.certifications?.map((cert, index) => (
                                 <div key={index} className="certificate-form-card relative mb-4">
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         className="absolute top-4 right-4 text-red-500 hover:text-red-700"
                                         onClick={() => {
                                             const updated = formData.certifications.filter((_, i) => i !== index);
@@ -469,13 +469,13 @@ const StudentProfile = () => {
                                         <div className="form-group">
                                             <label>Certificate File (PDF)</label>
                                             <div className="flex items-center gap-2">
-                                                <label className="flex-1 px-4 py-2 bg-slate-800/50 border border-white/10 rounded-lg cursor-pointer hover:bg-slate-800 text-sm text-slate-300 flex items-center gap-2">
+                                                <label className="flex-1 px-4 py-2 bg-[var(--input-bg)] border border-[var(--border-theme)] rounded-lg cursor-pointer hover:bg-[var(--bg-cream)] text-sm text-[var(--text-brown)] flex items-center gap-2">
                                                     <Upload size={14} />
                                                     {cert.fileUrl ? 'Change Certificate' : 'Upload PDF'}
-                                                    <input 
-                                                        type="file" 
-                                                        accept=".pdf" 
-                                                        className="hidden" 
+                                                    <input
+                                                        type="file"
+                                                        accept=".pdf"
+                                                        className="hidden"
                                                         onChange={(e) => handleCertificateUpload(e, index)}
                                                     />
                                                 </label>
@@ -489,13 +489,13 @@ const StudentProfile = () => {
                                     </div>
                                 </div>
                             ))}
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 className="w-full py-2 border-2 border-dashed border-white/10 rounded-xl text-slate-400 hover:border-blue-400/50 hover:text-blue-400 flex items-center justify-center gap-2 text-sm"
                                 onClick={() => {
-                                    setFormData(prev => ({ 
-                                        ...prev, 
-                                        certifications: [...(prev.certifications || []), { name: '', issuer: '', fileUrl: '' }] 
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        certifications: [...(prev.certifications || []), { name: '', issuer: '', fileUrl: '' }]
                                     }));
                                 }}
                             >
@@ -532,8 +532,8 @@ const StudentProfile = () => {
                         <div className="space-y-6 mt-4">
                             {formData.projects?.map((project, index) => (
                                 <div key={index} className="project-form-card relative mb-6">
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         className="absolute top-4 right-4 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                         onClick={() => {
                                             const updated = formData.projects.filter((_, i) => i !== index);
@@ -608,8 +608,8 @@ const StudentProfile = () => {
                                     </div>
                                 </div>
                             ))}
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 className="w-full py-3 border-2 border-dashed border-white/10 rounded-2xl text-slate-400 hover:border-blue-400/50 hover:text-blue-400 transition-all flex items-center justify-center gap-2"
                                 onClick={() => {
                                     const newProject = { title: '', description: '', technologies: '', projectUrl: '', githubUrl: '' };
@@ -641,11 +641,11 @@ const StudentProfile = () => {
                                         </div>
                                         <p className="text-slate-400 mb-4">{project.description}</p>
                                         <div className="flex flex-wrap gap-2">
-                                            {(Array.isArray(project.technologies) 
-                                                ? project.technologies 
+                                            {(Array.isArray(project.technologies)
+                                                ? project.technologies
                                                 : (project.technologies?.split(',') || [])
                                             ).map((tech, i) => (
-                                                <span key={i} className="px-3 py-1 bg-slate-800/50 border border-white/10 rounded-lg text-xs font-semibold text-slate-300">
+                                                <span key={i} className="px-3 py-1 bg-[var(--accent-brand)]/10 border border-[var(--border-theme)] rounded-lg text-xs font-semibold text-[var(--text-brown)]">
                                                     {typeof tech === 'string' ? tech.trim() : tech}
                                                 </span>
                                             ))}

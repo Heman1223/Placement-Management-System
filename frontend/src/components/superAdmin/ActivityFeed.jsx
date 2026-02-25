@@ -1,8 +1,8 @@
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
-import { 
-    CheckCircle2, XCircle, UserPlus, Building2, 
-    Briefcase, GraduationCap, Clock, ShieldCheck 
+import {
+    CheckCircle2, XCircle, UserPlus, Building2,
+    Briefcase, GraduationCap, Clock, ShieldCheck
 } from 'lucide-react';
 
 const ActivityFeed = ({ activities, loading }) => {
@@ -12,13 +12,13 @@ const ActivityFeed = ({ activities, loading }) => {
             approve_company: { icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
             reject_college: { icon: XCircle, color: 'text-rose-500', bg: 'bg-rose-500/10' },
             reject_company: { icon: XCircle, color: 'text-rose-500', bg: 'bg-rose-500/10' },
-            register_student: { icon: UserPlus, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            register_college: { icon: Building2, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+            register_student: { icon: UserPlus, color: 'text-primaryDark', bg: 'bg-primaryDark/10' },
+            register_college: { icon: Building2, color: 'text-accent', bg: 'bg-accent/10' },
             register_company: { icon: Briefcase, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            post_job: { icon: Briefcase, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+            post_job: { icon: Briefcase, color: 'text-accent', bg: 'bg-accent/10' },
             shortlist_student: { icon: CheckCircle2, color: 'text-amber-500', bg: 'bg-amber-500/10' }
         };
-        
+
         const config = icons[action] || { icon: Clock, color: 'text-slate-400', bg: 'bg-slate-400/10' };
         return config;
     };
@@ -27,7 +27,7 @@ const ActivityFeed = ({ activities, loading }) => {
         const email = activity.user?.email || 'System';
         const role = activity.user?.role?.replace('_', ' ');
         const action = activity.action?.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        
+
         return (
             <div className="flex flex-col">
                 <span className="text-sm font-semibold text-slate-200">{action}</span>
@@ -63,8 +63,8 @@ const ActivityFeed = ({ activities, loading }) => {
             {activities.map((activity, index) => {
                 const config = getActionIcon(activity.action);
                 return (
-                    <motion.div 
-                        key={activity._id} 
+                    <motion.div
+                        key={activity._id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}

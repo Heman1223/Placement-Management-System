@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { 
-    Eye, Building2, Calendar, MapPin, Briefcase, 
-    CheckCircle, Clock, XCircle, AlertCircle, 
+import {
+    Eye, Building2, Calendar, MapPin, Briefcase,
+    CheckCircle, Clock, XCircle, AlertCircle,
     ExternalLink, ChevronRight, FileText, Info, Award, Target
 } from 'lucide-react';
 import './Applications.css';
@@ -44,7 +44,7 @@ const StudentApplications = () => {
 
     const getStatusTheme = (status) => {
         const themes = {
-            applied: { color: '#60a5fa', icon: <Clock size={16} />, bg: 'rgba(59, 130, 246, 0.1)' },
+            applied: { color: '#C6A969', icon: <Clock size={16} />, bg: 'rgba(198, 169, 105, 0.1)' },
             under_review: { color: '#fbbf24', icon: <Eye size={16} />, bg: 'rgba(251, 191, 36, 0.1)' },
             shortlisted: { color: '#a78bfa', icon: <CheckCircle size={16} />, bg: 'rgba(167, 139, 250, 0.1)' },
             interview_scheduled: { color: '#34d399', icon: <Calendar size={16} />, bg: 'rgba(52, 211, 153, 0.1)' },
@@ -67,7 +67,7 @@ const StudentApplications = () => {
     };
 
     const formatStatus = (status) => {
-        return status.split('_').map(word => 
+        return status.split('_').map(word =>
             word.charAt(0).toUpperCase() + word.slice(1)
         ).join(' ');
     };
@@ -135,7 +135,7 @@ const StudentApplications = () => {
                                                 <p className="company-name">{app.job?.company?.name}</p>
                                             </div>
                                         </div>
-                                        <div 
+                                        <div
                                             className="status-badge"
                                             style={{ backgroundColor: theme.bg, color: theme.color, border: `1px solid ${theme.color}33` }}
                                         >
@@ -166,7 +166,7 @@ const StudentApplications = () => {
                                     </div>
 
                                     <div className="app-actions" style={{ display: 'flex', gap: '1rem' }}>
-                                        <button 
+                                        <button
                                             onClick={() => setSelectedApp(app)}
                                             className="btn btn-outline"
                                             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}
@@ -175,7 +175,7 @@ const StudentApplications = () => {
                                             View Progress
                                             <ChevronRight size={14} />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => navigate(`/student/jobs/${app.job._id}`)}
                                             className="btn btn-outline"
                                             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, borderColor: 'rgba(59, 130, 246, 0.3)', color: '#60a5fa' }}
@@ -218,7 +218,7 @@ const StudentApplications = () => {
                 <div className="modal-overlay" onClick={() => setSelectedApp(null)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <button className="modal-close" onClick={() => setSelectedApp(null)}><XCircle size={24} /></button>
-                        
+
                         <div className="modal-header">
                             <div className="job-info">
                                 <div className="company-logo" style={{ width: '60px', height: '60px' }}>
@@ -291,7 +291,7 @@ const StudentApplications = () => {
                                                         Upcoming
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
                                                     <div className="detail-item">
                                                         <span className="label">Location/Mode</span>
@@ -305,7 +305,7 @@ const StudentApplications = () => {
 
                                                 {interview.meetingLink && (
                                                     <a href={interview.meetingLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.8rem' }}>
-                                                        <ExternalLink size={18} /> 
+                                                        <ExternalLink size={18} />
                                                         Join Meeting
                                                     </a>
                                                 )}

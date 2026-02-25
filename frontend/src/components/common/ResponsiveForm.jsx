@@ -40,7 +40,7 @@ export const ResponsiveInput = ({
             text-sm md:text-base
             border rounded-lg
             ${error ? 'border-red-500' : 'border-gray-300'}
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+            focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent
             transition-all
           `}
           {...props}
@@ -83,7 +83,7 @@ export const ResponsiveSelect = ({
           text-sm md:text-base
           border rounded-lg
           ${error ? 'border-red-500' : 'border-gray-300'}
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+          focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent
           transition-all
           bg-white
         `}
@@ -135,7 +135,7 @@ export const ResponsiveTextarea = ({
           text-sm md:text-base
           border rounded-lg
           ${error ? 'border-red-500' : 'border-gray-300'}
-          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+          focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent
           transition-all
           resize-none
         `}
@@ -162,11 +162,11 @@ export const ResponsiveButton = ({
   ...props
 }) => {
   const variants = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+    primary: 'bg-primary hover:bg-primaryDark text-white',
     secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
     success: 'bg-green-600 hover:bg-green-700 text-white',
     danger: 'bg-red-600 hover:bg-red-700 text-white',
-    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50',
+    outline: 'border-2 border-primary text-primary hover:bg-cream',
   };
 
   const sizes = {

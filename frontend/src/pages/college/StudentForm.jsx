@@ -239,11 +239,11 @@ const StudentForm = () => {
         toast.loading('Uploading certificate...', { id: 'cert-upload' });
         try {
             const response = await uploadAPI.certificate(uploadFormData);
-            
+
             const updatedCerts = [...formData.certifications];
             updatedCerts[index].fileUrl = response.data.data.url;
             setFormData(prev => ({ ...prev, certifications: updatedCerts }));
-            
+
             toast.success('Certificate uploaded', { id: 'cert-upload' });
         } catch (error) {
             console.error('Cert upload error:', error);
@@ -292,7 +292,7 @@ const StudentForm = () => {
             // Upload image if selected (for existing student) or handle in a way
             // Actually, for NEW student, we need the student ID first.
             // So I'll upload image AFTER student is created if it's new.
-            
+
             let studentIdForImage = id;
 
             // Save student data
@@ -312,7 +312,7 @@ const StudentForm = () => {
                 const imageFormData = new FormData();
                 imageFormData.append('studentId', studentIdForImage);
                 imageFormData.append('image', imageFile);
-                
+
                 try {
                     const { uploadAPI } = await import('../../services/api');
                     await uploadAPI.image(imageFormData);
@@ -361,7 +361,7 @@ const StudentForm = () => {
         }
 
         setImageFile(file);
-        
+
         // Create preview URL
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -856,18 +856,18 @@ const StudentForm = () => {
                             Add Project
                         </Button>
                     </div>
-                    
+
                     <div className="space-y-6">
                         {formData.projects.map((project, index) => (
                             <div key={index} className="project-input-row p-5 bg-black/5 rounded-2xl border border-white/5 relative">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className="absolute top-4 right-4 p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                                     onClick={() => removeProject(index)}
                                 >
                                     <Trash2 size={20} />
                                 </button>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <Input
                                         label="Project Title"
@@ -940,7 +940,7 @@ const StudentForm = () => {
                             Add New
                         </Button>
                     </div>
-                    
+
                     <div className="space-y-4">
                         {formData.certifications.map((cert, index) => (
                             <div key={index} className="certificate-input-row p-4 bg-black/5 rounded-xl border border-white/5">
@@ -964,7 +964,7 @@ const StudentForm = () => {
                                                 <input
                                                     type="file"
                                                     accept=".pdf,image/*"
-                                                    className="text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                                                    className="text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[var(--accent-brand)] file:text-white hover:file:opacity-90"
                                                     onChange={(e) => handleCertificateUpload(index, e.target.files[0])}
                                                 />
                                                 {cert.fileUrl && (
@@ -975,8 +975,8 @@ const StudentForm = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         className="mb-1 p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                                         onClick={() => removeCertificate(index)}
                                     >

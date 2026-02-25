@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { superAdminAPI } from '../../services/api';
-import Table, { Pagination } from '../../components/common/Table';
-import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
 import {
     Search, Filter, GraduationCap,
     CheckCircle, XCircle, MoreVertical,
-    ChevronLeft, ChevronRight, UserCheck,
-    Star, Eye, Building2, Briefcase, Mail, Phone, Sparkles, Trash2
+    UserCheck, Star, Eye, Building2,
+    Briefcase, Mail, Phone, Sparkles, Trash2,
+    Activity, ArrowUpRight, MapPin, Users,
+    FilterX, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import Table, { Pagination } from '../../components/common/Table';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
 import './AdminPages.css';
 
 const Students = () => {
@@ -24,11 +26,8 @@ const Students = () => {
         search: '',
         college: '',
         department: '',
-        batch: '',
         placementStatus: '',
-        isStarStudent: '',
-        minCGPA: '',
-        maxCGPA: ''
+        isStarStudent: ''
     });
     const [showFilters, setShowFilters] = useState(false);
     const [openDropdown, setOpenDropdown] = useState(null);
@@ -40,7 +39,7 @@ const Students = () => {
     useEffect(() => {
         fetchColleges();
         const handleClickOutside = (event) => {
-            if (!event.target.closest('.table-action-btn') && !event.target.closest('.inline-dropdown')) {
+            if (!event.target.closest('.action-dropdown-wrapper')) {
                 setOpenDropdown(null);
             }
         };
@@ -49,13 +48,8 @@ const Students = () => {
     }, []);
 
     useEffect(() => {
-        // Reset to page 1 on search
         setPagination(prev => ({ ...prev, current: 1 }));
-    }, [filters.search]);
-
-    useEffect(() => {
-        // Fetch on search with delay/debounce logic isn't here but simple fetch is fine for now
-        fetchStudents();
+        fetchStudents(1);
     }, [filters.search]);
 
     const fetchColleges = async () => {
@@ -67,11 +61,11 @@ const Students = () => {
         }
     };
 
-    const fetchStudents = async () => {
+    const fetchStudents = async (page = pagination.current) => {
         try {
             setLoading(true);
             const params = {
-                page: pagination.current,
+                page,
                 limit: 10,
                 ...Object.fromEntries(
                     Object.entries(filters).filter(([_, v]) => v !== '')
@@ -82,7 +76,7 @@ const Students = () => {
             setStudents(response.data.data.students);
             setPagination(response.data.data.pagination);
         } catch (error) {
-            toast.error('Failed to load students');
+            toast.error('Failed to load student registry');
         } finally {
             setLoading(false);
         }
@@ -92,34 +86,27 @@ const Students = () => {
         try {
             await superAdminAPI.toggleStarStudent(student._id);
             const newStatus = !student.isStarStudent;
-            
-            // Update local state immediately for snappy UI
-            setStudents(prev => prev.map(s => 
+
+            setStudents(prev => prev.map(s =>
                 s._id === student._id ? { ...s, isStarStudent: newStatus } : s
             ));
-            
-            toast.success(newStatus ? 'Marked as Star Student' : 'Removed from Star Students');
+
+            toast.success(newStatus ? 'Excellence Recognized' : 'Status Updated');
         } catch (error) {
-            toast.error('Failed to update status');
+            toast.error('Recognition update failed');
         }
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this student? This action cannot be undone.')) return;
+        if (!window.confirm('Terminate this student record permanently?')) return;
 
         try {
             await superAdminAPI.deleteStudent(id);
-            toast.success('Student deleted successfully');
+            toast.success('Record Terminated');
             fetchStudents();
         } catch (error) {
-            toast.error('Failed to delete student');
+            toast.error('Termination failed');
         }
-    };
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        setPagination({ ...pagination, current: 1 });
-        fetchStudents();
     };
 
     const handleFilterChange = (field, value) => {
@@ -131,181 +118,128 @@ const Students = () => {
             search: '',
             college: '',
             department: '',
-            batch: '',
             placementStatus: '',
-            isStarStudent: '',
-            minCGPA: '',
-            maxCGPA: ''
+            isStarStudent: ''
         });
         setPagination({ ...pagination, current: 1 });
-        setTimeout(fetchStudents, 100);
+        fetchStudents(1);
     };
 
     const getInitials = (firstName, lastName) => {
         return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
     };
 
-    const getAvatarColor = (index) => {
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-        return colors[index % colors.length];
-    };
-
-    const containerVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5, staggerChildren: 0.1 } }
-    };
-
-    const itemVariants = {
-        hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0 }
-    };
-
     const columns = [
         {
-            header: 'S.No',
-            accessor: '_id',
-            width: '60px',
-            render: (_, __, index) => ((pagination.current - 1) * 10) + index + 1
-        },
-        {
-            header: 'Student',
+            header: 'Candidate Identity',
             accessor: 'name',
-            render: (val, row, idx) => (
-                <div className="user-cell">
+            render: (_, student) => (
+                <div className="entity-cell">
                     <div className="relative">
-                        <div
-                            className="user-avatar-small shrink-0"
-                            style={{ backgroundColor: getAvatarColor(idx) }}
-                        >
-                            {getInitials(row.name?.firstName, row.name?.lastName)}
+                        <div className="entity-icon">
+                            {student.avatar ? (
+                                <img src={student.avatar} alt="" className="w-full h-full object-cover rounded-lg" />
+                            ) : (
+                                <span className="text-[10px] font-black">{getInitials(student.name?.firstName, student.name?.lastName)}</span>
+                            )}
                         </div>
-                        {row.isStarStudent && (
-                            <div className="absolute -top-2 -right-2 bg-slate-900 rounded-full p-1 border border-amber-500 shadow-sm z-20">
-                                <Star size={12} className="text-amber-500 fill-amber-500" />
+                        {student.isStarStudent && (
+                            <div className="absolute -top-1 -right-1">
+                                <Star size={10} className="text-[#c6a85e] fill-current" />
                             </div>
                         )}
                     </div>
-                    <div className="user-info-text">
-                        <div className="flex items-center gap-2">
-                            <span className="user-name">{row.name?.firstName} {row.name?.lastName}</span>
+                    <div>
+                        <div className="entity-name uppercase">
+                            {student.name?.firstName} {student.name?.lastName}
                         </div>
-                        <span className="user-subtext">{row.email}</span>
+                        <div className="entity-meta uppercase tracking-widest leading-none mt-1">
+                            {student.rollNumber || student._id.slice(-6)}
+                        </div>
                     </div>
                 </div>
             )
         },
-        { header: 'Roll Number', accessor: 'rollNumber' },
-        { 
-            header: 'College', 
-            accessor: 'college',
-            render: (val) => (
-                <div className="user-info-text">
-                    <span className="text-white font-medium">{val?.name}</span>
-                    <span className="user-subtext">{val?.city || 'Campus'}</span>
+        {
+            header: 'Institutional Data',
+            accessor: 'college.name',
+            render: (collegeName, student) => (
+                <div>
+                    <div className="text-[10px] font-bold text-[#4a2c15] uppercase flex items-center gap-1.5">
+                        <Building2 size={12} className="text-[#6b3f1d]" /> {collegeName}
+                    </div>
+                    <div className="text-[9px] text-[#8b6f5a] font-bold uppercase tracking-widest mt-0.5">
+                        {student.department}
+                    </div>
                 </div>
             )
         },
-        { header: 'Department', accessor: 'department' },
-        { 
-            header: 'CGPA', 
+        {
+            header: 'Academic Vector',
             accessor: 'cgpa',
-            render: (val) => <span className="font-bold text-blue-400">{val?.toFixed(2) || 'N/A'}</span>
+            render: (cgpa) => (
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-[#6b3f1d] px-2 py-0.5 bg-[#faf6ef] rounded-md border border-[#e6d8c3]">
+                        {cgpa?.toFixed(2) || 'N/A'}
+                    </span>
+                    <span className="text-[9px] font-bold text-[#8b6f5a] uppercase tracking-tighter">GPA INDEX</span>
+                </div>
+            )
         },
         {
-            header: 'Status',
+            header: 'Phase',
             accessor: 'placementStatus',
-            render: (val) => (
-                <span className={`status-badge-v2 ${val}`}>
-                    {val?.replace('_', ' ') || 'not placed'}
+            render: (status) => (
+                <span className={`status-badge ${status === 'placed' ? 'status-success' : 'status-pending'}`}>
+                    {status === 'placed' ? 'Placed' : status?.replace('_', ' ') || 'Searching'}
                 </span>
             )
         },
         {
-            header: 'Verified',
-            accessor: 'isVerified',
-            render: (val) => (
-                <div className={`verify-chip ${val ? 'yes' : 'no'}`}>
-                    {val ? <UserCheck size={14} /> : <XCircle size={14} />}
-                    {val ? 'Yes' : 'No'}
-                </div>
-            )
-        },
-        {
-            header: '⭐',
-            accessor: 'isStarStudent',
-            width: '60px',
-            render: (val, row) => (
-                <div className="flex justify-center">
-                    <button
-                        className={`p-1.5 rounded-lg transition-all ${val ? 'bg-amber-500/20 text-amber-500' : 'text-slate-600 hover:bg-white/5 hover:text-slate-400'}`}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleStar(row);
-                        }}
-                        title={val ? 'Remove Star' : 'Mark as Star'}
-                    >
-                        <Star size={18} className={val ? 'fill-current' : ''} />
-                    </button>
-                </div>
-            )
-        },
-        {
-            header: 'Actions',
+            header: 'Command',
             accessor: '_id',
-            render: (id, row) => (
-                <div className="relative">
+            render: (_, student) => (
+                <div className="flex gap-2 justify-end action-dropdown-wrapper">
                     <button
-                        className="table-action-btn"
+                        onClick={() => navigate(`/admin/students/${student._id}`)}
+                        className="w-8 h-8 rounded-lg border border-[#e6d8c3] flex items-center justify-center text-[#6b3f1d] hover:bg-[#faf6ef] transition-colors"
+                        title="View Profile"
+                    >
+                        <Eye size={14} />
+                    </button>
+                    <button
+                        className="w-8 h-8 rounded-lg border border-[#e6d8c3] flex items-center justify-center text-[#6b3f1d] hover:bg-[#faf6ef] transition-colors"
                         onClick={(e) => {
                             e.stopPropagation();
-                            setOpenDropdown(openDropdown === id ? null : id);
+                            setOpenDropdown(openDropdown === student._id ? null : student._id);
                         }}
-                        title="More actions"
                     >
-                        <MoreVertical size={16} />
+                        <MoreVertical size={14} />
                     </button>
-
                     <AnimatePresence>
-                        {openDropdown === id && (
+                        {openDropdown === student._id && (
                             <motion.div
-                                className="inline-dropdown right-0"
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                style={{ right: '100%', top: 0, marginRight: '8px' }}
+                                className="absolute right-0 mt-8 w-48 bg-white rounded-xl shadow-lg border border-[#e6d8c3] z-50 overflow-hidden"
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
                             >
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(`/admin/students/${id}`);
-                                        setOpenDropdown(null);
-                                    }}
-                                    title="View student profile"
-                                >
-                                    <Eye size={16} /> View Profile
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        handleToggleStar(row);
-                                        setOpenDropdown(null);
-                                    }}
-                                    className={row.isStarStudent ? 'danger' : 'warning'}
-                                    title={row.isStarStudent ? 'Remove star status' : 'Mark as star student'}
-                                >
-                                    <Star size={16} className={row.isStarStudent ? 'fill-current' : ''} />
-                                    {row.isStarStudent ? 'Remove Star' : 'Mark as Star'}
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDelete(id);
-                                        setOpenDropdown(null);
-                                    }}
-                                    className="danger"
-                                    title="Delete student permanently"
-                                >
-                                    <Trash2 size={16} /> Delete
-                                </button>
+                                <div className="p-1">
+                                    <button
+                                        onClick={() => { handleToggleStar(student); setOpenDropdown(null); }}
+                                        className={`w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase flex items-center gap-2 rounded-lg mb-1 ${student.isStarStudent ? 'text-[#b42318] hover:bg-[#fdeaea]' : 'text-[#b45309] hover:bg-[#fffbeb]'
+                                            }`}
+                                    >
+                                        <Star size={14} className={student.isStarStudent ? '' : 'fill-current'} />
+                                        {student.isStarStudent ? 'Revoke Excellence' : 'Mark Excellence'}
+                                    </button>
+                                    <button
+                                        onClick={() => { handleDelete(student._id); setOpenDropdown(null); }}
+                                        className="w-full px-4 py-2.5 text-left text-[10px] font-bold uppercase text-[#b42318] hover:bg-[#fdeaea] rounded-lg flex items-center gap-2"
+                                    >
+                                        <Trash2 size={14} /> Terminate Record
+                                    </button>
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -315,174 +249,115 @@ const Students = () => {
     ];
 
     return (
-        <motion.div
-            className="admin-page-v2"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-        >
-            {/* Premium Header Banner */}
-            <div className="premium-header-banner" style={{ background: '#1e40af' }}>
-                <div className="premium-header-text">
-                    <h1>Administrative Registry</h1>
-                    <p>Comprehensive overview of students across the institutional network.</p>
+        <div className="admin-page">
+            <div className="flex justify-between items-start mb-8">
+                <div>
+                    <h1 className="text-3xl font-semibold text-[#4a2c15] tracking-tight mb-1">Talent Intelligence</h1>
+                    <p className="text-xs text-[#8b6f5a] font-medium uppercase tracking-widest leading-none">Global Candidate Registry</p>
                 </div>
-                <button
-                    className={`premium-search-btn rounded-xl bg-white/10 hover:bg-white/20 transition-all ${showFilters ? 'bg-white/20' : ''}`}
-                    onClick={() => setShowFilters(!showFilters)}
-                    title="Toggle advanced filters"
-                >
-                    <Filter size={16} />
-                    {showFilters ? 'Hide Filters' : 'Show Filters'}
-                </button>
-            </div>
-
-            {/* Premium Stat Grid */}
-            <div className="premium-stat-grid">
-                <motion.div className="premium-stat-card" variants={itemVariants}>
-                    <div className="premium-stat-icon bg-blue-500/10 text-blue-500">
-                        <GraduationCap size={24} />
-                    </div>
-                    <div className="stat-v2-info">
-                        <span className="stat-label">Total Students</span>
-                        <span className="stat-value">{pagination.total.toLocaleString()}</span>
-                    </div>
-                </motion.div>
-                <motion.div className="premium-stat-card" variants={itemVariants}>
-                    <div className="premium-stat-icon bg-emerald-500/10 text-emerald-500">
-                        <CheckCircle size={24} />
-                    </div>
-                    <div className="stat-v2-info">
-                        <span className="stat-label">Placed</span>
-                        <span className="stat-value">
-                            {students.filter(s => s.placementStatus === 'placed').length}
-                        </span>
-                    </div>
-                </motion.div>
-                <motion.div className="premium-stat-card" variants={itemVariants}>
-                    <div className="premium-stat-icon bg-amber-500/10 text-amber-500">
-                        <XCircle size={24} />
-                    </div>
-                    <div className="stat-v2-info">
-                        <span className="stat-label">Unplaced</span>
-                        <span className="stat-value">
-                            {students.filter(s => s.placementStatus !== 'placed').length}
-                        </span>
-                    </div>
-                </motion.div>
-            </div>
-
-            {/* Premium Search Container */}
-            <motion.div className="premium-search-container" variants={itemVariants}>
-                <form onSubmit={handleSearch} className="flex-1 flex">
-                    <div className="search-input-wrapper flex-1">
-                        <Search size={18} className="text-slate-500" />
+                <div className="flex gap-4">
+                    <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b6f5a]" />
                         <input
                             type="text"
-                            placeholder="Search by name, email, or roll number..."
+                            placeholder="IDENTIFY CANDIDATE..."
+                            className="admin-search-input-hardened theme-input pl-10 pr-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all"
+                            style={{ backgroundColor: '#ffffff' }}
                             value={filters.search}
                             onChange={(e) => handleFilterChange('search', e.target.value)}
                         />
                     </div>
-                    <button type="submit" className="premium-search-btn">
-                        <Search size={18} />
-                        Search
-                    </button>
-                </form>
-            </motion.div>
+                    <Button
+                        variant={showFilters ? 'primary' : 'outline'}
+                        className={`!rounded-lg transition-all admin-action-btn-hardened ${showFilters ? '!bg-[#6b3f1d] !border-[#6b3f1d]' : '!border-[#e6d8c3] !text-[#6b3f1d]'}`}
+                        onClick={() => setShowFilters(!showFilters)}
+                    >
+                        <Filter size={18} className="mr-2" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider">Matrix Filters</span>
+                    </Button>
+                </div>
+            </div>
 
-            {/* Advanced Filters Panel */}
             <AnimatePresence>
                 {showFilters && (
                     <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="filters-panel-premium mx-8 mb-6 overflow-hidden"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden mb-8"
                     >
-                        <div className="p-6 bg-[#1e293b] rounded-2xl border border-white/5 grid grid-cols-1 md:grid-cols-5 gap-6">
-                            <div className="flex flex-col gap-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase">College</label>
+                        <div className="bg-white p-6 rounded-xl border border-[#e6d8c3] grid grid-cols-1 md:grid-cols-4 gap-6 shadow-sm">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest ml-1">Institutional Node</label>
                                 <select
-                                    className="bg-slate-900/50 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500"
+                                    className="admin-form-input-hardened theme-input w-full px-3 py-2 text-[11px] font-bold text-[#4a2c15] uppercase tracking-wider focus:outline-none focus:border-[#c6a85e]"
+                                    style={{ backgroundColor: '#ffffff' }}
                                     value={filters.college}
                                     onChange={(e) => handleFilterChange('college', e.target.value)}
                                 >
-                                    <option value="">All Colleges</option>
+                                    <option value="">Full Network</option>
                                     {colleges.map(college => (
                                         <option key={college._id} value={college._id}>{college.name}</option>
                                     ))}
                                 </select>
                             </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase">Department</label>
-                                <input
-                                    className="bg-slate-900/50 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500"
-                                    placeholder="e.g. CSE, IT"
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest ml-1">Academic Discipline</label>
+                                <Input
+                                    className="admin-form-input-hardened theme-input"
+                                    style={{ backgroundColor: '#ffffff' }}
+                                    placeholder="E.G. ENGINEERING..."
                                     value={filters.department}
                                     onChange={(e) => handleFilterChange('department', e.target.value)}
                                 />
                             </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase">Placement Status</label>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-[#8b6f5a] uppercase tracking-widest ml-1">Placement Status</label>
                                 <select
-                                    className="bg-slate-900/50 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500"
+                                    className="admin-form-input-hardened theme-input w-full px-3 py-2 text-[11px] font-bold text-[#4a2c15] uppercase tracking-wider focus:outline-none focus:border-[#c6a85e]"
+                                    style={{ backgroundColor: '#ffffff' }}
                                     value={filters.placementStatus}
                                     onChange={(e) => handleFilterChange('placementStatus', e.target.value)}
                                 >
-                                    <option value="">All Status</option>
-                                    <option value="placed">Placed</option>
-                                    <option value="not_placed">Not Placed</option>
-                                    <option value="in_process">In Process</option>
-                                </select>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase">Star Students</label>
-                                <select
-                                    className="bg-slate-900/50 border border-white/10 rounded-lg p-2 text-white outline-none focus:border-blue-500"
-                                    value={filters.isStarStudent}
-                                    onChange={(e) => handleFilterChange('isStarStudent', e.target.value)}
-                                >
-                                    <option value="">All Students</option>
-                                    <option value="true">Star Students Only</option>
-                                    <option value="false">Non-Star Students</option>
+                                    <option value="">Any Status</option>
+                                    <option value="placed">Confirmed Placement</option>
+                                    <option value="not_placed">Active Search</option>
+                                    <option value="in_process">Under Interview</option>
                                 </select>
                             </div>
                             <div className="flex items-end gap-3">
-                                <Button className="flex-1" onClick={fetchStudents}>Apply Filters</Button>
-                                <Button variant="outline" onClick={clearFilters} title="Clear all filters">Clear</Button>
+                                <Button variant="outline" className="flex-1 !py-2.5 !border-[#e6d8c3] !text-[#8b6f5a]" onClick={clearFilters}>
+                                    <FilterX size={14} className="mr-2" />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">Flush</span>
+                                </Button>
+                                <Button variant="primary" className="flex-1 !py-2.5 !bg-[#6b3f1d]" onClick={() => setShowFilters(false)}>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">Apply Matrix</span>
+                                </Button>
                             </div>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Premium Table Wrapper */}
-            <div className="section-title-row">
-                <h2>Student Database</h2>
-                <div className="flex gap-2">
-                    <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">Verified Records</span>
-                </div>
-            </div>
-            <div className="premium-table-container">
+            <div className="table-container shadow-sm">
                 <Table
                     columns={columns}
                     data={students}
                     loading={loading}
-                    emptyMessage="No students found matching your search criteria."
-                    onRowClick={(row) => navigate(`/admin/students/${row._id}`)}
-                />
-                <Pagination
-                    current={pagination.current}
-                    total={pagination.total}
-                    onPageChange={(page) => setPagination(prev => ({ ...prev, current: page }))}
                 />
             </div>
 
-
-        </motion.div>
+            {pagination.pages > 1 && (
+                <div className="flex justify-center mt-6">
+                    <Pagination
+                        current={pagination.current}
+                        pages={pagination.pages}
+                        onPageChange={(page) => fetchStudents(page)}
+                    />
+                </div>
+            )}
+        </div>
     );
 };
 
 export default Students;
-

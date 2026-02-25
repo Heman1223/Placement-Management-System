@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import Footer from './Footer';
 import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
 
@@ -19,7 +20,7 @@ const Layout = ({ title }) => {
     };
 
     return (
-        <div className={`layout ${isSuperAdmin || isCollegeAdmin || isCompany || isStudent ? 'layout-admin-dark' : ''}`}>
+        <div className="layout bg-[#f5efe6] min-h-screen">
             <Sidebar
                 collapsed={sidebarCollapsed}
                 onToggle={toggleSidebar}
@@ -31,6 +32,7 @@ const Layout = ({ title }) => {
                 <main className="layout-content">
                     <Outlet />
                 </main>
+                <Footer />
             </div>
 
             {/* Mobile overlay */}

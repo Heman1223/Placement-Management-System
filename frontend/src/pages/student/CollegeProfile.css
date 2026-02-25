@@ -1,15 +1,15 @@
 :root {
-    --glass-bg: rgba(30, 41, 59, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.05);
-    --accent-blue: #3b82f6;
-    --dashboard-bg: #0b1121;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(139, 94, 60, 0.1);
+    --accent-blue: var(--accent-brand);
+    --dashboard-bg: var(--bg-cream);
 }
 
 .college-profile-page {
     padding: 2.5rem;
     max-width: 1400px;
     margin: 0 auto;
-    color: #f1f5f9;
+    color: var(--text-brown);
 }
 
 /* Header & Banner Section */
@@ -25,7 +25,7 @@
 
 .cp-banner {
     height: 160px;
-    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    background: linear-gradient(135deg, var(--accent-brand) 0%, var(--primary-brand) 100%);
     position: relative;
 }
 
@@ -35,13 +35,13 @@
     left: 4rem;
     width: 150px;
     height: 150px;
-    background: #0f172a;
+    background: var(--bg-cream);
     border-radius: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    border: 6px solid #1e293b;
+    border: 6px solid var(--border-theme);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
@@ -101,7 +101,9 @@
     align-items: start;
 }
 
-.mb-6 { margin-bottom: 2rem; }
+.mb-6 {
+    margin-bottom: 2rem;
+}
 
 .cp-card {
     background: var(--glass-bg);
@@ -293,20 +295,36 @@
 }
 
 @media (max-width: 1024px) {
-    .cp-grid { grid-template-columns: 1fr; }
-    .cp-info-basic { padding: 4rem 2.5rem 2.5rem; }
-    .cp-logo-container { left: 2.5rem; }
+    .cp-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cp-info-basic {
+        padding: 4rem 2.5rem 2.5rem;
+    }
+
+    .cp-logo-container {
+        left: 2.5rem;
+    }
 }
 
 @media (max-width: 640px) {
-    .cp-info-basic h1 { font-size: 2rem; }
-    .cp-logo-container { 
-        width: 100px; 
-        height: 100px; 
-        left: 50%; 
+    .cp-info-basic h1 {
+        font-size: 2rem;
+    }
+
+    .cp-logo-container {
+        width: 100px;
+        height: 100px;
+        left: 50%;
         transform: translateX(-50%);
-        bottom: -30px; 
+        bottom: -30px;
         border-width: 4px;
     }
-    .cp-info-basic { padding-top: 5rem; text-align: center; align-items: center; }
+
+    .cp-info-basic {
+        padding-top: 5rem;
+        text-align: center;
+        align-items: center;
+    }
 }

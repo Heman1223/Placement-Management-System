@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
-import { 
-    Activity, Download, Search, Filter, 
-    BarChart3, Clock, User, Shield, 
+import {
+    Activity, Download, Search, Filter,
+    BarChart3, Clock, User, Shield,
     Globe, Calendar, ChevronLeft, ChevronRight,
-    Eye, Star, CheckCircle, Upload, Edit, 
+    Eye, Star, CheckCircle, Upload, Edit,
     Trash2, Briefcase, FileText, LayoutDashboard,
     TrendingUp, MousePointer2, UserCheck
 } from 'lucide-react';
@@ -24,7 +24,7 @@ const ActivityLogs = () => {
         limit: 20
     });
     const [pagination, setPagination] = useState({});
-    const [activeTab, setActiveTab] = useState('logs'); 
+    const [activeTab, setActiveTab] = useState('logs');
 
     useEffect(() => {
         if (activeTab === 'logs') {
@@ -114,7 +114,7 @@ const ActivityLogs = () => {
     };
 
     const formatAction = (action) => {
-        return action.split('_').map(word => 
+        return action.split('_').map(word =>
             word.charAt(0).toUpperCase() + word.slice(1)
         ).join(' ');
     };
@@ -126,9 +126,9 @@ const ActivityLogs = () => {
     };
 
     const actionOptions = [
-        'view_student', 'download_student_data', 'shortlist_student', 
-        'approve_college', 'approve_company', 'bulk_upload', 
-        'export_data', 'update_student', 'delete_student', 
+        'view_student', 'download_student_data', 'shortlist_student',
+        'approve_college', 'approve_company', 'bulk_upload',
+        'export_data', 'update_student', 'delete_student',
         'post_job', 'update_job', 'view_resume'
     ];
 
@@ -143,8 +143,8 @@ const ActivityLogs = () => {
                         <h1 className="text-3xl font-black text-white mb-2">Activity Logs</h1>
                         <p className="text-slate-400">Monitor system events and user actions</p>
                     </div>
-                    <button 
-                        className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold border border-emerald-600 shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2" 
+                    <button
+                        className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold border border-emerald-600 shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
                         onClick={handleExport}
                     >
                         <Download size={16} />
@@ -156,30 +156,30 @@ const ActivityLogs = () => {
             {/* Tabs */}
             <div className="flex gap-6 mb-8 border-b border-white/10">
                 <button
-                    className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'logs' ? 'text-blue-500' : 'text-slate-500 hover:text-slate-300'}`}
+                    className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'logs' ? 'text-primary' : 'text-muted hover:text-text'}`}
                     onClick={() => setActiveTab('logs')}
                 >
                     <div className="flex items-center gap-2">
                         <Activity size={18} />
                         Live Feed
                     </div>
-                    {activeTab === 'logs' && <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-t-full" />}
+                    {activeTab === 'logs' && <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
                 </button>
                 <button
-                    className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'stats' ? 'text-blue-500' : 'text-slate-500 hover:text-slate-300'}`}
+                    className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'stats' ? 'text-primary' : 'text-muted hover:text-text'}`}
                     onClick={() => setActiveTab('stats')}
                 >
                     <div className="flex items-center gap-2">
                         <BarChart3 size={18} />
                         Analytics
                     </div>
-                    {activeTab === 'stats' && <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-t-full" />}
+                    {activeTab === 'stats' && <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full" />}
                 </button>
             </div>
 
             <AnimatePresence mode="wait">
                 {activeTab === 'logs' ? (
-                    <motion.div 
+                    <motion.div
                         key="logs-view"
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -211,7 +211,7 @@ const ActivityLogs = () => {
                                 type="date"
                                 value={filters.startDate}
                                 onChange={(e) => setFilters({ ...filters, startDate: e.target.value, page: 1 })}
-                                className="bg-slate-900/50 border border-white/10 rounded-xl p-3 text-sm font-medium text-white outline-none focus:border-blue-500 transition-all"
+                                className="bg-cream border border-border/30 rounded-xl p-3 text-sm font-medium text-text outline-none focus:border-primary transition-all"
                             />
                             <input
                                 type="date"
@@ -238,7 +238,7 @@ const ActivityLogs = () => {
                                         <tr>
                                             <td colSpan="5" className="text-center py-20">
                                                 <div className="flex flex-col items-center gap-4">
-                                                    <div className="w-8 h-8 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+                                                    <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
                                                     <span className="text-slate-500 text-sm">Loading logs...</span>
                                                 </div>
                                             </td>
@@ -254,7 +254,7 @@ const ActivityLogs = () => {
                                             <tr key={log._id} className="hover:bg-white/5 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                                                             {getActionIcon(log.action)}
                                                         </div>
                                                         <span className="text-sm font-medium text-white">{formatAction(log.action)}</span>
@@ -295,7 +295,7 @@ const ActivityLogs = () => {
                                     Total: {logs.length} Events
                                 </span>
                                 <div className="flex items-center gap-2">
-                                    <button 
+                                    <button
                                         className="p-2 hover:bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
                                         disabled={filters.page === 1}
                                         onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
@@ -305,7 +305,7 @@ const ActivityLogs = () => {
                                     <span className="text-sm font-medium text-white">
                                         Page {pagination.current} / {pagination.pages}
                                     </span>
-                                    <button 
+                                    <button
                                         className="p-2 hover:bg-white/10 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors"
                                         disabled={filters.page === pagination.pages}
                                         onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
@@ -317,19 +317,19 @@ const ActivityLogs = () => {
                         </div>
                     </motion.div>
                 ) : (
-                    <motion.div 
+                    <motion.div
                         key="stats-view"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                     >
-                         {/* Simplified Stats View for College - Reusing logic but cleaning up styles */}
-                         {/* (Omitting complex charts for brevity if not strictly requested, but user asked for cleanup, so I'll keep the stats but style them cleanly) */}
-                         {stats && (
+                        {/* Simplified Stats View for College - Reusing logic but cleaning up styles */}
+                        {/* (Omitting complex charts for brevity if not strictly requested, but user asked for cleanup, so I'll keep the stats but style them cleanly) */}
+                        {stats && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                                 <div className="bg-slate-900/50 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-blue-500/10 rounded-xl text-blue-500">
+                                        <div className="p-3 bg-primary/10 rounded-xl text-primary">
                                             <TrendingUp size={24} />
                                         </div>
                                         <div>
@@ -340,11 +340,11 @@ const ActivityLogs = () => {
                                 </div>
                                 {/* ... more stats ... */}
                             </div>
-                         )}
-                         {/* Placeholder for stats - keeping it simple for now as user focused on "Activity Logs" header/font */}
-                         <div className="text-center py-20 text-slate-500">
-                             Analytics view available.
-                         </div>
+                        )}
+                        {/* Placeholder for stats - keeping it simple for now as user focused on "Activity Logs" header/font */}
+                        <div className="text-center py-20 text-slate-500">
+                            Analytics view available.
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

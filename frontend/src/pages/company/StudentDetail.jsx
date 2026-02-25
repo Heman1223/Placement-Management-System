@@ -3,11 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { companyAPI, jobAPI } from '../../services/api';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
-import { 
-    ArrowLeft, Mail, Phone, Calendar, 
-    Award, Briefcase, FileText, Github, 
+import {
+    ArrowLeft, Mail, Phone, Calendar,
+    Award, Briefcase, FileText, Github,
     Linkedin, Globe, CheckCircle, XCircle,
-    GraduationCap, BookOpen, Link as LinkIcon, 
+    GraduationCap, BookOpen, Link as LinkIcon,
     Eye, Star, ExternalLink, Sparkles, User, ChevronRight, Plus, Target
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -111,18 +111,18 @@ const StudentDetail = () => {
                 <h2 className="header-title">STUDENT DOSSIER</h2>
                 <div className="flex gap-3">
                     {student.applications?.length > 0 ? (
-                        <Button 
+                        <Button
                             onClick={() => {
                                 setSelectedJob(student.applications[0].jobId);
                                 setShortlistModal(true);
                             }}
                             icon={Star}
-                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-6"
+                            className="bg-[var(--accent-brand)] hover:opacity-90 text-white rounded-2xl px-6"
                         >
                             Shortlist Candidate
                         </Button>
                     ) : (
-                        <Button 
+                        <Button
                             onClick={() => setInviteModal(true)}
                             icon={Sparkles}
                             className="bg-slate-700 hover:bg-slate-600 text-white rounded-2xl px-6"
@@ -145,11 +145,11 @@ const StudentDetail = () => {
                             </div>
                         )}
                     </div>
-                    
+
                     <div className="summary-info">
                         <h1 className="student-fullname">{student.name?.firstName} {student.name?.lastName}</h1>
                         <p className="student-meta">{student.department} • Batch {student.batch}</p>
-                        
+
                         <div className="summary-badges">
                             <div className="p-badge badge-verified">
                                 <div className="dot" />
@@ -220,11 +220,11 @@ const StudentDetail = () => {
                             <span className="data-label">Phone Connection</span>
                             <span className="data-value">{student.phone || 'N/A'}</span>
                         </div>
-                        
+
                         <div className="resources-list-v2 mt-4">
                             {student.linkedinUrl && (
                                 <a href={student.linkedinUrl} target="_blank" rel="noopener noreferrer" className="resource-item-v2">
-                                    <Linkedin size={20} className="text-blue-500" />
+                                    <Linkedin size={20} className="text-accent" />
                                     <div className="flex-1">
                                         <div className="res-label">LINKEDIN</div>
                                         <div className="res-link">Professional Profile</div>
@@ -339,7 +339,7 @@ const StudentDetail = () => {
                                     <div key={index} className="reg-card">
                                         <div className="flex justify-between items-start mb-3">
                                             <h4 className="text-white font-bold">{app.jobTitle}</h4>
-                                            <span className={`status-badge-inline status-${app.status} text-[10px] px-2 py-1 rounded bg-blue-500/10 text-blue-400 font-bold border border-blue-500/20`}>
+                                            <span className={`status-badge-inline status-${app.status} text-[10px] px-2 py-1 rounded bg-accent/10 text-accent font-bold border border-accent/20`}>
                                                 {app.status.toUpperCase()}
                                             </span>
                                         </div>
@@ -363,8 +363,8 @@ const StudentDetail = () => {
                     <div className="card-body-v2">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {student.resumeUrl && (
-                                <a href={student.resumeUrl} target="_blank" rel="noopener noreferrer" className="resource-item-v2 !bg-blue-600/10 !border-blue-600/20">
-                                    <FileText size={24} className="text-blue-500" />
+                                <a href={student.resumeUrl} target="_blank" rel="noopener noreferrer" className="resource-item-v2 !bg-[var(--accent-brand)]/10 !border-[var(--accent-brand)]/20">
+                                    <FileText size={24} className="text-primary" />
                                     <div className="flex-1">
                                         <div className="res-label">CURRICULUM VITAE</div>
                                         <div className="res-link">Download CV</div>
@@ -391,7 +391,7 @@ const StudentDetail = () => {
                     Close Dossier
                 </Button>
                 {student.applications?.length > 0 ? (
-                    <Button onClick={() => setShortlistModal(true)} icon={Star} className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-10">
+                    <Button onClick={() => setShortlistModal(true)} icon={Star} className="bg-[var(--accent-brand)] hover:opacity-90 text-white rounded-2xl px-10">
                         Confirm Shortlist
                     </Button>
                 ) : (

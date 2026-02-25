@@ -73,14 +73,14 @@ const Partnerships = () => {
             </div>
 
             <div className="tabs-container">
-                <button 
+                <button
                     className={`tab-btn ${activeTab === 'pending' ? 'active' : ''}`}
                     onClick={() => setActiveTab('pending')}
                 >
                     Pending Requests
                     {requests.length > 0 && <span className="badge-count">{requests.length}</span>}
                 </button>
-                <button 
+                <button
                     className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`}
                     onClick={() => setActiveTab('active')}
                 >
@@ -108,13 +108,13 @@ const Partnerships = () => {
                                         <p className="request-date">Requested: {new Date(req?.requestedAt || Date.now()).toLocaleDateString()}</p>
                                     </div>
                                     <div className="actions">
-                                        <button 
+                                        <button
                                             className="btn-approve"
                                             onClick={() => handleResponse(req._id, 'approved')}
                                         >
                                             Approve
                                         </button>
-                                        <button 
+                                        <button
                                             className="btn-reject"
                                             onClick={() => handleResponse(req._id, 'rejected')}
                                         >
@@ -131,9 +131,9 @@ const Partnerships = () => {
                             <div className="empty-state">No active partners</div>
                         ) : (
                             partners.map(partner => (
-                                <div 
-                                    key={partner._id} 
-                                    className="partner-card cursor-pointer hover:border-blue-500/50 transition-all"
+                                <div
+                                    key={partner._id}
+                                    className="partner-card cursor-pointer hover:border-accent transition-all"
                                     onClick={() => navigate(`/college/companies/${partner._id}`, { state: { company: partner } })}
                                 >
                                     <div className="partner-header">
@@ -154,7 +154,7 @@ const Partnerships = () => {
                                         </div>
                                     </div>
                                     <div className="partner-actions" onClick={(e) => e.stopPropagation()}>
-                                        <button 
+                                        <button
                                             className="btn-text-danger"
                                             onClick={() => handleRevoke(partner._id)}
                                         >

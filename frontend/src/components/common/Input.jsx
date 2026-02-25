@@ -36,6 +36,7 @@ const Input = forwardRef(({
                     ref={ref}
                     type={type}
                     className={`input text-sm md:text-base ${Icon ? 'input-with-icon' : ''}`}
+                    style={props.style}
                     {...props}
                 />
             </div>

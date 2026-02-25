@@ -1,7 +1,7 @@
 .header {
     height: var(--header-height);
-    background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-light);
+    background: var(--primary-brand);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -13,22 +13,24 @@
 }
 
 .layout-admin-dark .header {
-    background: #0f172a;
-    border-bottom-color: #1e293b;
+    background: var(--primary-brand);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-.layout-admin-dark .header-title {
+.header-title {
+    font-size: 1.25rem;
+    font-weight: 600;
     color: white;
 }
 
-.layout-admin-dark .header-menu-btn,
-.layout-admin-dark .header-icon-btn {
-    color: #94a3b8;
+.header-menu-btn,
+.header-icon-btn {
+    color: rgba(255, 255, 255, 0.8);
 }
 
-.layout-admin-dark .header-menu-btn:hover,
-.layout-admin-dark .header-icon-btn:hover {
-    background: #1e293b;
+.header-menu-btn:hover,
+.header-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
     color: white;
 }
 
@@ -45,19 +47,19 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-lg);
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.85);
     transition: all var(--transition-fast);
 }
 
 .header-menu-btn:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
 }
 
 .header-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: white;
 }
 
 .header-right {
@@ -74,13 +76,13 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-lg);
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.85);
     transition: all var(--transition-fast);
 }
 
 .header-icon-btn:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
 }
 
 .header-badge {

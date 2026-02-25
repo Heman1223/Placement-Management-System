@@ -14,7 +14,8 @@
 }
 
 html {
-    font-size: 14px; /* Mobile base font size */
+    font-size: 14px;
+    /* Mobile base font size */
     scroll-behavior: smooth;
     width: 100%;
     min-height: 100vh;
@@ -123,19 +124,64 @@ a:hover {
     color: var(--primary-700);
 }
 
-/* Form Elements */
+/* Global Form & Input Standardization */
 input,
 textarea,
-select,
-button {
-    font-family: inherit;
-    font-size: inherit;
+select {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-theme);
+    color: var(--input-text);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ring-theme);
+    border-color: var(--primary-brown);
+}
+
+.theme-input {
+    background-color: var(--search-bg) !important;
+    color: var(--input-text) !important;
+    border: 2px solid var(--accent-gold) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    transition: 0.3s ease !important;
+}
+
+.theme-input::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 0.6 !important;
+}
+
+.theme-input:focus {
+    border-color: var(--primary-brown) !important;
+    box-shadow: 0 0 0 4px rgba(107, 63, 29, 0.1) !important;
+    background-color: white !important;
+}
+
+*:focus {
+    outline: none !important;
 }
 
 button {
     cursor: pointer;
     border: none;
     background: none;
+    transition: all 0.2s ease;
+}
+
+/* Luxury Shadows */
+.shadow-soft {
+    box-shadow: 0 8px 24px rgba(60, 40, 20, 0.12);
+}
+
+.shadow-elevated {
+    box-shadow: 0 16px 40px rgba(60, 40, 20, 0.18);
 }
 
 /* Utilities */

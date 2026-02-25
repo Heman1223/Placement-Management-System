@@ -204,7 +204,7 @@ const Settings = () => {
                                     <img src={profile.logo} alt="College Logo" />
                                 </div>
                             )}
-                            
+
                             <div className="logo-actions">
                                 <input
                                     type="file"
@@ -502,7 +502,7 @@ const Settings = () => {
                                         onChange={(e) => handleRuleChange('allowMultipleOffers', e.target.checked)}
                                         disabled={loading}
                                     />
-                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <div className="w-11 h-6 bg-[var(--bg-cream)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--ring-theme)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-brand)]"></div>
                                 </label>
                             </div>
 
@@ -519,7 +519,7 @@ const Settings = () => {
                                         onChange={(e) => handleRuleChange('showDataWithoutApproval', e.target.checked)}
                                         disabled={loading}
                                     />
-                                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <div className="w-11 h-6 bg-[var(--bg-cream)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--ring-theme)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--accent-brand)]"></div>
                                 </label>
                             </div>
 
@@ -589,7 +589,7 @@ const Settings = () => {
                         <div className="info-box">
                             <SettingsIcon size={20} />
                             <div>
-                                <strong>Note:</strong> When enabled, students can register themselves. 
+                                <strong>Note:</strong> When enabled, students can register themselves.
                                 They will still need to be verified by you before they can apply for jobs.
                             </div>
                         </div>

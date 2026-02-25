@@ -47,7 +47,7 @@ const CollegeProfile = () => {
                 <div className="cp-info-basic">
                     <h1 className="flex items-center gap-4">
                         {college.name}
-                        <span className="text-xs uppercase tracking-widest px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full border border-blue-500/30">Dynamic V2</span>
+                        <span className="text-xs uppercase tracking-widest px-3 py-1 bg-accent/20 text-accent rounded-full border border-accent/30">Dynamic V2</span>
                     </h1>
                     <p className="cp-code">College Code: {college.code}</p>
                     <div className="cp-university">
@@ -79,8 +79,8 @@ const CollegeProfile = () => {
                         </div>
                         <div className="stat-plate">
                             <span className="s-val">
-                                {college.stats?.totalStudents > 0 
-                                    ? Math.round((college.stats.placedStudents / college.stats.totalStudents) * 100) 
+                                {college.stats?.totalStudents > 0
+                                    ? Math.round((college.stats.placedStudents / college.stats.totalStudents) * 100)
                                     : 0}%
                             </span>
                             <span className="s-lab">Placement Rate</span>

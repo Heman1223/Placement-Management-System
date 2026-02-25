@@ -262,13 +262,13 @@ const JobForm = () => {
                             onChange={(e) => handleChange('category', e.target.value)}
                             placeholder="e.g., Software Development"
                         />
-                        
+
                         {/* Placement Drive Selection */}
                         <div className="input-wrapper" style={{ gridColumn: '1 / -1' }}>
                             <div className="checkbox-wrapper">
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
+                                    <input
+                                        type="checkbox"
                                         checked={isPlacementDrive}
                                         onChange={(e) => {
                                             const checked = e.target.checked;
@@ -280,12 +280,12 @@ const JobForm = () => {
                                                 }));
                                             }
                                         }}
-                                        className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                        className="w-4 h-4 text-[var(--accent-brand)] rounded border-[var(--border-theme)] focus:ring-[var(--ring-theme)]"
                                     />
                                     <span className="font-medium">Is this a On-Campus / Placement Drive?</span>
                                 </label>
                             </div>
-                            
+
                             {isPlacementDrive && (
                                 <div className="mt-2">
                                     <label className="input-label">Select College <span className="input-required">*</span></label>
@@ -499,7 +499,7 @@ const JobForm = () => {
                     <div className="eligibility-section">
                         <label className="input-label">Allowed Batches</label>
                         <div className="tag-input">
-                             <select
+                            <select
                                 className="input"
                                 value=""
                                 onChange={(e) => {
@@ -527,18 +527,18 @@ const JobForm = () => {
                             {formData.eligibility.allowedBatches.map((batch, i) => (
                                 <span key={i} className="tag">
                                     {batch}
-                                     <button type="button" onClick={() => {
-                                         setFormData(prev => ({
+                                    <button type="button" onClick={() => {
+                                        setFormData(prev => ({
                                             ...prev,
                                             eligibility: {
                                                 ...prev.eligibility,
                                                 allowedBatches: prev.eligibility.allowedBatches.filter(b => b !== batch)
                                             }
                                         }));
-                                     }}><Trash2 size={12} /></button>
+                                    }}><Trash2 size={12} /></button>
                                 </span>
                             ))}
-                             {formData.eligibility.allowedBatches.length === 0 && (
+                            {formData.eligibility.allowedBatches.length === 0 && (
                                 <span className="tag-hint">All batches allowed</span>
                             )}
                         </div>

@@ -10,12 +10,12 @@
 }
 
 /* Header */
-.job-detail-header {
+.job-detail-page .job-detail-header {
     margin-bottom: 2.5rem;
     position: relative;
 }
 
-.back-btn {
+.job-detail-page .back-btn {
     display: inline-flex !important;
     align-items: center;
     gap: 0.6rem;
@@ -30,7 +30,7 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.back-btn:hover {
+.job-detail-page .back-btn:hover {
     background: rgba(255, 255, 255, 0.08) !important;
     color: white !important;
     transform: translateX(-4px);
@@ -38,7 +38,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.job-header-content {
+.job-detail-page .job-header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -64,7 +64,7 @@
     pointer-events: none;
 }
 
-.job-header-left {
+.job-detail-page .job-header-left {
     display: flex;
     gap: 2rem;
     align-items: center;
@@ -72,7 +72,7 @@
     position: relative;
 }
 
-.company-logo {
+.job-detail-page .company-logo {
     width: 100px;
     height: 100px;
     background: white;
@@ -91,7 +91,7 @@
     object-fit: contain;
 }
 
-.job-header-info h1 {
+.job-detail-page .job-header-info h1 {
     margin: 0 0 0.8rem;
     font-size: 2.5rem;
     font-weight: 850;
@@ -100,14 +100,14 @@
     line-height: 1.1;
 }
 
-.job-meta {
+.job-detail-page .job-meta {
     display: flex;
     align-items: center;
     gap: 1.2rem;
     flex-wrap: wrap;
 }
 
-.company-name {
+.job-detail-page .company-name {
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -116,7 +116,7 @@
     font-weight: 600;
 }
 
-.job-type-badge {
+.job-detail-page .job-type-badge {
     padding: 0.4rem 1rem;
     background: rgba(59, 130, 246, 0.1);
     color: #60a5fa;
@@ -128,7 +128,7 @@
     letter-spacing: 0.05em;
 }
 
-.job-status-badge {
+.job-detail-page .job-status-badge {
     padding: 0.4rem 1rem;
     border-radius: 1rem;
     font-size: 0.85rem;
@@ -141,14 +141,14 @@
 }
 
 /* Quick Info Grid */
-.quick-info-grid {
+.job-detail-page .quick-info-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
     margin-bottom: 3rem;
 }
 
-.info-card {
+.job-detail-page .info-card {
     display: flex;
     align-items: center;
     gap: 1.2rem;
@@ -160,13 +160,13 @@
     transition: all 0.3s ease;
 }
 
-.info-card:hover {
+.job-detail-page .info-card:hover {
     transform: translateY(-5px);
     border-color: rgba(255, 255, 255, 0.1);
     background: rgba(30, 41, 59, 0.6);
 }
 
-.info-icon {
+.job-detail-page .info-icon {
     width: 54px;
     height: 54px;
     border-radius: 1.2rem;
@@ -177,18 +177,37 @@
     font-size: 1.2rem;
 }
 
-.salary-icon { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px dashed rgba(59, 130, 246, 0.3); }
-.location-icon { background: rgba(167, 139, 250, 0.1); color: #a78bfa; border: 1px dashed rgba(167, 139, 250, 0.3); }
-.mode-icon { background: rgba(52, 211, 153, 0.1); color: #34d399; border: 1px dashed rgba(52, 211, 153, 0.3); }
-.deadline-icon { background: rgba(251, 113, 133, 0.1); color: #fb7185; border: 1px dashed rgba(251, 113, 133, 0.3); }
+.job-detail-page .salary-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px dashed rgba(59, 130, 246, 0.3);
+}
 
-.info-content {
+.job-detail-page .location-icon {
+    background: rgba(167, 139, 250, 0.1);
+    color: #a78bfa;
+    border: 1px dashed rgba(167, 139, 250, 0.3);
+}
+
+.job-detail-page .mode-icon {
+    background: rgba(52, 211, 153, 0.1);
+    color: #34d399;
+    border: 1px dashed rgba(52, 211, 153, 0.3);
+}
+
+.job-detail-page .deadline-icon {
+    background: rgba(251, 113, 133, 0.1);
+    color: #fb7185;
+    border: 1px dashed rgba(251, 113, 133, 0.3);
+}
+
+.job-detail-page .info-content {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
 }
 
-.info-label {
+.job-detail-page .info-label {
     font-size: 0.75rem;
     color: #64748b;
     text-transform: uppercase;
@@ -196,27 +215,27 @@
     letter-spacing: 0.08em;
 }
 
-.info-value {
+.job-detail-page .info-value {
     font-size: 1.1rem;
     color: white;
     font-weight: 700;
 }
 
 /* Main Content Wrapper */
-.job-detail-content {
+.job-detail-page .job-detail-content {
     display: grid;
     grid-template-columns: 1fr 380px;
     gap: 2.5rem;
 }
 
-.job-detail-main {
+.job-detail-page .job-detail-main {
     display: flex;
     flex-direction: column;
     gap: 2.5rem;
 }
 
 /* Detail Section */
-.detail-section {
+.job-detail-page .detail-section {
     background: rgba(30, 41, 59, 0.4);
     padding: 3rem;
     border-radius: 2.5rem;
@@ -224,7 +243,7 @@
     backdrop-filter: blur(15px);
 }
 
-.detail-section h2 {
+.job-detail-page .detail-section h2 {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -235,21 +254,21 @@
     letter-spacing: -0.01em;
 }
 
-.description-content p {
+.job-detail-page .description-content p {
     margin: 0 0 1.5rem;
     color: #94a3b8;
     line-height: 1.9;
     font-size: 1.05rem;
 }
 
-.requirements-list-student {
+.job-detail-page .requirements-list-student {
     list-style: none;
     padding: 0;
     display: grid;
     gap: 1.2rem;
 }
 
-.requirements-list-student li {
+.job-detail-page .requirements-list-student li {
     padding: 1.2rem 1.5rem 1.2rem 3.5rem;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -395,7 +414,9 @@
     border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
-.apply-card h3 { color: #60a5fa; }
+.apply-card h3 {
+    color: #60a5fa;
+}
 
 /* Job Info List */
 .job-info-list {
@@ -412,7 +433,10 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.job-info-item:last-child { border: 0; padding: 0.5rem 0 0; }
+.job-info-item:last-child {
+    border: 0;
+    padding: 0.5rem 0 0;
+}
 
 .job-info-item .info-label {
     display: flex;
@@ -522,28 +546,76 @@
     display: inline-block;
 }
 
-.tag-required { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
-.tag-preferred { background: rgba(167, 139, 250, 0.1); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.2); }
+.tag-required {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.tag-preferred {
+    background: rgba(167, 139, 250, 0.1);
+    color: #a78bfa;
+    border: 1px solid rgba(167, 139, 250, 0.2);
+}
 
 /* Animations */
 @keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Responsive Fixes */
 @media (max-width: 1200px) {
-    .job-detail-content { grid-template-columns: 1fr; }
-    .job-detail-sidebar { order: -1; display: grid; grid-template-columns: 1fr 1fr; }
-    .quick-info-grid { grid-template-columns: repeat(2, 1fr); }
+    .job-detail-content {
+        grid-template-columns: 1fr;
+    }
+
+    .job-detail-sidebar {
+        order: -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .quick-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 768px) {
-    .job-detail-sidebar { grid-template-columns: 1fr; }
-    .job-header-content { flex-direction: column; text-align: center; padding: 2rem; }
-    .job-header-left { flex-direction: column; }
-    .job-meta { justify-content: center; }
-    .job-header-info h1 { font-size: 2rem; }
-    .quick-info-grid { grid-template-columns: 1fr; }
-    .eligibility-grid { grid-template-columns: 1fr; }
+    .job-detail-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .job-header-content {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .job-header-left {
+        flex-direction: column;
+    }
+
+    .job-meta {
+        justify-content: center;
+    }
+
+    .job-header-info h1 {
+        font-size: 2rem;
+    }
+
+    .quick-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .eligibility-grid {
+        grid-template-columns: 1fr;
+    }
 }

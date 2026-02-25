@@ -39,7 +39,7 @@ const StudentCard = ({ student, onShortlist, onInvite, viewDetails, shortlisting
             {student.registeredJob ? (
                 <Button
                     size="sm"
-                    className="shortlist-icon-btn bg-blue-600"
+                    className="shortlist-icon-btn bg-[var(--accent-brand)]"
                     onClick={() => onShortlist(student)}
                     title="Move to Pipeline"
                     disabled={shortlistingId === student._id}
@@ -107,7 +107,7 @@ const SearchStudents = () => {
 
     // UI States
     const [showFilters, setShowFilters] = useState(false);
-    const [selectedCollege, setSelectedCollege] = useState(null); 
+    const [selectedCollege, setSelectedCollege] = useState(null);
 
     // Action States
     const [shortlistingId, setShortlistingId] = useState(null);
@@ -377,7 +377,7 @@ const SearchStudents = () => {
             await companyAPI.requestCollegeAccess({ collegeId: selectedCollege._id });
             toast.success('Partnership request sent successfully');
             // Optimistically update UI
-            setColleges(prev => prev.map(c => 
+            setColleges(prev => prev.map(c =>
                 c._id === selectedCollege._id ? { ...c, accessStatus: 'pending' } : c
             ));
             // Update selected college object to reflect new status immediately
@@ -569,24 +569,24 @@ const SearchStudents = () => {
                 {/* Results Area */}
                 <div className="results-container">
                     {isCollegeLocked ? (
-                         <div className="locked-college-state p-12 text-center bg-slate-800/50 rounded-2xl border border-white/10">
-                            <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500">
+                        <div className="locked-college-state p-12 text-center bg-[var(--card-bg)] rounded-2xl border border-[var(--border-theme)]">
+                            <div className="w-16 h-16 bg-[var(--accent-brand)]/10 rounded-full flex items-center justify-center mx-auto mb-6 text-[var(--accent-brand)]">
                                 <Lock size={32} />
                             </div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Access Restricted</h2>
+                            <h2 className="text-2xl font-bold text-[var(--text-brown)] mb-2">Access Restricted</h2>
                             <p className="text-slate-500 max-w-md mx-auto mb-8">
                                 {selectedCollege.name} does not share student data publicly. You must request a partnership to view their candidates.
                             </p>
-                            
+
                             {accessStatus === 'pending' ? (
                                 <div className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-500/10 text-yellow-600 rounded-xl font-bold border border-yellow-500/20">
                                     <Clock size={20} />
                                     Request Pending Approval
                                 </div>
                             ) : (
-                                <button 
+                                <button
                                     onClick={handleRequestAccess}
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/25"
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-brand)] hover:opacity-90 text-white rounded-xl font-bold transition-all shadow-lg shadow-[var(--accent-brand)]/25"
                                 >
                                     Request Partnership
                                 </button>
@@ -603,7 +603,7 @@ const SearchStudents = () => {
                     ) : (
                         <>
                             <div className="results-header pt-4">
-                                <span className="font-bold text-slate-500 text-xs uppercase tracking-widest">Search Results ({pagination.total})</span>
+                                <span className="font-bold text-[var(--text-brown)] opacity-70 text-xs uppercase tracking-widest">Search Results ({pagination.total})</span>
                             </div>
 
                             {/* Section: Direct Applicants */}
@@ -611,20 +611,20 @@ const SearchStudents = () => {
                                 <div className="applicants-section mt-8">
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+                                            <div className="p-2 bg-[var(--accent-brand)]/10 rounded-lg text-[var(--accent-brand)]">
                                                 <Briefcase size={20} />
                                             </div>
                                             <div>
-                                                <h2 className="text-lg font-bold text-white leading-tight">Direct Applicants</h2>
-                                                <p className="text-xs text-slate-500 font-medium tracking-tight">Candidates who have already registered for your placement drives</p>
+                                                <h2 className="text-lg font-bold text-[var(--text-brown)] leading-tight">Direct Applicants</h2>
+                                                <p className="text-xs text-[var(--text-brown)] opacity-70 font-medium tracking-tight">Candidates who have already registered for your placement drives</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="students-grid mb-12">
                                         {students.filter(s => s.registeredJob).map(student => (
-                                            <StudentCard 
-                                                key={`applicant-${student._id}`} 
-                                                student={student} 
+                                            <StudentCard
+                                                key={`applicant-${student._id}`}
+                                                student={student}
                                                 onShortlist={handleShortlist}
                                                 onInvite={handleInvite}
                                                 viewDetails={viewStudentDetails}
@@ -644,16 +644,16 @@ const SearchStudents = () => {
                                             <Sparkles size={20} />
                                         </div>
                                         <div>
-                                            <h2 className="text-lg font-bold text-white leading-tight">Talent Discovery</h2>
-                                            <p className="text-xs text-slate-500 font-medium tracking-tight">Discover potential candidates and send direct recruitment offers</p>
+                                            <h2 className="text-lg font-bold text-[var(--text-brown)] leading-tight">Talent Discovery</h2>
+                                            <p className="text-xs text-[var(--text-brown)] opacity-70 font-medium tracking-tight">Discover potential candidates and send direct recruitment offers</p>
                                         </div>
                                     </div>
                                 )}
                                 <div className="students-grid">
                                     {students.filter(s => !s.registeredJob).map(student => (
-                                        <StudentCard 
-                                            key={`discovery-${student._id}`} 
-                                            student={student} 
+                                        <StudentCard
+                                            key={`discovery-${student._id}`}
+                                            student={student}
                                             onShortlist={handleShortlist}
                                             onInvite={handleInvite}
                                             viewDetails={viewStudentDetails}
@@ -706,8 +706,8 @@ const SearchStudents = () => {
                     </p>
 
                     {shortlistModal.student?.registeredJob && (
-                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mt-4">
-                            <div className="flex items-center gap-2 text-blue-400 text-sm font-bold">
+                        <div className="bg-accent/10 border border-accent/20 rounded-xl p-4 mt-4">
+                            <div className="flex items-center gap-2 text-[var(--accent-brand)] text-sm font-bold">
                                 <Briefcase size={16} />
                                 <span>Registered For: {shortlistModal.student.registeredJob}</span>
                             </div>
@@ -745,7 +745,7 @@ const SearchStudents = () => {
             >
                 <div className="invite-modal p-4">
                     <p className="text-slate-400 mb-6 text-sm">
-                        Send a high-priority recruitment offer to <strong>{inviteModal.student?.name?.firstName} {inviteModal.student?.name?.lastName}</strong>. 
+                        Send a high-priority recruitment offer to <strong>{inviteModal.student?.name?.firstName} {inviteModal.student?.name?.lastName}</strong>.
                         They will receive a notification to register for your selected drive.
                     </p>
 
@@ -753,7 +753,7 @@ const SearchStudents = () => {
                         <div className="form-group">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Link to Job Drive *</label>
                             <select
-                                className="w-full bg-[#0f172a] border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 transition-all text-sm"
+                                className="w-full bg-[var(--input-bg)] border border-[var(--border-theme)] rounded-xl p-3 text-[var(--text-brown)] focus:border-[var(--accent-brand)] transition-all text-sm"
                                 value={selectedJobForInvite}
                                 onChange={(e) => setSelectedJobForInvite(e.target.value)}
                             >
@@ -767,7 +767,7 @@ const SearchStudents = () => {
                         <div className="form-group">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Offer Details / Personal Message</label>
                             <textarea
-                                className="w-full bg-[#0f172a] border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 transition-all text-sm"
+                                className="w-full bg-[var(--input-bg)] border border-[var(--border-theme)] rounded-xl p-3 text-[var(--text-brown)] focus:border-[var(--accent-brand)] transition-all text-sm"
                                 value={inviteMessage}
                                 onChange={(e) => setInviteMessage(e.target.value)}
                                 placeholder="We've reviewed your profile and think you'd be a great fit for this role..."

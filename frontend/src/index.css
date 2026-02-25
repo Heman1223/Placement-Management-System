@@ -17,5 +17,5 @@ body,
 }
 
 body {
-  background-color: var(--bg-secondary, #f8fafc);
+  background-color: var(--bg-secondary);
 }

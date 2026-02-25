@@ -2,7 +2,8 @@
     width: 100%;
     overflow-x: auto;
     border-radius: var(--radius-lg);
-    border: none; /* Removed white border */
+    border: none;
+    /* Removed white border */
 }
 
 .table {
@@ -130,51 +131,55 @@
 }
 
 
-/* Dark Mode / Glassmorphism overrides */
+/* SaaS Theme Overrides — Cream & Brown Palette */
 .table th {
-    background: rgba(15, 23, 42, 0.8);
-    color: white !important; /* Force white for visibility */
-    font-weight: 800;
+    background: #faf6ef;
+    color: #6b3f1d !important;
+    font-weight: 700;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid #e6d8c3;
 }
 
 .table td {
-    color: #e2e8f0 !important; /* Lighter slate for better readability */
-    background: transparent;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: #4a2c15 !important;
+    background: #ffffff;
+    border-top: 1px solid #faf6ef;
     font-weight: 500;
+    font-size: 0.875rem;
 }
 
 .table tbody tr:hover td {
-    background: rgba(255, 255, 255, 0.05);
-    color: white !important;
+    background: #faf6ef;
+    color: #4a2c15 !important;
 }
 
 .table a {
-    color: #60a5fa;
+    color: #6b3f1d;
 }
 
 .table a:hover {
-    color: #93c5fd;
+    color: #4a2c15;
     text-decoration: none;
 }
 
 /* Pagination */
 .pagination-btn {
-    background: rgba(30, 41, 59, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+    background: #ffffff;
+    border: 1px solid #e6d8c3;
+    color: #4a2c15;
+    border-radius: 8px;
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: #faf6ef;
+    border-color: #c6a85e;
 }
 
 .pagination-info {
-    color: #94a3b8;
+    color: #8b6f5a;
+    font-size: 0.8125rem;
 }
 
 

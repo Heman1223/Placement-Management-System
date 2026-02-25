@@ -3,7 +3,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-secondary);
+    background: var(--bg-cream);
     padding: var(--spacing-6);
 }
 
@@ -24,8 +24,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--primary-100);
-    color: var(--primary-600);
+    background: var(--accent-brand);
+    opacity: 0.1;
+    color: var(--accent-brand);
 }
 
 .utility-icon.pending {

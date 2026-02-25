@@ -2,21 +2,29 @@
 
 .college-dashboard {
     animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-    background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+    background: var(--bg-cream);
     min-height: 100vh;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Premium Header Banner */
-.premium-header {
-    background: transparent; /* Removed blue gradient */
+.college-dashboard .premium-header {
+    background: transparent;
+    /* Removed blue gradient */
     border-radius: 2.5rem;
-    padding: 1rem 0; /* Reduced padding since no bg */
+    padding: 1rem 0;
+    /* Reduced padding since no bg */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -28,28 +36,32 @@
 }
 
 .premium-header::after {
-    display: none; /* Remove overlay */
+    display: none;
+    /* Remove overlay */
 }
 
-.header-content {
+.college-dashboard .header-content {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
 .college-name {
-    font-size: 10rem; /* Max impact */
-    font-weight: 1000; /* Ultra bold if possible, or 900 */
+    font-size: 10rem;
+    /* Max impact */
+    font-weight: 1000;
+    /* Ultra bold if possible, or 900 */
     color: white !important;
     letter-spacing: -0.05em;
     line-height: 1;
     margin: 0;
-    text-shadow: 0 4px 30px rgba(0,0,0,0.6);
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
 }
 
-.dashboard-badge {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+.college-dashboard .dashboard-badge {
+    background: var(--accent-brand);
+    opacity: 0.1;
+    color: var(--accent-brand);
     padding: 0.4rem 1rem;
     border-radius: 99px;
     font-size: 0.8rem;
@@ -57,10 +69,10 @@
     text-transform: uppercase;
     letter-spacing: 0.2em;
     width: fit-content;
-    border: 1px solid rgba(59, 130, 246, 0.2);
+    border: 1px solid var(--accent-brand);
 }
 
-.dashboard-subtitle {
+.college-dashboard .dashboard-subtitle {
     color: rgba(255, 255, 255, 0.4);
     font-size: 1.2rem;
     font-weight: 500;
@@ -68,7 +80,7 @@
 }
 
 /* Header Quick Actions - Solid Colors */
-.header-btn {
+.college-dashboard .header-btn {
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -87,7 +99,7 @@
 }
 
 .btn-blue {
-    background-color: #2563eb;
+    background-color: var(--accent-brand);
     color: white;
 }
 
@@ -106,14 +118,14 @@
 }
 
 /* Premium Stats Grid */
-.premium-stat-grid {
+.college-dashboard .premium-stat-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
     margin-bottom: 3rem;
 }
 
-.premium-stat-card {
+.college-dashboard .premium-stat-card {
     background: rgba(30, 41, 59, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -164,20 +176,20 @@
     gap: 2rem;
 }
 
-.charts-row {
+.college-dashboard .charts-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
 }
 
-.dashboard-section {
+.college-dashboard .dashboard-section {
     background: #1e293b;
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 2rem;
     padding: 2rem;
 }
 
-.section-header {
+.college-dashboard .section-header {
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -209,7 +221,7 @@
 }
 
 /* Top Institutional Performers - Modern Flat Design */
-.performer-card {
+.college-dashboard .performer-card {
     background: #1e293b;
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 2rem;
@@ -335,12 +347,12 @@
 }
 
 /* Department Stats */
-.dept-stats {
+.college-dashboard .dept-stats {
     display: grid;
     gap: 1rem;
 }
 
-.dept-stat-card {
+.college-dashboard .dept-stat-card {
     background: rgba(30, 41, 59, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 1rem;
@@ -359,17 +371,17 @@
     margin-bottom: 1rem;
 }
 
-.dept-name { 
+.dept-name {
     color: white;
     font-weight: 600;
 }
 
-.dept-count { 
+.dept-count {
     color: #94a3b8;
     font-size: 0.9rem;
 }
 
-.dept-progress { 
+.dept-progress {
     height: 6px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
@@ -402,13 +414,13 @@
 }
 
 /* Batch Stats */
-.batch-stats {
+.college-dashboard .batch-stats {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
 }
 
-.batch-card {
+.college-dashboard .batch-card {
     background: rgba(30, 41, 59, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 1.5rem;
@@ -428,14 +440,14 @@
     font-weight: 900;
     color: white;
     margin-bottom: 1.5rem;
-    text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .batch-details {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0, 0, 0, 0.2);
     padding: 1rem;
     border-radius: 1rem;
 }
@@ -453,8 +465,13 @@
     color: white;
 }
 
-.batch-value.placed { color: #10b981; }
-.batch-value.rate { color: #f59e0b; }
+.batch-value.placed {
+    color: #10b981;
+}
+
+.batch-value.rate {
+    color: #f59e0b;
+}
 
 .batch-label {
     font-size: 0.6rem;
@@ -475,7 +492,7 @@
     .college-dashboard {
         padding: 1rem;
     }
-    
+
     .premium-header {
         padding: 2rem;
         flex-direction: column;
@@ -490,7 +507,7 @@
     .charts-row {
         grid-template-columns: 1fr;
     }
-    
+
     .quick-actions {
         grid-template-columns: 1fr;
     }

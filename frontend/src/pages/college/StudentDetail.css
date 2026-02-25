@@ -6,19 +6,20 @@
     padding: 2rem;
     color: white;
     min-height: 100vh;
-    background: #0f172a; /* Solid dark background per image */
+    background: #0f172a;
+    /* Solid dark background per image */
     animation: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Design Header */
-.profile-header {
+.student-detail-page .profile-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 2.5rem;
 }
 
-.back-circle-btn {
+.student-detail-page .back-circle-btn {
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -32,9 +33,11 @@
     transition: all 0.2s;
 }
 
-.back-circle-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.student-detail-page .back-circle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
 
-.header-title {
+.student-detail-page .header-title {
     font-size: 1.25rem;
     font-weight: 800;
     color: #94a3b8;
@@ -42,7 +45,7 @@
     letter-spacing: 0.15em;
 }
 
-.edit-profile-btn {
+.student-detail-page .edit-profile-btn {
     background: #6366f1;
     color: white;
     padding: 0.6rem 1.4rem;
@@ -57,10 +60,13 @@
     transition: all 0.2s;
 }
 
-.edit-profile-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.4); }
+.student-detail-page .edit-profile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(99, 102, 241, 0.4);
+}
 
 /* Summary Card */
-.profile-summary-card {
+.student-detail-page .profile-summary-card {
     background: rgba(30, 41, 59, 0.4);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -73,13 +79,13 @@
     box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-.summary-left-group {
+.student-detail-page .summary-left-group {
     display: flex;
     align-items: center;
     gap: 3rem;
 }
 
-.summary-avatar {
+.student-detail-page .summary-avatar {
     width: 180px;
     height: 180px;
     border-radius: 2.5rem;
@@ -95,7 +101,7 @@
     object-fit: cover;
 }
 
-.avatar-placeholder {
+.student-detail-page .avatar-placeholder {
     width: 100%;
     height: 100%;
     display: flex;
@@ -107,7 +113,7 @@
     background: rgba(59, 130, 246, 0.1);
 }
 
-.student-fullname {
+.student-detail-page .student-fullname {
     font-size: 3.5rem;
     font-weight: 900;
     color: white !important;
@@ -116,19 +122,19 @@
     line-height: 1;
 }
 
-.student-meta {
+.student-detail-page .student-meta {
     font-size: 1.25rem;
     color: #94a3b8;
     font-weight: 500;
     margin-bottom: 2rem;
 }
 
-.summary-badges {
+.student-detail-page .summary-badges {
     display: flex;
     gap: 0.75rem;
 }
 
-.p-badge {
+.student-detail-page .p-badge {
     padding: 0.6rem 1.25rem;
     border-radius: 99px;
     font-size: 0.75rem;
@@ -140,33 +146,43 @@
     background: rgba(255, 255, 255, 0.05);
 }
 
-.badge-pending {
+.student-detail-page .badge-pending {
     border: 1px solid rgba(245, 158, 11, 0.3);
     color: #f59e0b;
 }
 
-.badge-pending .dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
+.badge-pending .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f59e0b;
+}
 
-.badge-verified {
+.student-detail-page .badge-verified {
     border: 1px solid rgba(16, 185, 129, 0.3);
     color: #10b981;
 }
 
-.badge-verified .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+.badge-verified .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+}
 
-.badge-status {
+.student-detail-page .badge-status {
     background: rgba(255, 255, 255, 0.1);
     color: #94a3b8;
 }
 
 /* Completeness Circle */
-.completeness-circle-lg {
+.student-detail-page .completeness-circle-lg {
     position: relative;
     width: 130px;
     height: 130px;
 }
 
-.circle-text {
+.student-detail-page .circle-text {
     position: absolute;
     inset: 0;
     display: flex;
@@ -175,18 +191,29 @@
     justify-content: center;
 }
 
-.circle-text .p-val { font-size: 1.75rem; font-weight: 900; color: white; line-height: 1; }
-.circle-text .p-lab { font-size: 0.6rem; font-weight: 800; color: #475569; margin-top: 2px; }
+.circle-text .p-val {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: white;
+    line-height: 1;
+}
+
+.circle-text .p-lab {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #475569;
+    margin-top: 2px;
+}
 
 /* Info Grid */
-.info-grid-v2 {
+.student-detail-page .info-grid-v2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
     margin-bottom: 3rem;
 }
 
-.grid-card-v2 {
+.student-detail-page .grid-card-v2 {
     background: rgba(30, 41, 59, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 2.5rem;
@@ -196,15 +223,17 @@
     gap: 2rem;
 }
 
-.grid-card-v2.full-width { grid-column: 1 / -1; }
+.grid-card-v2.full-width {
+    grid-column: 1 / -1;
+}
 
-.card-header-v2 {
+.student-detail-page .card-header-v2 {
     display: flex;
     align-items: center;
     gap: 1.25rem;
 }
 
-.card-icon-box {
+.student-detail-page .card-icon-box {
     width: 48px;
     height: 48px;
     border-radius: 12px;
@@ -214,11 +243,22 @@
     background: rgba(255, 255, 255, 0.05);
 }
 
-.card-icon-box.blue { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-.card-icon-box.emerald { color: #10b981; background: rgba(16, 185, 129, 0.1); }
-.card-icon-box.purple { color: #8b5cf6; background: rgba(139, 92, 246, 0.1); }
+.card-icon-box.blue {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
 
-.card-header-v2 h3 {
+.card-icon-box.emerald {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.card-icon-box.purple {
+    color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.student-detail-page .card-header-v2 h3 {
     font-size: 1rem;
     font-weight: 800;
     color: #64748b;
@@ -226,20 +266,30 @@
     text-transform: uppercase;
 }
 
-.card-body-v2 {
+.student-detail-page .card-body-v2 {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
-.data-item-v2 {
+.student-detail-page .data-item-v2 {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
 }
 
-.data-label { font-size: 0.7rem; font-weight: 800; color: #475569; letter-spacing: 0.05em; }
-.data-value { font-size: 1.1rem; font-weight: 600; color: white; }
+.student-detail-page .data-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #475569;
+    letter-spacing: 0.05em;
+}
+
+.student-detail-page .data-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+}
 
 /* Resource Items */
 .resources-list-v2 {
@@ -297,11 +347,26 @@
     font-size: 0.95rem;
 }
 
-.card-body-v2.centered { align-items: center; padding: 2rem 0; }
+.card-body-v2.centered {
+    align-items: center;
+    padding: 2rem 0;
+}
 
-.empty-resource { text-align: center; color: #334155; }
-.empty-icon { opacity: 0.2; margin-bottom: 1rem; }
-.empty-resource p { font-size: 1.1rem; font-weight: 700; color: #334155; }
+.empty-resource {
+    text-align: center;
+    color: #334155;
+}
+
+.empty-icon {
+    opacity: 0.2;
+    margin-bottom: 1rem;
+}
+
+.empty-resource p {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #334155;
+}
 
 /* Next Steps */
 .next-steps-section {
@@ -332,7 +397,9 @@
     transition: all 0.2s;
 }
 
-.step-item.completed { background: rgba(16, 185, 129, 0.05); }
+.step-item.completed {
+    background: rgba(16, 185, 129, 0.05);
+}
 
 .step-check {
     width: 38px;
@@ -343,16 +410,39 @@
     justify-content: center;
 }
 
-.step-item.completed .step-check { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.step-check.empty { border: 2px solid #1e293b; }
+.step-item.completed .step-check {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
 
-.step-text { font-size: 1.1rem; font-weight: 700; color: #cbd5e1; }
-.step-item.completed .step-text { color: white; }
+.step-check.empty {
+    border: 2px solid #1e293b;
+}
+
+.step-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #cbd5e1;
+}
+
+.step-item.completed .step-text {
+    color: white;
+}
 
 @media (max-width: 968px) {
-    .info-grid-v2 { grid-template-columns: 1fr; }
-    .profile-summary-card { flex-direction: column; gap: 2.5rem; text-align: center; }
-    .summary-badges { justify-content: center; }
+    .info-grid-v2 {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-summary-card {
+        flex-direction: column;
+        gap: 2.5rem;
+        text-align: center;
+    }
+
+    .summary-badges {
+        justify-content: center;
+    }
 }
 
 
@@ -368,13 +458,44 @@
     align-items: center;
 }
 
-.status-applied { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
-.status-shortlisted { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-.status-interviewed { background: rgba(139, 92, 246, 0.1); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.2); }
-.status-hired { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-.status-rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+.status-applied {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.status-shortlisted {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.status-interviewed {
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.status-hired {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-rejected {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

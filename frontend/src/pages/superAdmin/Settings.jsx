@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { superAdminAPI } from '../../services/api';
-import Button from '../../components/common/Button';
-import Input from '../../components/common/Input';
 import {
     Save, RotateCcw, Settings as SettingsIcon,
     Shield, Eye, Bell, Wrench, ShieldCheck,
     Lock, Mail, Download, Database,
-    Users, AlertTriangle, CheckCircle2, ArrowUpRight
+    Users, AlertTriangle, CheckCircle2, ArrowUpRight,
+    Target, Zap, Globe, User, ShieldAlert
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Button from '../../components/common/Button';
+import Input from '../../components/common/Input';
 import './AdminPages.css';
-import './Settings.css';
 
 const Settings = () => {
     const [settings, setSettings] = useState(null);
@@ -28,7 +27,7 @@ const Settings = () => {
             const response = await superAdminAPI.getSettings();
             setSettings(response.data.data);
         } catch (error) {
-            toast.error('Failed to load settings');
+            toast.error('Failed to load system parameters');
         } finally {
             setLoading(false);
         }
@@ -38,24 +37,24 @@ const Settings = () => {
         try {
             setSaving(true);
             await superAdminAPI.updateSettings(settings);
-            toast.success('System configuration updated');
+            toast.success('System configuration synchronized');
             fetchSettings();
         } catch (error) {
-            toast.error('Failed to save settings');
+            toast.error('Failed to synchronize parameters');
         } finally {
             setSaving(false);
         }
     };
 
     const handleReset = async () => {
-        if (!window.confirm('Are you sure you want to reset all settings to default? This cannot be undone.')) return;
+        if (!window.confirm('Are you sure you want to revert all configurations to factory defaults?')) return;
 
         try {
             await superAdminAPI.resetSettings();
-            toast.success('Configuration restored to defaults');
+            toast.success('Factory defaults restored');
             fetchSettings();
         } catch (error) {
-            toast.error('Failed to reset settings');
+            toast.error('Restoration sequence failed');
         }
     };
 
@@ -82,362 +81,211 @@ const Settings = () => {
         });
     };
 
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: { staggerChildren: 0.1 }
-        }
-    };
+    const Toggle = ({ checked, onChange, disabled }) => (
+        <label className="toggle">
+            <input
+                type="checkbox"
+                checked={checked}
+                onChange={(e) => !disabled && onChange(e.target.checked)}
+                disabled={disabled}
+            />
+            <span className="toggle-slider"></span>
+        </label>
+    );
 
-    const sectionVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0 }
-    };
-
-    if (loading) {
-        return (
-            <div className="table-loader-cell" style={{ height: '80vh' }}>
-                <div className="loader-content">
-                    <div className="spinner"></div>
-                    <span>Initializing system parameters...</span>
-                </div>
+    const ControlItem = ({ title, description, checked, onChange, disabled }) => (
+        <div className="notification-item border-b border-[#faf6ef] pb-6 last:border-none last:pb-0">
+            <div className="flex-1">
+                <h4 className="text-[11px] font-bold text-[#4a2c15] uppercase tracking-wide">{title}</h4>
+                {description && <p className="text-[10px] text-[#8b6f5a] font-bold uppercase tracking-widest mt-1">{description}</p>}
             </div>
-        );
-    }
+            <Toggle checked={checked} onChange={onChange} disabled={disabled} />
+        </div>
+    );
+
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="w-10 h-10 border-2 border-[#e6d8c3] border-t-[#6b3f1d] rounded-full animate-spin"></div>
+            <p className="mt-6 text-[#8b6f5a] text-[10px] font-bold uppercase tracking-widest">Synchronizing Core Engine...</p>
+        </div>
+    );
 
     return (
-        <motion.div
-            className="admin-page"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-        >
-            {/* Premium Header Banner - Matching Dashboard Theme */}
-            <div className="premium-header-banner" style={{ marginBottom: '2rem' }}>
-                <div className="premium-header-text">
-                    <h1>Platform Configuration</h1>
-                    <p>Manage system settings, access controls, and automation rules</p>
+        <div className="admin-page">
+            <div className="flex justify-between items-start mb-8">
+                <div>
+                    <h1 className="text-3xl font-semibold text-[#4a2c15] tracking-tight mb-1">System Configuration</h1>
+                    <p className="text-xs text-[#8b6f5a] font-medium uppercase tracking-widest leading-none">Centralized Parameter Governance</p>
                 </div>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button
+                <div className="flex gap-4">
+                    <Button
+                        variant="outline"
                         onClick={handleReset}
-                        title="Reset all settings to default"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            padding: '0.75rem 1.25rem',
-                            borderRadius: '0.75rem',
-                            background: 'rgba(239, 68, 68, 0.15)',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
-                            color: '#f87171',
-                            fontWeight: 600,
-                            fontSize: '0.875rem',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
+                        className="!rounded-lg !border-[#e6d8c3] !text-[#8b6f5a]"
                     >
-                        <RotateCcw size={18} />
-                        Reset
-                    </button>
-                    <button
+                        <RotateCcw size={16} className="mr-2" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider">Restore Defaults</span>
+                    </Button>
+                    <Button
+                        variant="primary"
                         onClick={handleSave}
                         disabled={saving}
-                        title="Save all changes"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            padding: '0.75rem 1.25rem',
-                            borderRadius: '0.75rem',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            color: 'white',
-                            fontWeight: 600,
-                            fontSize: '0.875rem',
-                            cursor: saving ? 'not-allowed' : 'pointer',
-                            opacity: saving ? 0.6 : 1,
-                            transition: 'all 0.2s'
-                        }}
+                        className="!rounded-lg !bg-[#6b3f1d]"
                     >
-                        <Save size={18} />
-                        {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
+                        <Save size={16} className="mr-2" />
+                        <span className="text-[11px] font-bold uppercase tracking-wider">{saving ? 'Synchronizing...' : 'Sync Configuration'}</span>
+                    </Button>
                 </div>
             </div>
 
-            <div className="settings-modern-grid">
-                {/* Registration Control */}
-                <motion.div className="settings-card" variants={sectionVariants}>
-                    <div className="settings-card-header">
-                        <div className="icon-wrapper purple">
-                            <Users size={20} />
-                        </div>
-                        <div>
-                            <h3>Access Control</h3>
-                            <p>Manage membership and registration flows</p>
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Access Governance */}
+                <div className="bg-white p-8 rounded-xl border border-[#e6d8c3] shadow-sm">
+                    <div className="flex items-center gap-3 mb-8 border-b border-[#faf6ef] pb-4">
+                        <Shield className="text-[#6b3f1d]" size={18} />
+                        <h2 className="text-sm font-black text-[#4a2c15] uppercase tracking-widest">Access Governance</h2>
                     </div>
-                    <div className="settings-card-body">
-                        <div className="control-item">
-                            <div className="control-info">
-                                <span className="control-title">Student Self-Signup</span>
-                                <span className="control-desc">Allow independent student registration</span>
-                            </div>
-                            <label className="modern-toggle">
-                                <input
-                                    type="checkbox"
-                                    checked={settings?.studentSelfSignup?.enabled || false}
-                                    onChange={(e) => updateSetting('studentSelfSignup', 'enabled', e.target.checked)}
-                                />
-                                <span className="toggle-track"></span>
-                            </label>
-                        </div>
-
-                        <div className="control-item">
-                            <div className="control-info">
-                                <span className="control-title">Require Verification</span>
-                                <span className="control-desc">Admin must approve self-registered students</span>
-                            </div>
-                            <label className="modern-toggle">
-                                <input
-                                    type="checkbox"
-                                    checked={settings?.studentSelfSignup?.requireApproval || false}
-                                    onChange={(e) => updateSetting('studentSelfSignup', 'requireApproval', e.target.checked)}
-                                    disabled={!settings?.studentSelfSignup?.enabled}
-                                />
-                                <span className="toggle-track"></span>
-                            </label>
-                        </div>
-
-                        <div className="divider" />
-
-                        <div className="control-item">
-                            <div className="control-info">
-                                <span className="control-title">Agency Registration</span>
-                                <span className="control-desc">Allow placement agencies to join the platform</span>
-                            </div>
-                            <label className="modern-toggle">
-                                <input
-                                    type="checkbox"
-                                    checked={settings?.agencyRegistration?.enabled || false}
-                                    onChange={(e) => updateSetting('agencyRegistration', 'enabled', e.target.checked)}
-                                />
-                                <span className="toggle-track"></span>
-                            </label>
-                        </div>
+                    <div className="space-y-6">
+                        <ControlItem
+                            title="Student Self-Signup"
+                            description="Independent talent identification"
+                            checked={settings?.studentSelfSignup?.enabled || false}
+                            onChange={(val) => updateSetting('studentSelfSignup', 'enabled', val)}
+                        />
+                        <ControlItem
+                            title="Registry Approval"
+                            description="Mandated administrative verification"
+                            checked={settings?.studentSelfSignup?.requireApproval || false}
+                            onChange={(val) => updateSetting('studentSelfSignup', 'requireApproval', val)}
+                            disabled={!settings?.studentSelfSignup?.enabled}
+                        />
+                        <ControlItem
+                            title="Agency Integration"
+                            description="Authorized placement agency onboarding"
+                            checked={settings?.agencyRegistration?.enabled || false}
+                            onChange={(val) => updateSetting('agencyRegistration', 'enabled', val)}
+                        />
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Automation Rules */}
-                <motion.div className="settings-card" variants={sectionVariants}>
-                    <div className="settings-card-header">
-                        <div className="icon-wrapper blue">
-                            <ShieldCheck size={20} />
-                        </div>
-                        <div>
-                            <h3>Automation Rules</h3>
-                            <p>Define automatic trust and verification logic</p>
-                        </div>
+                <div className="bg-white p-8 rounded-xl border border-[#e6d8c3] shadow-sm">
+                    <div className="flex items-center gap-3 mb-8 border-b border-[#faf6ef] pb-4">
+                        <Zap className="text-[#c6a85e]" size={18} />
+                        <h2 className="text-sm font-black text-[#4a2c15] uppercase tracking-widest">Automation Matrix</h2>
                     </div>
-                    <div className="settings-card-body">
-                        <div className="control-grid">
-                            <div className="control-item">
-                                <div className="control-info">
-                                    <span className="control-title">Auto-Approve Colleges</span>
-                                </div>
-                                <label className="modern-toggle">
-                                    <input
-                                        type="checkbox"
-                                        checked={settings?.approvalRules?.autoApproveColleges || false}
-                                        onChange={(e) => updateSetting('approvalRules', 'autoApproveColleges', e.target.checked)}
-                                    />
-                                    <span className="toggle-track"></span>
-                                </label>
-                            </div>
-                            <div className="control-item">
-                                <div className="control-info">
-                                    <span className="control-title">Auto-Approve Companies</span>
-                                </div>
-                                <label className="modern-toggle">
-                                    <input
-                                        type="checkbox"
-                                        checked={settings?.approvalRules?.autoApproveCompanies || false}
-                                        onChange={(e) => updateSetting('approvalRules', 'autoApproveCompanies', e.target.checked)}
-                                    />
-                                    <span className="toggle-track"></span>
-                                </label>
-                            </div>
-                            <div className="control-item">
-                                <div className="control-info">
-                                    <span className="control-title">Auto-Approve Agencies</span>
-                                </div>
-                                <label className="modern-toggle">
-                                    <input
-                                        type="checkbox"
-                                        checked={settings?.approvalRules?.autoApproveAgencies || false}
-                                        onChange={(e) => updateSetting('approvalRules', 'autoApproveAgencies', e.target.checked)}
-                                    />
-                                    <span className="toggle-track"></span>
-                                </label>
-                            </div>
-                            <div className="control-item">
-                                <div className="control-info">
-                                    <span className="control-title">Email Verification</span>
-                                </div>
-                                <label className="modern-toggle">
-                                    <input
-                                        type="checkbox"
-                                        checked={settings?.approvalRules?.requireEmailVerification || false}
-                                        onChange={(e) => updateSetting('approvalRules', 'requireEmailVerification', e.target.checked)}
-                                    />
-                                    <span className="toggle-track"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Maintenance Mode */}
-                <motion.div className="settings-card warning-card" variants={sectionVariants}>
-                    <div className="settings-card-header">
-                        <div className="icon-wrapper amber">
-                            <AlertTriangle size={20} />
-                        </div>
-                        <div>
-                            <h3>System Continuity</h3>
-                            <p>Platform status and emergency controls</p>
-                        </div>
-                    </div>
-                    <div className="settings-card-body">
-                        <div className="control-item">
-                            <div className="control-info">
-                                <span className="control-title">Maintenance Mode</span>
-                                <span className="control-desc">Restrict access and display maintenance screen</span>
-                            </div>
-                            <label className="modern-toggle">
-                                <input
-                                    type="checkbox"
-                                    checked={settings?.maintenanceMode?.enabled || false}
-                                    onChange={(e) => updateSetting('maintenanceMode', 'enabled', e.target.checked)}
-                                />
-                                <span className="toggle-track"></span>
-                            </label>
-                        </div>
-
-                        <div className="maintenance-config">
-                            <Input
-                                label="Broadcast Message"
-                                value={settings?.maintenanceMode?.message || ''}
-                                onChange={(e) => updateSetting('maintenanceMode', 'message', e.target.value)}
-                                placeholder="System update in progress..."
-                                disabled={!settings?.maintenanceMode?.enabled}
-                                className="maintenance-input"
-                            />
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Data Visibility */}
-                <motion.div className="settings-card" variants={sectionVariants}>
-                    <div className="settings-card-header">
-                        <div className="icon-wrapper green">
-                            <Eye size={20} />
-                        </div>
-                        <div>
-                            <h3>Data Privacy Policy</h3>
-                            <p>Control visibility of sensitive student information</p>
-                        </div>
-                    </div>
-                    <div className="settings-card-body">
-                        <div className="control-item">
-                            <span className="control-title">Visible to Corporate Partners</span>
-                            <label className="modern-toggle">
-                                <input
-                                    type="checkbox"
-                                    checked={settings?.dataVisibility?.studentDataVisibleToCompanies || false}
-                                    onChange={(e) => updateSetting('dataVisibility', 'studentDataVisibleToCompanies', e.target.checked)}
-                                />
-                                <span className="toggle-track"></span>
-                            </label>
-                        </div>
-
-                        <div className="control-item">
-                            <span className="control-title">Visible to Placement Agencies</span>
-                            <label className="modern-toggle">
-                                <input
-                                    type="checkbox"
-                                    checked={settings?.dataVisibility?.studentDataVisibleToAgencies || false}
-                                    onChange={(e) => updateSetting('dataVisibility', 'studentDataVisibleToAgencies', e.target.checked)}
-                                />
-                                <span className="toggle-track"></span>
-                            </label>
-                        </div>
-
-                        <div className="control-item">
-                            <div className="control-info">
-                                <span className="control-title">Bulk Export Authorization</span>
-                                <span className="control-desc">Allow downloading large datasets</span>
-                            </div>
-                            <label className="modern-toggle">
-                                <input
-                                    type="checkbox"
-                                    checked={settings?.dataVisibility?.allowBulkDownload || false}
-                                    onChange={(e) => updateSetting('dataVisibility', 'allowBulkDownload', e.target.checked)}
-                                />
-                                <span className="toggle-track"></span>
-                            </label>
-                        </div>
-
-                        <div className="divider pf-16" />
-
-                        <div className="setting-subsection">
-                            <h4>Granular Visibility Fields</h4>
-                            <div className="visibility-chips">
-                                {[
-                                    { id: 'contactInfo', label: 'Contact Details', icon: Mail },
-                                    { id: 'academicDetails', label: 'Academic Records', icon: Database },
-                                    { id: 'resume', label: 'Digital Resumes', icon: Download },
-                                    { id: 'personalInfo', label: 'Personal Attributes', icon: User }
-                                ].map((field) => (
-                                    <button
-                                        key={field.id}
-                                        className={`visibility-chip ${settings?.dataVisibility?.visibleFields?.[field.id] ? 'active' : ''}`}
-                                        onClick={() => updateNestedSetting('dataVisibility', 'visibleFields', field.id, !settings?.dataVisibility?.visibleFields?.[field.id])}
-                                    >
-                                        <field.icon size={14} />
-                                        <span>{field.label}</span>
-                                        {settings?.dataVisibility?.visibleFields?.[field.id] && <CheckCircle2 size={12} className="check" />}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            </div>
-
-            {/* Persistent Save Footer */}
-            <motion.div
-                className="settings-action-footer"
-                initial={{ y: 100 }}
-                animate={{ y: 0 }}
-                transition={{ delay: 0.5 }}
-            >
-                <div className="footer-content">
-                    <div className="status-indicator">
-                        <div className="pulse-dot"></div>
-                        <span>Unsaved modifications detected</span>
-                    </div>
-                    <div className="footer-actions">
-                        <Button variant="outline" onClick={fetchSettings}>Discard</Button>
-                        <Button onClick={handleSave} disabled={saving} variant="primary" size="lg">
-                            {saving ? 'Synchronizing...' : 'Save All Configuration'}
-                        </Button>
+                    <div className="space-y-6">
+                        <ControlItem
+                            title="Auto-Sync Colleges"
+                            description="Instant institutional authorization"
+                            checked={settings?.approvalRules?.autoApproveColleges || false}
+                            onChange={(val) => updateSetting('approvalRules', 'autoApproveColleges', val)}
+                        />
+                        <ControlItem
+                            title="Auto-Sync Companies"
+                            description="Instant corporate authorization"
+                            checked={settings?.approvalRules?.autoApproveCompanies || false}
+                            onChange={(val) => updateSetting('approvalRules', 'autoApproveCompanies', val)}
+                        />
+                        <ControlItem
+                            title="Compliance Verification"
+                            description="Enforce mandatory email validation"
+                            checked={settings?.approvalRules?.requireEmailVerification || false}
+                            onChange={(val) => updateSetting('approvalRules', 'requireEmailVerification', val)}
+                        />
                     </div>
                 </div>
-            </motion.div>
-        </motion.div>
+
+                {/* Data Privacy */}
+                <div className="bg-white p-8 rounded-xl border border-[#e6d8c3] shadow-sm">
+                    <div className="flex items-center gap-3 mb-8 border-b border-[#faf6ef] pb-4">
+                        <Eye className="text-[#6b3f1d]" size={18} />
+                        <h2 className="text-sm font-black text-[#4a2c15] uppercase tracking-widest">Privacy Protocol</h2>
+                    </div>
+                    <div className="space-y-6">
+                        <ControlItem
+                            title="Corporate Visibility"
+                            description="Grant partners access to talent data"
+                            checked={settings?.dataVisibility?.studentDataVisibleToCompanies || false}
+                            onChange={(val) => updateSetting('dataVisibility', 'studentDataVisibleToCompanies', val)}
+                        />
+                        <ControlItem
+                            title="Agency Access"
+                            description="Grant agencies access to talent registry"
+                            checked={settings?.dataVisibility?.studentDataVisibleToAgencies || false}
+                            onChange={(val) => updateSetting('dataVisibility', 'studentDataVisibleToAgencies', val)}
+                        />
+                        <ControlItem
+                            title="Registry Extraction"
+                            description="Allow authorized bulk data exports"
+                            checked={settings?.dataVisibility?.allowBulkDownload || false}
+                            onChange={(val) => updateSetting('dataVisibility', 'allowBulkDownload', val)}
+                        />
+                    </div>
+
+                    <div className="mt-8 pt-8 border-t border-[#faf6ef]">
+                        <h4 className="text-[10px] font-black text-[#8b6f5a] uppercase tracking-widest mb-6">Visible Data Nodes</h4>
+                        <div className="flex flex-wrap gap-3">
+                            {[
+                                { id: 'contactInfo', label: 'Contact Details' },
+                                { id: 'academicDetails', label: 'Academic Vectors' },
+                                { id: 'resume', label: 'Resume Repos' },
+                                { id: 'personalInfo', label: 'Personal ID' }
+                            ].map((field) => (
+                                <button
+                                    key={field.id}
+                                    onClick={() => updateNestedSetting('dataVisibility', 'visibleFields', field.id, !settings?.dataVisibility?.visibleFields?.[field.id])}
+                                    className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all ${settings?.dataVisibility?.visibleFields?.[field.id]
+                                        ? 'bg-[#6b3f1d] text-white border-[#6b3f1d]'
+                                        : 'bg-[#faf6ef] text-[#8b6f5a] border-[#e6d8c3] hover:border-[#6b3f1d]/30'
+                                        }`}
+                                >
+                                    {field.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* System Integrity */}
+                <div className="bg-white p-8 rounded-xl border border-[#e6d8c3] shadow-sm">
+                    <div className="flex items-center gap-3 mb-8 border-b border-[#faf6ef] pb-4">
+                        <ShieldAlert className="text-[#b42318]" size={18} />
+                        <h2 className="text-sm font-black text-[#4a2c15] uppercase tracking-widest">System Integrity</h2>
+                    </div>
+                    <div className="bg-[#fdeaea] p-6 rounded-xl border border-[#f5c2c7] mb-8">
+                        <ControlItem
+                            title="Maintenance Mode"
+                            description="Secure platform lockdown protocol"
+                            checked={settings?.maintenanceMode?.enabled || false}
+                            onChange={(val) => updateSetting('maintenanceMode', 'enabled', val)}
+                        />
+                        {settings?.maintenanceMode?.enabled && (
+                            <div className="mt-6">
+                                <label className="text-[10px] font-bold text-[#b42318] uppercase tracking-widest mb-2 block">Lockdown Advisory</label>
+                                <textarea
+                                    value={settings?.maintenanceMode?.message || ''}
+                                    onChange={(e) => updateSetting('maintenanceMode', 'message', e.target.value)}
+                                    className="w-full bg-white border border-[#f5c2c7] rounded-lg p-4 text-[10px] font-bold text-[#b42318] uppercase tracking-widest focus:outline-none focus:border-[#b42318] min-h-[100px]"
+                                />
+                            </div>
+                        )}
+                    </div>
+                    <div className="bg-[#faf6ef] p-6 rounded-xl border border-[#e6d8c3] flex justify-between items-center">
+                        <div>
+                            <span className="block text-[9px] font-black text-[#8b6f5a] uppercase tracking-widst mb-1">Infrastructure Core</span>
+                            <span className="text-[11px] font-bold text-[#4a2c15]">AXON-v3.4.9-PRO</span>
+                        </div>
+                        <div className="text-right">
+                            <span className="block text-[9px] font-black text-[#8b6f5a] uppercase tracking-widest mb-1">Operational Pulse</span>
+                            <span className="text-[11px] font-bold text-[#1e7d4d] flex items-center gap-1.5 justify-end">
+                                <div className="w-2 h-2 rounded-full bg-[#1e7d4d] animate-pulse" /> NOMINAL status
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 
