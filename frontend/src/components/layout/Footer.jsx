@@ -9,7 +9,7 @@ const Footer = () => {
                 <div className="footer-main">
                     <div className="footer-brand">
                         <div className="footer-logo">
-                            <img src="/logo.jpeg" alt="Avani Enterprises Logo" />
+                            <img src="/avani_enterprises_logo.jpg" alt="Avani Enterprises Logo" />
                             <div className="footer-logo-text">
                                 <h3>AVANI</h3>
                                 <h3>ENTERPRISES</h3>
@@ -76,7 +76,7 @@ const Footer = () => {
                 </div>
 
                 <div className="footer-bottom">
-                    <p>© 2025 Avani Sales CRM. All rights reserved. | <a href="#">Privacy Policy</a> | Made with <span className="heart">❤</span> by Heman</p>
+                    <p>© 2025 Avani Sales CRM. All rights reserved. | <a href="#">Privacy Policy</a> | Made with <span className="heart">❤</span> by Heman and Harleen</p>
                 </div>
             </div>
         </footer>

@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { GraduationCap, Eye, EyeOff } from 'lucide-react';
-// Removing global Auth.css to use Tailwind exclusively
-// import './Auth.css';
+import Footer from '../../components/layout/Footer';
+import './Auth.css';
 
 const Login = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
@@ -51,90 +51,111 @@ const Login = () => {
 
 
     return (
-        <div className="min-h-screen bg-[var(--bg-cream)] flex flex-col items-center justify-center p-4">
-            {/* Logo and Title */}
-            <div className="flex flex-col items-center mb-8">
-                <div className="w-16 h-16 bg-[var(--accent-brand)] rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(139,94,60,0.4)] mb-4">
-                    <GraduationCap className="text-white w-10 h-10" />
-                </div>
-                <h1 className="text-4xl font-bold text-[var(--text-brown)] mb-2 text-center text-wrap">Placement Management System</h1>
-                <p className="text-[var(--text-brown)] opacity-80">Your bridge to a professional career</p>
-            </div>
+        <div className="auth-page">
+            <div className="auth-bg-overlay" />
 
-            {/* Auth Card */}
-            <div className="w-full max-w-[440px] bg-white border border-[var(--accent-brand)]/20 rounded-3xl p-8 shadow-2xl">
-                <form className="space-y-6" onSubmit={handleSubmit}>
-                    <div>
-                        <label className="block text-sm font-medium text-[var(--text-brown)] mb-2">Email / Username</label>
-                        <div className="relative group">
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                placeholder="e.g. name@university.edu"
-                                className="w-full bg-[#E8D8C3]/20 border border-[#D7C2AE] text-[#2C1B12] rounded-xl py-3.5 px-4 focus:outline-none focus:ring-2 focus:ring-[#5A3E2B]/30 focus:border-[#5A3E2B] transition-all placeholder:text-[#2C1B12]/40"
-                                required
-                            />
+            <div className="auth-content-wrapper">
+                <div className="auth-container">
+                    {/* Left side - Info panel */}
+                    <div className="auth-info md:flex hidden">
+                        <div className="auth-info-content">
+                            <div className="brand-logo mb-6">
+                                <GraduationCap size={40} className="text-white" />
+                            </div>
+                            <h2 className="text-3xl font-bold text-white mb-4">Placement Portal</h2>
+                            <p className="text-white/80 mb-8 italic">"Your bridge to a professional career"</p>
+                            <ul className="space-y-4">
+                                <li className="text-white/90">✓ Verified Opportunities</li>
+                                <li className="text-white/90">✓ Campus Recruitment Drives</li>
+                                <li className="text-white/90">✓ Industry Partnerships</li>
+                            </ul>
                         </div>
-                        {errors.email && <p className="mt-1.5 text-xs text-red-400">{errors.email}</p>}
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-[var(--text-brown)] mb-2">Password</label>
-                        <div className="relative group">
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                placeholder="Enter your password"
-                                className="w-full bg-[#E8D8C3]/20 border border-[#D7C2AE] text-[#2C1B12] rounded-xl py-3.5 px-4 focus:outline-none focus:ring-2 focus:ring-[#5A3E2B]/30 focus:border-[#5A3E2B] transition-all placeholder:text-[#2C1B12]/40"
-                                required
-                            />
+                    {/* Right side - Form Card */}
+                    <div className="auth-card">
+                        <div className="auth-header text-center mb-10">
+                            <div className="w-16 h-16 bg-[var(--accent-brand)] rounded-2xl flex items-center justify-center shadow-lg shadow-[var(--accent-brand)]/20 mx-auto mb-4 md:hidden">
+                                <GraduationCap className="text-white" size={32} />
+                            </div>
+                            <h1 className="auth-title">Welcome Back</h1>
+                            <p className="auth-subtitle">Sign in to your account</p>
+                        </div>
+
+                        <form className="auth-form" onSubmit={handleSubmit}>
+                            <div className="auth-input-group">
+                                <label className="auth-label">Email / Username</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="name@university.edu"
+                                    className="auth-input"
+                                    autoComplete="off"
+                                    required
+                                />
+                                {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+                            </div>
+
+                            <div className="auth-input-group">
+                                <label className="auth-label">Password</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        placeholder="••••••••"
+                                        className="auth-input"
+                                        autoComplete="current-password"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-brown)]/60 hover:text-[var(--text-brown)]"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                                {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
+                            </div>
+
+                            <div className="flex items-center justify-between text-sm mb-6">
+                                <label className="flex items-center space-x-2 cursor-pointer group">
+                                    <input type="checkbox" className="w-4 h-4 rounded border-[var(--accent-brand)]/30 bg-white text-[var(--accent-brand)]" />
+                                    <span className="text-[var(--text-brown)]/80 group-hover:text-[var(--accent-brand)] transition-colors">Remember Me</span>
+                                </label>
+                                <Link to="/forgot-password" title="Forgot Password?" className="text-sm font-medium text-[var(--primary-brown)] hover:underline">
+                                    Forgot Password?
+                                </Link>
+                            </div>
+
                             <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-brown)]/60 hover:text-[var(--text-brown)] transition-colors"
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-[var(--primary-brown)] hover:bg-[var(--dark-brown)] text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98] flex items-center justify-center space-x-2"
                             >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                {loading ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <span>Sign In</span>
+                                )}
                             </button>
-                        </div>
-                        {errors.password && <p className="mt-1.5 text-xs text-red-400">{errors.password}</p>}
-                    </div>
+                        </form>
 
-                    <div className="flex items-center justify-between text-sm">
-                        <label className="flex items-center space-x-2 cursor-pointer group">
-                            <input type="checkbox" className="w-4 h-4 rounded border-[var(--accent-brand)]/30 bg-white text-[var(--accent-brand)] focus:ring-0 focus:ring-offset-0 focus:outline-none outline-none" />
-                            <span className="text-[var(--text-brown)] group-hover:text-[var(--accent-brand)] transition-colors">Remember Me</span>
-                        </label>
-                        <Link to="/forgot-password" title="Forgot Password?" className="text-[var(--accent-brand)] hover:opacity-80 transition-colors">
-                            Forgot Password?
-                        </Link>
+                        <p className="auth-footer text-center mt-8">
+                            Don't have an account?{' '}
+                            <Link to="/register" className="text-[var(--primary-brown)] font-bold hover:underline">Register</Link>
+                        </p>
                     </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-[var(--accent-brand)] hover:opacity-90 text-white font-semibold py-4 rounded-xl shadow-lg shadow-[var(--accent-brand)]/30 transition-all active:scale-[0.98] flex items-center justify-center space-x-2"
-                    >
-                        {loading ? (
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <span>Sign In</span>
-                        )}
-                    </button>
-                </form>
+                </div>
             </div>
 
-            <p className="mt-8 text-[var(--text-brown)] text-sm">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-[var(--accent-brand)] hover:opacity-80 font-semibold transition-colors">Register</Link>
-            </p>
-
-            <div className="mt-12 flex space-x-6 text-xs text-[var(--text-brown)]/60">
-                <Link to="/privacy" className="hover:text-[var(--text-brown)]">Privacy Policy</Link>
-                <Link to="/terms" className="hover:text-[var(--text-brown)]">Terms of Service</Link>
+            {/* Global Footer */}
+            <div className="auth-footer-wrapper">
+                <Footer />
             </div>
         </div>
     );

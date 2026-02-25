@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import Footer from './Footer';
+// import Footer from './Footer';
 import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
 
@@ -32,7 +32,8 @@ const Layout = ({ title }) => {
                 <main className="layout-content">
                     <Outlet />
                 </main>
-                <Footer />
+                {/* Footer removed to only show on login page */}
+                {/* <Footer /> */}
             </div>
 
             {/* Mobile overlay */}

@@ -14,8 +14,41 @@ body,
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  color-scheme: light !important;
 }
 
 body {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-secondary) !important;
+  color-scheme: light !important;
+}
+
+/* THE ULTIMATE HAMMER FOR WHITE INPUTS */
+input,
+select,
+textarea {
+  background-color: white !important;
+  color: #2C1B12 !important;
+}
+
+/* Force white background for ALL autofill states */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #2C1B12 !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* Custom focus ring that is NOT blue */
+input:focus {
+  outline: none !important;
+  border-color: #5A3E2B !important;
+  box-shadow: 0 0 0 2px rgba(90, 62, 43, 0.3) !important;
+  background-color: white !important;
 }
